@@ -4,7 +4,7 @@
       <ul>
         <li><NuxtLink to="/">Home</NuxtLink></li>
         <li><NuxtLink to="/load_direct">Load direct</NuxtLink></li>
-        <li><NuxtLink to="/user-">Load with plugin</NuxtLink></li>
+        <li><NuxtLink to="/user">User</NuxtLink></li>
       </ul>
     </nav>
   </header>

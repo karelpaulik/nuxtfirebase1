@@ -3,7 +3,7 @@ import { doc, getDoc, collection, addDoc, updateDoc, setDoc, deleteDoc } from 'f
 
 /**
  * Přidá nový dokument do zadané kolekce.
- * @param {string} collName Název kolekce (např. 'users').
+ * @param {string} collName Název kolekce.
  * @param {object} body Objekt s daty pro nový dokument.
  * @returns {Promise<string>} ID nově vytvořeného dokumentu.
  * @throws {Error} Pokud dojde k chybě při přidávání dokumentu.
@@ -11,8 +11,8 @@ import { doc, getDoc, collection, addDoc, updateDoc, setDoc, deleteDoc } from 'f
 export const useAddColl = async(collName: string, body: object): Promise<string> => {
   try {
     const { $firestore } = useNuxtApp();
-    const usersCollection = collection($firestore, collName);
-    const docRef = await addDoc(usersCollection, body);
+    const collRef = collection($firestore, collName);
+    const docRef = await addDoc(collRef, body);
     console.log(`Dokument úspěšně přidán s ID: ${docRef.id} do kolekce '${collName}'.`);
     return docRef.id;
   } catch (e: any) { // Používáme 'any' pro typ chyby kvůli variabilitě typů chyb
@@ -73,7 +73,7 @@ export const useDelDoc = async(collName: string, docId: string): Promise<boolean
 
 /**
  * Aktualizuje existující dokument ve Firestore.
- * @param {string} collName Název kolekce (např. 'users').
+ * @param {string} collName Název kolekce.
  * @param {string} docId ID dokumentu, který má být aktualizován.
  * @param {object} newData Objekt s daty, která se mají aktualizovat (merge).
  * @returns {Promise<boolean>} True, pokud byla aktualizace úspěšná.

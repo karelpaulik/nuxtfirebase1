@@ -5,6 +5,7 @@
         <li><NuxtLink to="/">Home</NuxtLink></li>
         <li><NuxtLink to="/load_direct">Load direct</NuxtLink></li>
         <li><NuxtLink to="/user">User</NuxtLink></li>
+        <li><NuxtLink to="/user/users">All users</NuxtLink></li>
       </ul>
     </nav>
   </header>

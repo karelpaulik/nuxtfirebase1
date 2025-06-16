@@ -4,7 +4,13 @@
 npm run build
 Vytvoří se .output/public
 
-Do tohoto adresáře najet a provést deploy na google hosting.
+Do tohoto adresáře najet
+cd .output/public
+
+Provést deploy na google hosting.
+firebase login
+firebase init
+firebase deploy
 ```
 
 **Pozn** Zde se nepoužije *npm run generate*, protože je nastavení v: nuxt.config.ts

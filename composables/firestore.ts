@@ -1,4 +1,4 @@
-import { doc, getDoc, collection, addDoc, updateDoc, setDoc, deleteDoc } from 'firebase/firestore'
+import { doc, getDoc, collection, addDoc, updateDoc, setDoc, deleteDoc, getDocs } from 'firebase/firestore'
 //const { $firestore } = useNuxtApp() //nelze volat na úrovní  modulu kvůli server side rendering
 
 /**
@@ -91,3 +91,26 @@ export const useUpdateDoc = async (collName: string, docId: string, newData: obj
     throw e;
   }
 };
+
+/**
+ * Načte všechny dokumenty z zadané kolekce.
+ * @param {string} collName Název kolekce.
+ * @returns {Promise<Array<{ data: object, id: string }>>} Pole objektů, kde každý obsahuje data dokumentu a jeho ID.
+ * @throws {Error} Pokud dojde k chybě při čtení dokumentů.
+ */
+export const useGetAllDocs = async (collName: string): Promise<Array<{ data: object, id: string }>> => {
+  try {
+    const { $firestore } = useNuxtApp();
+    const collRef = collection($firestore, collName);
+    const querySnapshot = await getDocs(collRef);
+    const docs: Array<{ data: object, id: string }> = [];
+    querySnapshot.forEach((doc) => {
+      docs.push({ id: doc.id, data: doc.data() });
+    });
+    console.log(`Úspěšně načteno ${docs.length} dokumentů z kolekce '${collName}'.`);
+    return docs;
+  } catch (e: any) {
+    console.error(`Chyba při načítání všech dokumentů z kolekce '${collName}':`, e.message || e);
+    throw e;
+  }
+}

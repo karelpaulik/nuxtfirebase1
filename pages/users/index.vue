@@ -1,5 +1,7 @@
 <template>
   <section>
+    <button @click="navigateTo(`/${PAGE_NAME}/new`)" class="new-user-button">Nový záznam</button>
+
     <h2>Všechny dokumenty</h2>
     <p v-if="loading">Načítám data...</p>
     <p v-else-if="error">Chyba při načítání dat: {{ error.message }}</p>
@@ -14,7 +16,6 @@
     </div>
     <p v-else>Žádná data v databázi.</p>
 
-
   </section>
 </template>
 
@@ -22,7 +23,7 @@
 import { ref, onMounted } from 'vue';
 
 const COLLECTION_NAME = 'users';
-const PAGE_NAME = 'user';
+const PAGE_NAME = 'users';
 
 const documents = ref([]); //template: doc.data.atribut, doc.id
 const loading = ref(true);
@@ -55,6 +56,21 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+.new-user-button {
+  margin-top: 20px; /* Přidá trochu mezery nad tlačítkem */
+  padding: 5px 15px;
+  background-color: #28a745; /* Příklad zelené barvy */
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.new-user-button:hover {
+  background-color: #218838;
 }
 
 </style>

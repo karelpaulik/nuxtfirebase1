@@ -22,8 +22,8 @@
     
     <div v-else class="btn-field">
       <button @click="handleAddDoc">Vytvořit nový dokument ze stávajícího.</button>
-      <button @click="handleUpdateDoc">Upravit dokument</button>
-      <button @click="handleDelDoc">Smaž dokument</button>
+      <button @click="handleUpdateDoc">Uložit změny dokumentu</button>
+      <button @click="handleDelDoc">Smazat dokument</button>
     </div>
 
     <pre>{{formData}}</pre>

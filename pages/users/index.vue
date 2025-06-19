@@ -9,7 +9,10 @@
       <ul>
         <li v-for="doc in documents" :key="doc.id" class="doc-item">
           <NuxtLink :to="`/${PAGE_NAME}/${doc.id}`">
-            {{ doc.data.fName }} {{ doc.data.lName }} (Born: {{ doc.data.born }})
+            {{ doc.data.fName }} {{ doc.data.lName }} (Born: {{ doc.data.born }}) 
+            Driv.lic: 
+            <input type="checkbox" :checked="doc.data.hasDrivingLic" disabled />
+            {{ doc.data.hobbies }}
           </NuxtLink>
         </li>
       </ul>

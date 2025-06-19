@@ -5,15 +5,45 @@
       fName<input v-model="formData.fName" placeholder="fName" @input="setHasChanges">
       lName<input v-model="formData.lName" placeholder="lName" @input="setHasChanges">
       born<input v-model="formData.born" placeholder="Born" @input="setHasChanges">
+
+      <div>
+        <label for="hasDrivingLic">Řidičský průkaz</label>
+        <input type="checkbox" id="hasDrivingLic" v-model="formData.hasDrivingLic" @change="setHasChanges"/>
+      </div>
+
+      <div class="hobbies-group">
+        <label>Zájmy:</label>
+        <div class="hobbies-options">
+          <input type="checkbox" id="hobbyFootball" value="fotbal" v-model="formData.hobbies" @change="setHasChanges" />
+          <label for="hobbyFootball">Fotbal</label>
+
+          <input type="checkbox" id="hobbyHockey" value="hokej" v-model="formData.hobbies" @change="setHasChanges" />
+          <label for="hobbyHockey">Hokej</label>
+
+          <input type="checkbox" id="hobbyCycling" value="cyklistika" v-model="formData.hobbies" @change="setHasChanges" />
+          <label for="hobbyCycling">Cyklistika</label>
+        </div>
+      </div>
+
+      <div>
+        <div>Picked: {{ picked }}</div>
+
+        <input type="radio" id="one" value="One" v-model="formData.picked" />
+        <label for="one">One</label>
+
+        <input type="radio" id="two" value="Two" v-model="formData.picked" />
+        <label for="two">Two</label>
+      </div>
+
+
     </div>
 
     <div v-if="hasChanges" class="changes-row">
-      <p class="changes-indicator">
+      <!-- <p class="changes-indicator">
         ⚠️ Data byla změněna! Nezapomeňte uložit.
-      </p>
-      <button @click="handleRevertChanges" class="revert-button">
-        Vrátit změny dokumentu
-      </button>
+      </p> -->
+      <button @click="handleRevertChanges" class="update-document-btn">Vrátit změny dokumentu</button>
+      <button @click="handleUpdateDoc" class="update-document-btn">Uložit změny dokumentu</button>
     </div>
 
     <div v-if="formId === 'new'" class="btn-field">
@@ -22,7 +52,6 @@
     
     <div v-else class="btn-field">
       <button @click="handleAddDoc">Vytvořit nový dokument ze stávajícího.</button>
-      <button @click="handleUpdateDoc">Uložit změny dokumentu</button>
       <button @click="handleDelDoc">Smazat dokument</button>
     </div>
 
@@ -42,7 +71,10 @@ const createEmptyformData = () => {
   return {
     fName: '',
     lName: '',
-    born: ''
+    born: '',
+    hasDrivingLic: false,
+    hobbies: [],
+    picked: ''
   };
 };
 
@@ -116,6 +148,17 @@ async function handleReadDoc(idToRead) {
   try {
     const doc = await useReadDoc(COLLECTION_NAME, idToRead);
     if (doc) {
+      // //-----------------------------------------------------------------------------------------
+      // const rawData = doc.data;
+      // // Zajisti, že hobbies je vždy pole
+      // const normalizedData = {
+      //   ...createEmptyformData(), // zajistí všechny požadované atributy
+      //   ...rawData, // přepíše výchozí hodnoty těmi z DB
+      //   hobbies: Array.isArray(rawData.hobbies) ? rawData.hobbies : [], // oprava jen pro hobbies
+      // };
+      // formData.value = normalizedData;
+      // //------------------------------------------------------------------------------------------
+
       formData.value = doc.data;
       formId.value = doc.id;
       hasChanges.value = false; // Po načtení nejsou žádné změny
@@ -248,7 +291,7 @@ async function handleDelDoc() {
   background-color: #079722;
 }
 
-.revert-button {
+.update-document-btn {
   background-color: #f0ad4e;
   color: white;
   padding: 10px 15px;
@@ -258,7 +301,26 @@ async function handleDelDoc() {
   margin: 2px;
 }
 
-.revert-button:hover {
+.update-document-btn:hover {
   background-color: #ec971f;
+}
+
+.hobbies-group {
+  display: flex;
+  flex-direction: column; /* Label "Zájmy" bude nad možnostmi */
+  gap: 5px; /* Mezera mezi labelem a skupinou checkboxů */
+  margin-top: 10px; /* Trocha místa nad celou skupinou zájmů */
+}
+
+.hobbies-options {
+  display: flex;
+  flex-wrap: wrap; /* Pokud bude moc možností, přesunou se na další řádek */
+  gap: 15px; /* Mezera mezi jednotlivými checkboxy a jejich labely */
+  align-items: center; /* Vertikální zarovnání */
+}
+
+.hobbies-options input[type="checkbox"] {
+  /* Možná úprava šířky inputu, pokud ho nechceš moc široký */
+  width: auto; 
 }
 </style>

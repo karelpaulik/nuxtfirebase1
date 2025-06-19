@@ -23,3 +23,12 @@ nitro.preset: 'static'
 ```
 ssr: true
 ```
+
+# Typescirpt kontrola
+```
+Nastavení:
+tsconfig.json
+compilerOptions.strict: true/false
+
+npm run typecheck
+```

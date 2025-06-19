@@ -26,22 +26,17 @@
       </div>
 
       <div>
-        <div>Picked: {{ picked }}</div>
+        <div>Picked: {{ formData.picked }}</div>
 
-        <input type="radio" id="one" value="One" v-model="formData.picked" />
+        <input type="radio" id="one" value="One" v-model="formData.picked" @change="setHasChanges" />
         <label for="one">One</label>
 
-        <input type="radio" id="two" value="Two" v-model="formData.picked" />
+        <input type="radio" id="two" value="Two" v-model="formData.picked" @change="setHasChanges" />
         <label for="two">Two</label>
       </div>
-
-
     </div>
 
     <div v-if="hasChanges" class="changes-row">
-      <!-- <p class="changes-indicator">
-        ⚠️ Data byla změněna! Nezapomeňte uložit.
-      </p> -->
       <button @click="handleRevertChanges" class="update-document-btn">Vrátit změny dokumentu</button>
       <button @click="handleUpdateDoc" class="update-document-btn">Uložit změny dokumentu</button>
     </div>
@@ -60,14 +55,33 @@
   </section>
 </template>
 
-<script setup>
-import { ref, watch } from 'vue'
-import { onBeforeRouteLeave } from 'vue-router'
+<script setup lang="ts">
+import { ref, watch } from 'vue';
+import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'; // Added useRouter for navigateTo
+
+// Assuming these are custom composables and you'll need to define their types if they're not already
+// For demonstration, I'm assuming they return Promise<any> or specific types if known.
+// declare function useReadDoc(collection: string, id: string): Promise<{ id: string; data: FormData } | null>;
+// declare function useAddColl(collection: string, data: FormData): Promise<string | null>;
+// declare function useUpdateDoc(collection: string, id: string, data: FormData): Promise<boolean>;
+// declare function useDelDoc(collection: string, id: string): Promise<boolean>;
 
 const COLLECTION_NAME = 'users';
-const PAGE_NAME = 'users'; // Název složky pro navigaci
+const PAGE_NAME = 'users';
 
-const createEmptyformData = () => {
+/**
+ * Interface defining the structure of the form data.
+ */
+interface FormData {
+  fName: string;
+  lName: string;
+  born: string;
+  hasDrivingLic: boolean;
+  hobbies: string[];
+  picked: string;
+}
+
+const createEmptyFormData = (): FormData => {
   return {
     fName: '',
     lName: '',
@@ -79,11 +93,12 @@ const createEmptyformData = () => {
 };
 
 const route = useRoute();
-const formId = ref(null); // Bude držet ID dokumentu nebo 'new'
-const formData = ref(createEmptyformData());
-const hasChanges = ref(false);
+const router = useRouter(); // Initialize useRouter for navigateTo
+const formId = ref<string | null>(null); // Explicitly define type as string or null
+const formData = ref<FormData>(createEmptyFormData()); // Explicitly define type as FormData
+const hasChanges = ref<boolean>(false); // Explicitly define type as boolean
 
-const setHasChanges = () => {
+const setHasChanges = (): void => {
   hasChanges.value = true;
 };
 
@@ -104,105 +119,98 @@ onBeforeRouteLeave((to, from, next) => {
 });
 
 watch(() => route.params.id, async (newIdParam) => {
-  if (newIdParam === 'new') {
-    // Pokud je ID 'new', připravujeme se na vytvoření nového dokumentu
+  const id = newIdParam as string; // Cast newIdParam to string for comparison and function calls
+
+  if (id === 'new') {
     console.log('Routa je /users/new, inicializuji formulář pro nového uživatele.');
     formId.value = 'new';
-    formData.value = createEmptyformData();
-    hasChanges.value = false; // Nově inicializovaný formulář nemá změny
-  } else if (newIdParam) {
-    // Pokud je ID platné (nějaká hodnota kromě 'new'), snažíme se načíst existující dokument
-    console.log(`ID v URL se změnilo na '${newIdParam}', načítám uživatele.`);
-    formId.value = newIdParam;
-    await handleReadDoc(newIdParam); // Použijeme await, abychom zajistili načtení před dalším renderováním
+    formData.value = createEmptyFormData();
+    hasChanges.value = false;
+  } else if (id) {
+    console.log(`ID v URL se změnilo na '${id}', načítám uživatele.`);
+    formId.value = id;
+    await handleReadDoc(id);
   } else {
-    // Toto by se nemělo stát s routou [id].vue, ale pro jistotu
     console.warn('Neočekávaný stav: ID v URL chybí.');
     formId.value = null;
-    formData.value = createEmptyformData();
+    formData.value = createEmptyFormData();
     hasChanges.value = false;
   }
-}, { immediate: true }); // immediate: true zajistí spuštění hned po naložení komponenty
+}, { immediate: true });
 
-async function handleRevertChanges() {
+async function handleRevertChanges(): Promise<void> {
   if (!formId.value) {
     console.warn('Nelze vrátit změny: Není načten žádný dokument ani nový formulář.');
     return;
   }
   if (confirm('Opravdu chcete vrátit všechny neuložené změny?')) {
     if (formId.value === 'new') {
-      // Pro 'new' formulář jednoduše resetujeme
-      formData.value = createEmptyformData();
+      formData.value = createEmptyFormData();
       hasChanges.value = false;
-      console.log("Formulář pro nového uživatele byl resetován.");
+      console.log('Formulář pro nového uživatele byl resetován.');
     } else {
-      // Pro existující dokument znovu načteme data
       await handleReadDoc(formId.value);
       hasChanges.value = false;
-      console.log("Změny byly vráceny opětovným načtením dokumentu.");
+      console.log('Změny byly vráceny opětovným načtením dokumentu.');
     }
   }
 }
 
-async function handleReadDoc(idToRead) {
+async function handleReadDoc(idToRead: string): Promise<void> {
   try {
     const doc = await useReadDoc(COLLECTION_NAME, idToRead);
     if (doc) {
-      // //-----------------------------------------------------------------------------------------
-      // const rawData = doc.data;
-      // // Zajisti, že hobbies je vždy pole
-      // const normalizedData = {
-      //   ...createEmptyformData(), // zajistí všechny požadované atributy
-      //   ...rawData, // přepíše výchozí hodnoty těmi z DB
-      //   hobbies: Array.isArray(rawData.hobbies) ? rawData.hobbies : [], // oprava jen pro hobbies
-      // };
-      // formData.value = normalizedData;
-      // //------------------------------------------------------------------------------------------
+      //-----------------------------------------------------------------------------------------
+      const rawData = doc.data;
+      // Zajisti, že hobbies je vždy pole
+      const normalizedData = {
+        ...createEmptyFormData(), // zajistí všechny požadované atributy
+        ...rawData, // přepíše výchozí hodnoty těmi z DB
+        hobbies: Array.isArray(rawData.hobbies) ? rawData.hobbies : [], // oprava jen pro hobbies
+      };
+      formData.value = normalizedData;
+      //------------------------------------------------------------------------------------------
 
-      formData.value = doc.data;
+
+      //formData.value = doc.data;
       formId.value = doc.id;
-      hasChanges.value = false; // Po načtení nejsou žádné změny
+      hasChanges.value = false;
     } else {
-      // Dokument nebyl nalezen, přesměrujeme na 'new' nebo na seznam
       console.log(`Dokument s ID '${idToRead}' nebyl nalezen.`);
       alert(`Uživatel s ID '${idToRead}' nebyl nalezen. Budete přesměrováni na vytvoření nového uživatele.`);
-      await navigateTo(`/${PAGE_NAME}/new`); // Přesměrování na /users/new
+      await router.push(`/${PAGE_NAME}/new`); // Using router.push for navigation
     }
   } catch (e) {
-    console.error("Chyba při čtení dokumentu:", e);
-    alert("Nastala chyba při načítání dokumentu. Budete přesměrováni na vytvoření nového uživatele.");
-    await navigateTo(`/${PAGE_NAME}/new`); // Přesměrování na /users/new v případě chyby
+    console.error('Chyba při čtení dokumentu:', e);
+    alert('Nastala chyba při načítání dokumentu. Budete přesměrováni na vytvoření nového uživatele.');
+    await router.push(`/${PAGE_NAME}/new`); // Using router.push for navigation
   }
 }
 
-async function handleAddDoc() {
-  // if (formId.value !== 'new') {
-  //   console.warn('Nelze vytvořit dokument: Současný režim není "nový".');
-  //   return;
-  // }
+async function handleAddDoc(): Promise<void> {
   if (!confirm(`Opravdu chcete vytvořit nový dokument?`)) {
-    console.log("Nevytvářím");
+    console.log('Nevytvářím');
     return;
   }
   try {
     const docId = await useAddColl(COLLECTION_NAME, formData.value);
     if (docId) {
       hasChanges.value = false;
-      await navigateTo(`/${PAGE_NAME}/${docId}`); // Po vytvoření přesměrujeme na detail nově vytvořeného dokumentu
+      await router.push(`/${PAGE_NAME}/${docId}`); // Using router.push for navigation
       console.log(`Vytvořen dokument s ID: ${docId}`);
     }
   } catch (e) {
-    console.error("Chyba při ukládání z komponenty:", e);
+    console.error('Chyba při ukládání z komponenty:', e);
   }
 }
 
-async function handleUpdateDoc() {
+async function handleUpdateDoc(): Promise<void> {
   if (!formId.value || formId.value === 'new') {
     console.warn('Nelze aktualizovat: Žádné platné ID dokumentu k úpravě.');
     return;
   }
   if (!confirm(`Opravdu chcete updatovat data s ID: ${formId.value}?`)) {
-    console.log("Neupravuji");
+    console.log('Neupravuji');
     return;
   }
   try {
@@ -218,24 +226,23 @@ async function handleUpdateDoc() {
   }
 }
 
-async function handleDelDoc() {
+async function handleDelDoc(): Promise<void> {
   if (!formId.value || formId.value === 'new') {
     console.warn('Žádné platné ID dokumentu k smazání.');
     return;
   }
   if (!confirm(`Opravdu chcete smazat data s ID: ${formId.value}?`)) {
-    console.log("nemažu");
+    console.log('nemažu');
     return;
   }
   try {
     const success = await useDelDoc(COLLECTION_NAME, formId.value);
     if (success) {
       console.log(`Dokument s ID '${formId.value}' byl úspěšně smazán!`);
-      // Po smazání je důležité přesměrovat na /users/new nebo na seznam
-      formData.value = createEmptyformData(); // Resetujeme formulář
-      formId.value = 'new'; // Nastavíme režim na 'new'
+      formData.value = createEmptyFormData();
+      formId.value = 'new';
       hasChanges.value = false;
-      await navigateTo(`/${PAGE_NAME}`); // Přesměrování na /users/new
+      await router.push(`/${PAGE_NAME}`); // Using router.push for navigation
     } else {
       console.log('Dokument nebyl smazán (neznámý důvod).');
     }
@@ -307,20 +314,19 @@ async function handleDelDoc() {
 
 .hobbies-group {
   display: flex;
-  flex-direction: column; /* Label "Zájmy" bude nad možnostmi */
-  gap: 5px; /* Mezera mezi labelem a skupinou checkboxů */
-  margin-top: 10px; /* Trocha místa nad celou skupinou zájmů */
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 10px;
 }
 
 .hobbies-options {
   display: flex;
-  flex-wrap: wrap; /* Pokud bude moc možností, přesunou se na další řádek */
-  gap: 15px; /* Mezera mezi jednotlivými checkboxy a jejich labely */
-  align-items: center; /* Vertikální zarovnání */
+  flex-wrap: wrap;
+  gap: 15px;
+  align-items: center;
 }
 
 .hobbies-options input[type="checkbox"] {
-  /* Možná úprava šířky inputu, pokud ho nechceš moc široký */
-  width: auto; 
+  width: auto;
 }
 </style>

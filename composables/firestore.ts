@@ -46,6 +46,26 @@ export const useReadDoc = async(collName: string, docId: string): Promise<{ data
   }
 }
 
+// Příklad: Generické useReadDoc
+// export const useReadDoc = async <T extends object>(collName: string, docId: string): Promise<{ data: T, id: string } | null> => {
+//   try {
+//     const { $firestore } = useNuxtApp();
+//     const docRef = doc($firestore, collName, docId);
+//     const docSnap = await getDoc(docRef);
+//     if (docSnap.exists()) {
+//       console.log(`Dokument s ID '${docId}' načten z kolekce '${collName}'.`);
+//       // Zde bychom `docSnap.data()` typovali přímo na `T`
+//       return { data: docSnap.data() as T, id: docSnap.id };
+//     } else {
+//       console.log(`useGetDoc: Dokument s ID '${docId}' v kolekci '${collName}' nenalezen.`);
+//       return null;
+//     }
+//   } catch (e: any) {
+//     console.error(`Chyba při čtení dokumentu s ID '${docId}' z kolekce '${collName}':`, e.message || e);
+//     throw e;
+//   }
+// }
+
 /**
  * Smaže dokument z zadané kolekce podle ID.
  * @param {string} collName Název kolekce.

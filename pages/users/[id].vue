@@ -59,12 +59,8 @@
 import { ref, watch } from 'vue';
 import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'; // Added useRouter for navigateTo
 
-// Assuming these are custom composables and you'll need to define their types if they're not already
-// For demonstration, I'm assuming they return Promise<any> or specific types if known.
-// declare function useReadDoc(collection: string, id: string): Promise<{ id: string; data: FormData } | null>;
-// declare function useAddColl(collection: string, data: FormData): Promise<string | null>;
-// declare function useUpdateDoc(collection: string, id: string, data: FormData): Promise<boolean>;
-// declare function useDelDoc(collection: string, id: string): Promise<boolean>;
+// Import generické normalizační funkce (změnil jsem název na normalizeData pro odlišení obecnosti)
+import { normalizeData } from '~/utils/normalizeData'; // Nebo ~/utils/generalNormalization.ts
 
 const COLLECTION_NAME = 'users';
 const PAGE_NAME = 'users';
@@ -159,20 +155,21 @@ async function handleRevertChanges(): Promise<void> {
 async function handleReadDoc(idToRead: string): Promise<void> {
   try {
     const doc = await useReadDoc(COLLECTION_NAME, idToRead);
+    //const doc = await useReadDoc<FormData>(COLLECTION_NAME, idToRead);
     if (doc) {
-      //-----------------------------------------------------------------------------------------
-      const rawData = doc.data;
-      // Zajisti, že hobbies je vždy pole
-      const normalizedData = {
-        ...createEmptyFormData(), // zajistí všechny požadované atributy
-        ...rawData, // přepíše výchozí hodnoty těmi z DB
-        hobbies: Array.isArray(rawData.hobbies) ? rawData.hobbies : [], // oprava jen pro hobbies
-      };
-      formData.value = normalizedData;
-      //------------------------------------------------------------------------------------------
-
+      // //-----------------------------------------------------------------------------------------
+      // const rawData = doc.data;
+      // // Zajisti, že hobbies je vždy pole
+      // const normalizedData = {
+      //   ...createEmptyFormData(), // zajistí všechny požadované atributy
+      //   ...rawData, // přepíše výchozí hodnoty těmi z DB
+      //   hobbies: Array.isArray(rawData.hobbies) ? rawData.hobbies : [], // oprava jen pro hobbies
+      // };
+      // formData.value = normalizedData;
+      // //------------------------------------------------------------------------------------------
 
       //formData.value = doc.data;
+      formData.value = normalizeData<FormData>(doc.data, createEmptyFormData());
       formId.value = doc.id;
       hasChanges.value = false;
     } else {

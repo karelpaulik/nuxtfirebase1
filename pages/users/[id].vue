@@ -2,25 +2,25 @@
   <section>
     <h2>{{ formId === 'new' ? 'Nový záznam' : 'Detail záznamu' }}</h2>
     <div class="form-fields">
-      fName<input v-model="formData.fName" placeholder="fName" @input="setHasChanges">
-      lName<input v-model="formData.lName" placeholder="lName" @input="setHasChanges">
-      born<input v-model="formData.born" placeholder="Born" @input="setHasChanges">
+      fName<input v-model="formData.fName" placeholder="fName" @input="setHasChanges(_handlerProps)">
+      lName<input v-model="formData.lName" placeholder="lName" @input="setHasChanges(_handlerProps)">
+      born<input v-model="formData.born" placeholder="Born" @input="setHasChanges(_handlerProps)">
 
       <div>
         <label for="hasDrivingLic">Řidičský průkaz</label>
-        <input type="checkbox" id="hasDrivingLic" v-model="formData.hasDrivingLic" @change="setHasChanges"/>
+        <input type="checkbox" id="hasDrivingLic" v-model="formData.hasDrivingLic" @change="setHasChanges(_handlerProps)"/>
       </div>
 
       <div class="hobbies-group">
         <label>Zájmy:</label>
         <div class="hobbies-options">
-          <input type="checkbox" id="hobbyFootball" value="fotbal" v-model="formData.hobbies" @change="setHasChanges" />
+          <input type="checkbox" id="hobbyFootball" value="fotbal" v-model="formData.hobbies" @change="setHasChanges(_handlerProps)" />
           <label for="hobbyFootball">Fotbal</label>
 
-          <input type="checkbox" id="hobbyHockey" value="hokej" v-model="formData.hobbies" @change="setHasChanges" />
+          <input type="checkbox" id="hobbyHockey" value="hokej" v-model="formData.hobbies" @change="setHasChanges(_handlerProps)" />
           <label for="hobbyHockey">Hokej</label>
 
-          <input type="checkbox" id="hobbyCycling" value="cyklistika" v-model="formData.hobbies" @change="setHasChanges" />
+          <input type="checkbox" id="hobbyCycling" value="cyklistika" v-model="formData.hobbies" @change="setHasChanges(_handlerProps)" />
           <label for="hobbyCycling">Cyklistika</label>
         </div>
       </div>
@@ -28,26 +28,26 @@
       <div>
         <div>Picked: {{ formData.picked }}</div>
 
-        <input type="radio" id="one" value="One" v-model="formData.picked" @change="setHasChanges" />
+        <input type="radio" id="one" value="One" v-model="formData.picked" @change="setHasChanges(_handlerProps)" />
         <label for="one">One</label>
 
-        <input type="radio" id="two" value="Two" v-model="formData.picked" @change="setHasChanges" />
+        <input type="radio" id="two" value="Two" v-model="formData.picked" @change="setHasChanges(_handlerProps)" />
         <label for="two">Two</label>
       </div>
     </div>
 
     <div v-if="hasChanges" class="changes-row">
-      <button @click="handleRevertChanges" class="update-document-btn">Vrátit změny dokumentu</button>
-      <button @click="handleUpdateDoc" class="update-document-btn">Uložit změny dokumentu</button>
+      <button @click="handleRevertChanges(_handlerProps)" class="update-document-btn">Vrátit změny dokumentu</button>
+      <button @click="handleUpdateDoc(_handlerProps)" class="update-document-btn">Uložit změny dokumentu</button>
     </div>
 
     <div v-if="formId === 'new'" class="btn-field">
-      <button @click="handleAddDoc">Vytvořit nový dokument</button>
+      <button @click="handleAddDoc(_handlerProps)">Vytvořit nový dokument</button>
     </div>
     
     <div v-else class="btn-field">
-      <button @click="handleAddDoc">Vytvořit nový dokument ze stávajícího.</button>
-      <button @click="handleDelDoc">Smazat dokument</button>
+      <button @click="handleAddDoc(_handlerProps)">Vytvořit nový dokument ze stávajícího.</button>
+      <button @click="handleDelDoc(_handlerProps)">Smazat dokument</button>
     </div>
 
     <pre>{{formData}}</pre>
@@ -56,11 +56,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
-import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'; // Added useRouter for navigateTo
-
-// Import generické normalizační funkce (změnil jsem název na normalizeData pro odlišení obecnosti)
-import { normalizeData } from '~/utils/normalizeData'; // Nebo ~/utils/generalNormalization.ts
+// Importujeme useDocHandlers pro získání stavu a _handlerProps.
+// Importujeme také všechny samostatné handlery a router-specifické Composables.
+import { 
+  useDocHandlers, 
+  setHasChanges, 
+  handleRevertChanges, 
+  handleAddDoc, 
+  handleUpdateDoc, 
+  handleDelDoc, 
+  useWatchRouteId, 
+  useConfirmRouteLeave,
+  type FormHandlerProps // Importujeme interface pro typování
+} from '~/composables/useDocHandlers'; // Nový composable soubor
 
 const COLLECTION_NAME = 'users';
 const PAGE_NAME = 'users';
@@ -88,166 +96,16 @@ const createEmptyFormData = (): FormData => {
   };
 };
 
-const route = useRoute();
-const router = useRouter(); // Initialize useRouter for navigateTo
-const formId = ref<string | null>(null); // Explicitly define type as string or null
-const formData = ref<FormData>(createEmptyFormData()); // Explicitly define type as FormData
-const hasChanges = ref<boolean>(false); // Explicitly define type as boolean
+const {
+  formId, //Používá se v Template
+  formData, //Používá se v Template
+  hasChanges, //Používá se v Template
+  _handlerProps // Získáme objekt handlerProps pro volání funkcí
+} = useDocHandlers<FormData>(COLLECTION_NAME, PAGE_NAME, createEmptyFormData);
 
-const setHasChanges = (): void => {
-  hasChanges.value = true;
-};
-
-onBeforeRouteLeave((to, from, next) => {
-  if (hasChanges.value) {
-    const confirmLeave = confirm(
-      'Máte neuložené změny. Opravdu chcete odejít bez uložení?'
-    );
-    if (confirmLeave) {
-      hasChanges.value = false;
-      next();
-    } else {
-      next(false);
-    }
-  } else {
-    next();
-  }
-});
-
-watch(() => route.params.id, async (newIdParam) => {
-  const id = newIdParam as string; // Cast newIdParam to string for comparison and function calls
-
-  if (id === 'new') {
-    console.log('Routa je /users/new, inicializuji formulář pro nového uživatele.');
-    formId.value = 'new';
-    formData.value = createEmptyFormData();
-    hasChanges.value = false;
-  } else if (id) {
-    console.log(`ID v URL se změnilo na '${id}', načítám uživatele.`);
-    formId.value = id;
-    await handleReadDoc(id);
-  } else {
-    console.warn('Neočekávaný stav: ID v URL chybí.');
-    formId.value = null;
-    formData.value = createEmptyFormData();
-    hasChanges.value = false;
-  }
-}, { immediate: true });
-
-async function handleRevertChanges(): Promise<void> {
-  if (!formId.value) {
-    console.warn('Nelze vrátit změny: Není načten žádný dokument ani nový formulář.');
-    return;
-  }
-  if (confirm('Opravdu chcete vrátit všechny neuložené změny?')) {
-    if (formId.value === 'new') {
-      formData.value = createEmptyFormData();
-      hasChanges.value = false;
-      console.log('Formulář pro nového uživatele byl resetován.');
-    } else {
-      await handleReadDoc(formId.value);
-      hasChanges.value = false;
-      console.log('Změny byly vráceny opětovným načtením dokumentu.');
-    }
-  }
-}
-
-async function handleReadDoc(idToRead: string): Promise<void> {
-  try {
-    const doc = await useReadDoc(COLLECTION_NAME, idToRead);
-    //const doc = await useReadDoc<FormData>(COLLECTION_NAME, idToRead);
-    if (doc) {
-      // //-----------------------------------------------------------------------------------------
-      // const rawData = doc.data;
-      // // Zajisti, že hobbies je vždy pole
-      // const normalizedData = {
-      //   ...createEmptyFormData(), // zajistí všechny požadované atributy
-      //   ...rawData, // přepíše výchozí hodnoty těmi z DB
-      //   hobbies: Array.isArray(rawData.hobbies) ? rawData.hobbies : [], // oprava jen pro hobbies
-      // };
-      // formData.value = normalizedData;
-      // //------------------------------------------------------------------------------------------
-
-      //formData.value = doc.data;
-      formData.value = normalizeData<FormData>(doc.data, createEmptyFormData());
-      formId.value = doc.id;
-      hasChanges.value = false;
-    } else {
-      console.log(`Dokument s ID '${idToRead}' nebyl nalezen.`);
-      alert(`Uživatel s ID '${idToRead}' nebyl nalezen. Budete přesměrováni na vytvoření nového uživatele.`);
-      await router.push(`/${PAGE_NAME}/new`); // Using router.push for navigation
-    }
-  } catch (e) {
-    console.error('Chyba při čtení dokumentu:', e);
-    alert('Nastala chyba při načítání dokumentu. Budete přesměrováni na vytvoření nového uživatele.');
-    await router.push(`/${PAGE_NAME}/new`); // Using router.push for navigation
-  }
-}
-
-async function handleAddDoc(): Promise<void> {
-  if (!confirm(`Opravdu chcete vytvořit nový dokument?`)) {
-    console.log('Nevytvářím');
-    return;
-  }
-  try {
-    const docId = await useAddColl(COLLECTION_NAME, formData.value);
-    if (docId) {
-      hasChanges.value = false;
-      await router.push(`/${PAGE_NAME}/${docId}`); // Using router.push for navigation
-      console.log(`Vytvořen dokument s ID: ${docId}`);
-    }
-  } catch (e) {
-    console.error('Chyba při ukládání z komponenty:', e);
-  }
-}
-
-async function handleUpdateDoc(): Promise<void> {
-  if (!formId.value || formId.value === 'new') {
-    console.warn('Nelze aktualizovat: Žádné platné ID dokumentu k úpravě.');
-    return;
-  }
-  if (!confirm(`Opravdu chcete updatovat data s ID: ${formId.value}?`)) {
-    console.log('Neupravuji');
-    return;
-  }
-  try {
-    const success = await useUpdateDoc(COLLECTION_NAME, formId.value, formData.value);
-    if (success) {
-      console.log(`Dokument s ID '${formId.value}' byl úspěšně aktualizován!`);
-      hasChanges.value = false;
-    } else {
-      console.log('Dokument nebyl aktualizován (neznámý důvod).');
-    }
-  } catch (e) {
-    console.error('Došlo k chybě při aktualizaci dokumentu:', e);
-  }
-}
-
-async function handleDelDoc(): Promise<void> {
-  if (!formId.value || formId.value === 'new') {
-    console.warn('Žádné platné ID dokumentu k smazání.');
-    return;
-  }
-  if (!confirm(`Opravdu chcete smazat data s ID: ${formId.value}?`)) {
-    console.log('nemažu');
-    return;
-  }
-  try {
-    const success = await useDelDoc(COLLECTION_NAME, formId.value);
-    if (success) {
-      console.log(`Dokument s ID '${formId.value}' byl úspěšně smazán!`);
-      formData.value = createEmptyFormData();
-      formId.value = 'new';
-      hasChanges.value = false;
-      await router.push(`/${PAGE_NAME}`); // Using router.push for navigation
-    } else {
-      console.log('Dokument nebyl smazán (neznámý důvod).');
-    }
-  } catch (e) {
-    console.error('Došlo k chybě při mazání dokumentu:', e);
-    alert('Nastala chyba při mazání dokumentu.');
-  }
-}
+// --- Zde voláme router-specifické Composables přímo z komponenty ---
+useWatchRouteId(_handlerProps);    // Voláme watcher pro ID routy
+useConfirmRouteLeave(_handlerProps); // Voláme ochranu před opuštěním stránky
 </script>
 
 <style scoped>

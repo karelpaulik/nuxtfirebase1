@@ -4,8 +4,8 @@
 
     <h2>Všechny dokumenty</h2>
     <p v-if="loading">Načítám data...</p>
-    <p v-else-if="error">Chyba při načítání dat: {{ error.message }}</p>
-    <div v-else-if="documents.length > 0">
+    <p v-else-if="error?.message">Chyba při načítání dat: {{ error.message }}</p>
+    <div v-else-if="documents && documents.length > 0">
       <ul>
         <li v-for="doc in documents" :key="doc.id" class="doc-item">
           <NuxtLink :to="`/${PAGE_NAME}/${doc.id}`">
@@ -17,41 +17,62 @@
         </li>
       </ul>
     </div>
-    <p v-else>Žádná data v databázi.</p>
-
+    <p v-else>Žádná data v databázi (nebo žádné výsledky filtru).</p>
+    
+    <button @click="filterByPetrN()" class="filter-button">Filtrovat: fName=Petr, lName začíná na N</button>
+    <button @click="resetFilterAndLoadAll()" class="filter-button">Zobrazit vše</button>
   </section>
 </template>
 
-<script setup>
-import { ref, onMounted } from 'vue';
+<script setup lang="ts">
+import { onMounted } from 'vue'; 
+import {
+  useCollectionHandlers, 
+  handleReadAllDocs,    
+  handleReadFilterDocs 
+} from '~/composables/useCollectionHandlers'; 
+import type { CollectionHandlerProps } from '~/composables/useCollectionHandlers'; 
+import type { WhereFilterOp } from 'firebase/firestore';
 
 const COLLECTION_NAME = 'users';
 const PAGE_NAME = 'users';
 
-const documents = ref([]); //template: doc.data.atribut, doc.id
-const loading = ref(true);
-const error = ref(null);
+const {
+  documents,
+  loading,
+  error,
+  _handlerProps 
+} = useCollectionHandlers(COLLECTION_NAME);
 
-// Funkce pro načtení všech uživatelů
-async function handleReadAllDocs() {
-  loading.value = true;
-  error.value = null;
-  try {
-    documents.value = await useGetAllDocs(COLLECTION_NAME); //return: array.
-  } catch (e) {
-    error.value = e;
-    console.error("Chyba při načítání všech uživatelů:", e);
-  } finally {
-    loading.value = false;
-  }
-}
-
-// Načíst uživatele při naložení komponenty
+// Načíst všechny dokumenty při načtení komponenty
 onMounted(() => {
-  handleReadAllDocs();
+  handleReadAllDocs(_handlerProps);
 });
-</script>
 
+//Dále již volitelné
+
+//Jednoduchý filter, kde se filtruje podle jednoho pole
+const handleFilterByFName = (name: string) => { 
+  const filters = [{ field: 'fName', operator: '==', value: name }];
+  handleReadFilterDocs(_handlerProps, filters);
+};
+
+// Funkce pro aplikování komplexního AND filtru
+const filterByPetrN = () => {
+  //const filters = [
+  const filters: Array<{ field: string; operator: WhereFilterOp; value: any }> = [
+    { field: 'fName', operator: '==', value: 'Petr' },
+    { field: 'lName', operator: '>=', value: 'N' }, // lName začíná na N nebo více
+    { field: 'lName', operator: '<', value: 'O' }   // lName je menší než O (zachytí N, Na, Nb, ... Nz)
+  ];
+  handleReadFilterDocs(_handlerProps, filters);
+};
+
+// Funkce pro resetování filtru a opětovné načtení všech dat
+const resetFilterAndLoadAll = () => {
+  handleReadAllDocs(_handlerProps);
+};
+</script>
 
 <style scoped>
 .doc-item {
@@ -62,18 +83,34 @@ onMounted(() => {
 }
 
 .new-user-button {
-  margin-top: 20px; /* Přidá trochu mezery nad tlačítkem */
+  margin-top: 20px; 
   padding: 5px 15px;
-  background-color: #28a745; /* Příklad zelené barvy */
+  background-color: #28a745;
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
   font-size: 16px;
+  margin-right: 10px; 
 }
 
 .new-user-button:hover {
   background-color: #218838;
 }
 
+.filter-button {
+  margin-top: 10px;
+  padding: 8px 12px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-right: 5px;
+}
+
+.filter-button:hover {
+  background-color: #0056b3;
+}
 </style>

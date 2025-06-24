@@ -1,5 +1,20 @@
-import { doc, getDoc, collection, addDoc, updateDoc, setDoc, deleteDoc, getDocs } from 'firebase/firestore'
-//const { $firestore } = useNuxtApp() //nelze volat na úrovní  modulu kvůli server side rendering
+// composables/useFirestore.ts
+import { 
+  doc, 
+  getDoc, 
+  collection, 
+  addDoc, 
+  updateDoc, 
+  setDoc, 
+  deleteDoc, 
+  getDocs, 
+  query, 
+  where, 
+  or // Import pro OR dotazy
+} from 'firebase/firestore'
+import type { WhereFilterOp } from 'firebase/firestore';
+// const { $firestore } = useNuxtApp() //nelze volat na úrovní  modulu kvůli server side rendering
+
 
 /**
  * Přidá nový dokument do zadané kolekce.
@@ -15,7 +30,7 @@ export const useAddColl = async(collName: string, body: object): Promise<string>
     const docRef = await addDoc(collRef, body);
     console.log(`Dokument úspěšně přidán s ID: ${docRef.id} do kolekce '${collName}'.`);
     return docRef.id;
-  } catch (e: any) { // Používáme 'any' pro typ chyby kvůli variabilitě typů chyb
+  } catch (e: any) {
       console.error(`Chyba při přidávání dokumentu do kolekce '${collName}':`, e.message || e);
       throw e;
   }
@@ -46,26 +61,6 @@ export const useReadDoc = async(collName: string, docId: string): Promise<{ data
   }
 }
 
-// Příklad: Generické useReadDoc
-// export const useReadDoc = async <T extends object>(collName: string, docId: string): Promise<{ data: T, id: string } | null> => {
-//   try {
-//     const { $firestore } = useNuxtApp();
-//     const docRef = doc($firestore, collName, docId);
-//     const docSnap = await getDoc(docRef);
-//     if (docSnap.exists()) {
-//       console.log(`Dokument s ID '${docId}' načten z kolekce '${collName}'.`);
-//       // Zde bychom `docSnap.data()` typovali přímo na `T`
-//       return { data: docSnap.data() as T, id: docSnap.id };
-//     } else {
-//       console.log(`useGetDoc: Dokument s ID '${docId}' v kolekci '${collName}' nenalezen.`);
-//       return null;
-//     }
-//   } catch (e: any) {
-//     console.error(`Chyba při čtení dokumentu s ID '${docId}' z kolekce '${collName}':`, e.message || e);
-//     throw e;
-//   }
-// }
-
 /**
  * Smaže dokument z zadané kolekce podle ID.
  * @param {string} collName Název kolekce.
@@ -76,14 +71,14 @@ export const useReadDoc = async(collName: string, docId: string): Promise<{ data
 export const useDelDoc = async(collName: string, docId: string): Promise<boolean> => {
   if (!docId) {
     console.warn(`useDelDoc: Chybí ID dokumentu pro smazání v kolekci '${collName}'.`);
-    throw new Error("ID dokumentu je povinné pro smazání."); // Měli byste vždy vyžadovat ID pro mazání
+    throw new Error("ID dokumentu je povinné pro smazání.");
   }
   try {
     const { $firestore } = useNuxtApp();
     const docRef = doc($firestore, collName, docId);
     await deleteDoc(docRef);
     console.log(`Dokument s ID '${docId}' byl úspěšně smazán z kolekce '${collName}'.`);
-    return true; // Indikuje úspěšné smazání
+    return true;
   } catch (e: any) {
     console.error(`Chyba při mazání dokumentu s ID '${docId}' z kolekce '${collName}':`, e.message || e);
     throw e;
@@ -103,9 +98,9 @@ export const useUpdateDoc = async (collName: string, docId: string, newData: obj
   try {
     const { $firestore } = useNuxtApp();
     const docRef = doc($firestore, collName, docId);
-    await updateDoc(docRef, newData); // updateDoc provede merge dat
+    await updateDoc(docRef, newData);
     console.log(`Dokument s ID '${docId}' v kolekci '${collName}' byl úspěšně aktualizován.`);
-    return true; // Úspěšná aktualizace
+    return true;
   } catch (e: any) {
     console.error(`useUpdateDoc: Chyba při aktualizaci dokumentu s ID '${docId}' v kolekci '${collName}':`, e.message || e);
     throw e;
@@ -124,8 +119,8 @@ export const useGetAllDocs = async (collName: string): Promise<Array<{ data: obj
     const collRef = collection($firestore, collName);
     const querySnapshot = await getDocs(collRef);
     const docs: Array<{ data: object, id: string }> = [];
-    querySnapshot.forEach((doc) => {
-      docs.push({ id: doc.id, data: doc.data() });
+    querySnapshot.forEach((documentSnapshot) => { // <--- ZMĚNA ZDE: Přejmenováno 'doc' na 'documentSnapshot'
+      docs.push({ id: documentSnapshot.id, data: documentSnapshot.data() });
     });
     console.log(`Úspěšně načteno ${docs.length} dokumentů z kolekce '${collName}'.`);
     return docs;
@@ -134,3 +129,38 @@ export const useGetAllDocs = async (collName: string): Promise<Array<{ data: obj
     throw e;
   }
 }
+
+/**
+ * Načte dokumenty z dané kolekce s použitím jednoho nebo více filtrů.
+ *
+ * @param {string} collName Název kolekce.
+ * @param {Array<{ field: string; operator: WhereFilterOp; value: any }>} filters Pole objektů definujících filtry.
+ * @returns {Promise<Array<{ data: object, id: string }>>} Pole filtrovaných dokumentů.
+ * @throws {Error} Pokud dojde k chybě při načítání.
+ */
+export const useReadDocsByFilter = async (
+  collName: string,
+  filters: Array<{ field: string; operator: WhereFilterOp; value: any }> 
+): Promise<Array<{ data: object, id: string }>> => {
+  try {
+    const { $firestore } = useNuxtApp();
+    const collRef = collection($firestore, collName);
+    
+    let q = query(collRef); 
+
+    filters.forEach(filter => {
+      q = query(q, where(filter.field, filter.operator, filter.value));
+    });
+
+    const querySnapshot = await getDocs(q);
+    const docs: Array<{ data: object, id: string }> = [];
+    querySnapshot.forEach((documentSnapshot) => { // <--- ZMĚNA ZDE: Přejmenováno 'doc' na 'documentSnapshot'
+      docs.push({ id: documentSnapshot.id, data: documentSnapshot.data() });
+    });
+    console.log(`Úspěšně načteno ${docs.length} filtrovaných dokumentů z kolekce '${collName}'.`);
+    return docs;
+  } catch (e: any) {
+    console.error(`Chyba při načítání filtrovaných dokumentů z kolekce '${collName}':`, e.message || e);
+    throw e;
+  }
+};

@@ -7,7 +7,7 @@
       born<input v-model="formData.born" placeholder="Born" @input="setHasChanges(_handlerProps)">
       createdDate<input type="date" v-model="createdDateFormatted" @input="setHasChanges(_handlerProps)">
       childrenCount<input v-model.number="formData.childrenCount" placeholder="childrenCount" @input="setHasChanges(_handlerProps)">
-      userHeight<input v-model.number="formData.userHeight" placeholder="userHeight" @input="setHasChanges(_handlerProps)">
+      userHeight<input v-model.number="formData.userHeight" placeholder="userHeight" @input="setHasChanges(_handlerProps)" @keydown="(event) => usePreventKeys([','], false)(event)" >
 
 
       <div>
@@ -103,7 +103,7 @@ const createEmptyFormData = (): FormData => {
     picked: '',
     createdDate: new Date(),  // Pro v-model nutno computed (převod na string a zpět). Maybe quasar?
     childrenCount: 0,         // v-model.number
-    userHeight: 0.0,          // v-model.number // Pozor. Pokud uživatel zadá čárku místo tečky, číslo za čárkou se ořízne. Ošetření: javascript, quasar?.
+    userHeight: 0.0,          // v-model.number // Desetinný oddělovač je tečka. // Jak zabránit čárce: @keydown="(event) => usePreventKeys([','])(event)"
   };
 };
 

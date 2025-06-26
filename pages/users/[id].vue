@@ -5,6 +5,10 @@
       fName<input v-model="formData.fName" placeholder="fName" @input="setHasChanges(_handlerProps)">
       lName<input v-model="formData.lName" placeholder="lName" @input="setHasChanges(_handlerProps)">
       born<input v-model="formData.born" placeholder="Born" @input="setHasChanges(_handlerProps)">
+      createdDate<input type="date" v-model="createdDateFormatted" @input="setHasChanges(_handlerProps)">
+      childrenCount<input v-model.number="formData.childrenCount" placeholder="childrenCount" @input="setHasChanges(_handlerProps)">
+      userHeight<input v-model.number="formData.userHeight" placeholder="userHeight" @input="setHasChanges(_handlerProps)">
+
 
       <div>
         <label for="hasDrivingLic">Řidičský průkaz</label>
@@ -83,6 +87,10 @@ interface FormData {
   hasDrivingLic: boolean;
   hobbies: string[];
   picked: string;
+  createdDate: Date;     // datum
+  childrenCount: number; // integer
+  userHeight: number;    // float
+
 }
 
 const createEmptyFormData = (): FormData => {
@@ -92,7 +100,10 @@ const createEmptyFormData = (): FormData => {
     born: '',
     hasDrivingLic: false,
     hobbies: [],
-    picked: ''
+    picked: '',
+    createdDate: new Date(),  // Pro v-model nutno computed (převod na string a zpět). Maybe quasar?
+    childrenCount: 0,         // v-model.number
+    userHeight: 0.0,          // v-model.number // Pozor. Pokud uživatel zadá čárku místo tečky, číslo za čárkou se ořízne. Ošetření: javascript, quasar?.
   };
 };
 
@@ -106,6 +117,22 @@ const {
 // --- Zde voláme router-specifické Composables přímo z komponenty ---
 useWatchRouteId(_handlerProps);    // Voláme watcher pro ID routy
 useConfirmRouteLeave(_handlerProps); // Voláme ochranu před opuštěním stránky
+
+const createdDateFormatted = computed({
+  get: () => {
+    const date = formData.value.createdDate;
+    return date instanceof Date && !isNaN(date.getTime())
+      ? date.toISOString().split('T')[0]
+      : '';
+  },
+  set: (newValue: string) => {
+    const parsedDate = new Date(newValue);
+    if (!isNaN(parsedDate.getTime())) {
+      formData.value.createdDate = parsedDate;
+    }
+  }
+});
+
 </script>
 
 <style scoped>

@@ -32,3 +32,11 @@ compilerOptions.strict: true/false
 
 npm run typecheck
 ```
+
+# Quasar instalace
+```
+npm install quasar @quasar/extras
+npx nuxi@latest module add quasar
+
+Pozn. Tímto se automaticky quasar nastaví do nuxt.config.ts
+```

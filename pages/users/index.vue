@@ -2,7 +2,7 @@
   <section>
     <button @click="navigateTo(`/${PAGE_NAME}/new`)" class="new-user-button">Nový záznam</button>
 
-    <h2>Všechny dokumenty</h2>
+    <h4 class="q-pa-xs q-mt-md q-mb-xs">Všechny dokumenty</h4>
     <p v-if="loading">Načítám data...</p>
     <p v-else-if="error?.message">Chyba při načítání dat: {{ error.message }}</p>
     <div v-else-if="documents && documents.length > 0">

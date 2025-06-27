@@ -1,26 +1,27 @@
 <template>
-  <section>
-    <button @click="navigateTo(`/${PAGE_NAME}/new`)" class="new-user-button">Nový záznam</button>
-
+  <section>   
     <h4 class="q-pa-xs q-mt-md q-mb-xs">Všechny dokumenty</h4>
+    <q-btn @click="navigateTo(`/${PAGE_NAME}/new`)" label="Nový záznam" />
+
     <p v-if="loading">Načítám data...</p>
     <p v-else-if="error?.message">Chyba při načítání dat: {{ error.message }}</p>
     <div v-else-if="documents && documents.length > 0">
       <ul>
-        <li v-for="doc in documents" :key="doc.id" class="doc-item">
+        <li v-for="doc in documents" :key="doc.id" class="q-pa-xs">
           <NuxtLink :to="`/${PAGE_NAME}/${doc.id}`">
             {{ doc.data.fName }} {{ doc.data.lName }} (Born: {{ doc.data.born }}) 
             Driv.lic: 
-            <input type="checkbox" :checked="doc.data.hasDrivingLic" disabled />
+            <q-checkbox v-model="doc.data.hasDrivingLic" label="Driv. lic" disable dense />
             {{ doc.data.hobbies }}
           </NuxtLink>
         </li>
       </ul>
     </div>
     <p v-else>Žádná data v databázi (nebo žádné výsledky filtru).</p>
-    
-    <button @click="filterByPetrN()" class="filter-button">Filtrovat: fName=Petr, lName začíná na N</button>
-    <button @click="resetFilterAndLoadAll()" class="filter-button">Zobrazit vše</button>
+
+    <q-btn @click="filterByPetrN()" label="Filtrovat: fName=Petr, lName začíná na N" />
+    <q-btn @click="resetFilterAndLoadAll()" label="Zobrazit vše" />
+
   </section>
 </template>
 
@@ -73,44 +74,3 @@ const resetFilterAndLoadAll = () => {
   handleReadAllDocs(_handlerProps);
 };
 </script>
-
-<style scoped>
-.doc-item {
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.new-user-button {
-  margin-top: 20px; 
-  padding: 5px 15px;
-  background-color: #28a745;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 16px;
-  margin-right: 10px; 
-}
-
-.new-user-button:hover {
-  background-color: #218838;
-}
-
-.filter-button {
-  margin-top: 10px;
-  padding: 8px 12px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  margin-right: 5px;
-}
-
-.filter-button:hover {
-  background-color: #0056b3;
-}
-</style>

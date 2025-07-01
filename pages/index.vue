@@ -1,5 +1,5 @@
 <template>
   <div>
-    <h4>Welcome to the homepage</h4>
+    <h4 class="q-pa-xs q-ma-xs">Welcome to the homepage</h4>
   </div>
 </template>

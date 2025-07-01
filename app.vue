@@ -1,59 +1,49 @@
 <template>
-  <div>
-    <header>
-      <nav>
-        <ul>
-          <li><NuxtLink to="/">Home</NuxtLink></li>
-          <li><NuxtLink to="/load_direct">Load direct</NuxtLink></li>
-          <li><NuxtLink to="/users">All users</NuxtLink></li>
-        </ul>
-      </nav>
-    </header>
+  <div class="fixed full-width z-top">
+    <q-toolbar class="bg-blue-grey text-white shadow-2">
+        <q-tabs align="center" no-caps>
+          <q-route-tab to="/" label="Home" />
+          <q-route-tab to="/load_direct/" label="Load direct" />
+          <q-route-tab to="/users/" label="Users" />
+        </q-tabs>
+    </q-toolbar>
+  </div>
 
+  <div>
     <main>
       <NuxtPage />
     </main>
   </div>
+
+  <q-toolbar class="fixed-bottom bg-primary text-white shadow-2">
+    <q-btn flat round dense icon="menu" />
+    <q-toolbar-title>
+      Spodní Toolbar
+    </q-toolbar-title>
+    <q-btn flat round dense icon="search" class="q-mr-xs" />
+    <q-btn flat round dense icon="more_vert" />
+  </q-toolbar>
+
 </template>
 
 <style scoped>
-/* Pevná hlavička */
-header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  background-color: #f0f0f0;
-  padding: 1rem 2rem;
-  border-bottom: 1px solid #ddd;
-  z-index: 1000;
-}
-
 /* Rezervace místa pod hlavičkou */
 main {
-  padding-top: 40px; /* výška headeru + mezera */
+  padding-top: 50px; /* výška headeru + mezera */
+  padding-bottom: 50px;
 }
+</style>
 
-nav ul {
-  list-style: none;
-  display: flex;
-  gap: 1.5rem;
-  padding: 0;
-  margin: 0;
+<style>
+/* Aplikujeme overflow-x: auto a flex-wrap: nowrap přímo na q-toolbar */
+.q-toolbar {
+  overflow-x: auto;
+  flex-wrap: nowrap; /* Důležité, aby se obsah nezalamoval */
+  /* Styly pro skrytí scrollbaru */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
-
-nav a {
-  text-decoration: none;
-  color: #333;
-  transition: color 0.2s;
-}
-
-nav a:hover {
-  color: #007bff;
-}
-
-.router-link-active {
-  font-weight: bold;
-  color: #007bff;
+.q-toolbar::-webkit-scrollbar {
+  display: none;
 }
 </style>

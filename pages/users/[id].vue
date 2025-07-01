@@ -1,41 +1,47 @@
 <template>
   <section>
-    <h4 class="q-pa-xs q-mt-md q-mb-xs">{{ formId === 'new' ? 'Nový záznam' : 'Detail záznamu' }}</h4>
+    <div class="fixed z-top full-width">
+      <q-toolbar class="bg-primary text-white shadow-2">
+        <div v-if="formId === 'new'" class="row q-pa-xs">
+          <q-btn flat stretch no-caps @click="handleAddDoc(_handlerProps)" label="Create new doc." class="text-no-wrap" />
+        </div>
 
-    <div class="q-pa-md" style="max-width: 300px">
-      <q-input v-model="formData.fName" label="fName" @update:modelValue="setHasChanges(_handlerProps)" />
-      <q-input v-model="formData.lName" label="lName" @update:modelValue="setHasChanges(_handlerProps)" />
-      <q-input v-model="formData.born" label="Born" @update:modelValue="setHasChanges(_handlerProps)" />
-      <q-input type="date" v-model="createdDateFormatted" label="createdDate" @update:modelValue="setHasChanges(_handlerProps)" />
-      <q-input v-model.number="formData.childrenCount" label="childrenCount" @update:modelValue="setHasChanges(_handlerProps)" />
-      <q-input v-model.number="formData.userHeight" label="userHeight" @update:modelValue="setHasChanges(_handlerProps)" @keydown="(event) => usePreventKeys([','], false)(event)" />
+        <q-btn v-if="formId !== 'new'" flat stretch no-caps :disable="!hasChanges" label="Save changes" @click="handleUpdateDoc(_handlerProps)" class="text-no-wrap" />
+        <q-btn flat stretch no-caps :disable="!hasChanges" label="Revert changes" @click="handleRevertChanges(_handlerProps)" class="text-no-wrap" />
+
+        <div v-if="formId !== 'new'" class="row no-wrap q-pa-xs">
+          <q-btn flat stretch no-caps @click="handleAddDoc(_handlerProps)" label="Save as new doc." class="text-no-wrap" />
+          <q-btn flat stretch no-caps @click="handleDelDoc(_handlerProps)" label="Del doc." class="text-no-wrap" />
+        </div>
+
+      </q-toolbar>
     </div>
 
-    <q-checkbox v-model="formData.hasDrivingLic" label="Řidičský průkaz" @update:modelValue="setHasChanges(_handlerProps)" />
+    <div class="q-pt-xl">
+      <h4 class="q-pa-xs q-ma-xs">{{ formId === 'new' ? 'Nový záznam' : 'Detail záznamu' }}</h4>
 
-    <div>
-      <q-checkbox v-model="formData.hobbies" val="Fotbal" label="fotbal" @update:modelValue="setHasChanges(_handlerProps)" />
-      <q-checkbox v-model="formData.hobbies" val="Hokej" label="hokej" @update:modelValue="setHasChanges(_handlerProps)" />
-      <q-checkbox v-model="formData.hobbies" val="Cyklistika" label="cyklistika" @update:modelValue="setHasChanges(_handlerProps)" />
-    </div>
+      <div class="q-pa-md" style="max-width: 300px">
+        <q-input v-model="formData.fName" label="fName" @update:modelValue="setHasChanges(_handlerProps)" />
+        <q-input v-model="formData.lName" label="lName" @update:modelValue="setHasChanges(_handlerProps)" />
+        <q-input v-model="formData.born" label="Born" @update:modelValue="setHasChanges(_handlerProps)" />
+        <q-input type="date" v-model="createdDateFormatted" label="createdDate" @update:modelValue="setHasChanges(_handlerProps)" />
+        <q-input v-model.number="formData.childrenCount" label="childrenCount" @update:modelValue="setHasChanges(_handlerProps)" />
+        <q-input v-model.number="formData.userHeight" label="userHeight" @update:modelValue="setHasChanges(_handlerProps)" @keydown="(event) => usePreventKeys([','], false)(event)" />
+      </div>
 
-    <div>
-    <q-radio v-model="formData.picked" val="One" label="One" @update:modelValue="setHasChanges(_handlerProps)" />
-    <q-radio v-model="formData.picked" val="Two" label="Two" @update:modelValue="setHasChanges(_handlerProps)" />
-    </div>
+      <q-checkbox v-model="formData.hasDrivingLic" label="Řidičský průkaz" @update:modelValue="setHasChanges(_handlerProps)" />
 
-    <div v-if="hasChanges" class="changes-row q-pa-xs">
-        <q-btn label="Vrátit změny dokumentu" @click="handleRevertChanges(_handlerProps)" />
-        <q-btn label="Uložit změny dokumentu" @click="handleUpdateDoc(_handlerProps)" />
-    </div>
+      <div>
+        <q-checkbox v-model="formData.hobbies" val="Fotbal" label="fotbal" @update:modelValue="setHasChanges(_handlerProps)" />
+        <q-checkbox v-model="formData.hobbies" val="Hokej" label="hokej" @update:modelValue="setHasChanges(_handlerProps)" />
+        <q-checkbox v-model="formData.hobbies" val="Cyklistika" label="cyklistika" @update:modelValue="setHasChanges(_handlerProps)" />
+      </div>
 
-    <div v-if="formId === 'new'" class="btn-field">
-      <q-btn @click="handleAddDoc(_handlerProps)" label="Vytvořit nový dokument" />
-    </div>
-    
-    <div v-else class="q-pa-xs">
-      <q-btn @click="handleAddDoc(_handlerProps)" label="Vytvořit nový dokument ze stávajícího." />
-      <q-btn @click="handleDelDoc(_handlerProps)" label="Smazat dokument" />
+      <div>
+      <q-radio v-model="formData.picked" val="One" label="One" @update:modelValue="setHasChanges(_handlerProps)" />
+      <q-radio v-model="formData.picked" val="Two" label="Two" @update:modelValue="setHasChanges(_handlerProps)" />
+      </div>
+
     </div>
 
   </section>

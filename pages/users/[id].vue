@@ -1,7 +1,7 @@
 <template>
   <section>
     <div class="fixed z-top full-width">
-      <q-toolbar class="bg-primary text-white shadow-2">
+      <q-toolbar class="bg-blue-grey text-white shadow-2">
         <div v-if="formId === 'new'" class="row q-pa-xs">
           <q-btn flat stretch no-caps @click="handleAddDoc(_handlerProps)" label="Create new doc." class="text-no-wrap" />
         </div>

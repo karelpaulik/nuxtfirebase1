@@ -44,8 +44,8 @@ export const handleReadAllDocs = async (props: CollectionHandlerProps): Promise<
   try {
     documents.value = await useGetAllDocs(collectionName);
   } catch (e: any) {
-    error.value = e;
-    console.error(`Chyba při načítání všech dokumentů z kolekce '${collectionName}':`, e);
+    //error.value = e;
+    notifyError(`Chyba při načítání všech dokumentů z kolekce '${collectionName}':`, e);
   } finally {
     loading.value = false;
   }
@@ -77,8 +77,8 @@ export const handleReadFilterDocs = async (
   try {
     documents.value = await useReadDocsByFilter(collectionName, filters);
   } catch (e: any) {
-    error.value = e;
-    console.error(`Chyba při načítání filtrovaných dokumentů z kolekce '${collectionName}':`, e);
+    //error.value = e;
+    notifyError(`Chyba při načítání filtrovaných dokumentů z kolekce '${collectionName}':`, e);
   } finally {
     loading.value = false;
   }

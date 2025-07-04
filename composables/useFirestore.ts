@@ -31,7 +31,7 @@ export const useAddColl = async(collName: string, body: object): Promise<string>
     console.log(`Dokument úspěšně přidán s ID: ${docRef.id} do kolekce '${collName}'.`);
     return docRef.id;
   } catch (e: any) {
-      console.error(`Chyba při přidávání dokumentu do kolekce '${collName}':`, e.message || e);
+      notifyError(`Chyba při přidávání dokumentu do kolekce '${collName}':`, e);
       throw e;
   }
 }
@@ -56,7 +56,7 @@ export const useReadDoc = async(collName: string, docId: string): Promise<{ data
         return null;
     }
   } catch (e: any) {
-      console.error(`Chyba při čtení dokumentu s ID '${docId}' z kolekce '${collName}':`, e.message || e);
+      notifyError(`Chyba při čtení dokumentu s ID '${docId}' z kolekce '${collName}':`, e);
       throw e;
   }
 }
@@ -80,7 +80,7 @@ export const useDelDoc = async(collName: string, docId: string): Promise<boolean
     console.log(`Dokument s ID '${docId}' byl úspěšně smazán z kolekce '${collName}'.`);
     return true;
   } catch (e: any) {
-    console.error(`Chyba při mazání dokumentu s ID '${docId}' z kolekce '${collName}':`, e.message || e);
+    notifyError(`Chyba při mazání dokumentu s ID '${docId}' z kolekce '${collName}':`, e);
     throw e;
   }
 }
@@ -102,7 +102,7 @@ export const useUpdateDoc = async (collName: string, docId: string, newData: obj
     console.log(`Dokument s ID '${docId}' v kolekci '${collName}' byl úspěšně aktualizován.`);
     return true;
   } catch (e: any) {
-    console.error(`useUpdateDoc: Chyba při aktualizaci dokumentu s ID '${docId}' v kolekci '${collName}':`, e.message || e);
+    notifyError(`useUpdateDoc: Chyba při aktualizaci dokumentu s ID '${docId}' v kolekci '${collName}':`, e);
     throw e;
   }
 };
@@ -125,7 +125,7 @@ export const useGetAllDocs = async (collName: string): Promise<Array<{ data: obj
     console.log(`Úspěšně načteno ${docs.length} dokumentů z kolekce '${collName}'.`);
     return docs;
   } catch (e: any) {
-    console.error(`Chyba při načítání všech dokumentů z kolekce '${collName}':`, e.message || e);
+    notifyError(`Chyba při načítání všech dokumentů z kolekce '${collName}':`, e);
     throw e;
   }
 }
@@ -160,7 +160,7 @@ export const useReadDocsByFilter = async (
     console.log(`Úspěšně načteno ${docs.length} filtrovaných dokumentů z kolekce '${collName}'.`);
     return docs;
   } catch (e: any) {
-    console.error(`Chyba při načítání filtrovaných dokumentů z kolekce '${collName}':`, e.message || e);
+    notifyError(`Chyba při načítání filtrovaných dokumentů z kolekce '${collName}':`, e);
     throw e;
   }
 };

@@ -1,7 +1,7 @@
 <template>
   <section>   
     <div class="fixed z-top">
-      <q-toolbar class="bg-primary text-white shadow-2">
+      <q-toolbar class="bg-blue-grey text-white shadow-2">
         <q-btn flat stretch no-caps @click="navigateTo(`/${PAGE_NAME}/new`)" label="Nový záznam" />
       </q-toolbar>
     </div>

@@ -14,5 +14,10 @@ export default defineNuxtConfig({
     preset: 'static' // Tímto říkáte Nitru, aby generovalo čistě statické soubory
   },
 
-  modules: ['nuxt-quasar-ui']
+  modules: ['nuxt-quasar-ui'],
+
+quasar: {
+  plugins: ['Notify']
+}
+
 })

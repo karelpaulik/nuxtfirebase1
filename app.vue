@@ -1,6 +1,6 @@
 <template>
   <div class="fixed full-width z-top">
-    <q-toolbar class="bg-blue-grey text-white shadow-2">
+    <q-toolbar class="bg-primary text-white shadow-2">
         <q-tabs align="center" no-caps>
           <q-route-tab to="/" label="Home" />
           <q-route-tab to="/load_direct/" label="Load direct" />

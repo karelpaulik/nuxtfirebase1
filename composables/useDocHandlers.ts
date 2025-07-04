@@ -38,12 +38,11 @@ export const handleReadDoc = async <T extends Record<string, any>>(props: FormHa
       hasChanges.value = false;
     } else {
       console.log(`Dokument s ID '${idToRead}' nebyl nalezen v kolekci '${collectionName}'.`);
-      alert(`Záznam s ID '${idToRead}' nebyl nalezen. Budete přesměrováni na vytvoření nového záznamu.`);
+      notify(`Záznam s ID '${idToRead}' nebyl nalezen. Budete přesměrováni na vytvoření nového záznamu.`, 'negative', undefined, 5000)
       await router.push(`/${pageName}/new`);
     }
   } catch (e) {
-    console.error('Chyba při čtení dokumentu:', e);
-    alert('Nastala chyba při načítání dokumentu. Budete přesměrováni na vytvoření nového záznamu.');
+    notifyError('Chyba při čtení dokumentu:', e);
     await router.push(`/${pageName}/new`);
   }
 };
@@ -83,7 +82,7 @@ export const handleAddDoc = async <T extends Record<string, any>>(props: FormHan
       console.log(`Vytvořen dokument s ID: ${docId} v kolekci ${collectionName}`);
     }
   } catch (e) {
-    console.error('Chyba při ukládání z komponenty:', e);
+    notifyError('Chyba při ukládání z komponenty:', e);
   }
 };
 
@@ -107,7 +106,7 @@ export const handleUpdateDoc = async <T extends Record<string, any>>(props: Form
       console.log('Dokument nebyl aktualizován (neznámý důvod).');
     }
   } catch (e) {
-    console.error('Došlo k chybě při aktualizaci dokumentu:', e);
+    notifyError('Došlo k chybě při aktualizaci dokumentu:', e);
   }
 };
 
@@ -134,8 +133,7 @@ export const handleDelDoc = async <T extends Record<string, any>>(props: FormHan
       console.log('Dokument nebyl smazán (neznámý důvod).');
     }
   } catch (e) {
-    console.error('Došlo k chybě při mazání dokumentu:', e);
-    alert('Nastala chyba při mazání dokumentu.');
+    notifyError('Došlo k chybě při mazání dokumentu:', e);
   }
 };
 

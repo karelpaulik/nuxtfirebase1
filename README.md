@@ -40,3 +40,11 @@ npx nuxi@latest module add quasar
 
 Pozn. Tímto se automaticky quasar nastaví do nuxt.config.ts
 ```
+
+# FullScreen
+```
+Nepoužívám, protože dělá problémy na mobilním telefonu.
+Když vkádám do inputu na mob. telefonu, objeví se nahoře lišta (možnost vložení uložených hesel, platebních metod, adres) a překryje horní tollbary.
+FullScreen tedy dělá problém na mobilním zařízením - když se vkládají informace do inputu.
+Jinak asi OK.
+```

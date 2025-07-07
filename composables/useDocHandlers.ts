@@ -11,6 +11,7 @@ import { normalizeData } from '~/utils/normalizeData'; // Import normalizační 
  * Exportujeme ho, aby byl dostupný i jinde pro typování.
  */
 export interface FormHandlerProps<T> {
+  initialDocumentIdRef: Ref<string | undefined>;
   formId: Ref<string | null>;
   formData: Ref<T>;
   hasChanges: Ref<boolean>;
@@ -163,6 +164,30 @@ export function useWatchRouteId<T extends Record<string, any>>(props: FormHandle
   }, { immediate: true });
 }
 
+export function useWatchDocumentId<T extends Record<string, any>>(props: FormHandlerProps<T>): void {
+  watch(() => props.initialDocumentIdRef.value, async (newIdParam) => {
+    const id = newIdParam as string;
+
+    const { formId, formData, hasChanges, pageName, createEmptyData } = props;
+
+    if (id === 'new') {
+      console.log(`Document ID prop je 'new', inicializuji formulář pro nový záznam.`);
+      formId.value = 'new';
+      formData.value = createEmptyData();
+      hasChanges.value = false;
+    } else if (id) {
+      console.log(`Document ID prop se změnilo na '${id}', načítám záznam.`);
+      formId.value = id;
+      await handleReadDoc(props, id);
+    } else {
+      console.warn('Neočekávaný stav: Document ID prop chybí nebo je neplatné.');
+      formId.value = null;
+      formData.value = createEmptyData();
+      hasChanges.value = false;
+    }
+  }, { immediate: true });
+}
+
 // --- Samostatná exportovaná funkce pro onBeforeRouteLeave logiku
 export function useConfirmRouteLeave<T extends Record<string, any>>(props: FormHandlerProps<T>): void {
   // Destrukturalizujeme hasChanges z objektu props
@@ -188,6 +213,7 @@ export function useConfirmRouteLeave<T extends Record<string, any>>(props: FormH
 // Hlavní Composables funkce.
 // Nyní inicializuje refy, ZÍSKÁ router a route instance a vrací je spolu s _handlerProps.
 export function useDocHandlers<T extends Record<string, any>>(
+  initialDocumentIdProp: Ref<string | undefined>, // Nyní jako první argument
   collectionName: string,
   pageName: string,
   createEmptyData: () => T
@@ -196,19 +222,19 @@ export function useDocHandlers<T extends Record<string, any>>(
   const formData = ref<T>(createEmptyData());
   const hasChanges = ref<boolean>(false);
 
-  // Získáme instance routeru a routy ZDE, v kontextu setup()
   const router = useRouter();
   const route = useRoute();
 
   const handlerProps: FormHandlerProps<T> = {
+    initialDocumentIdRef: initialDocumentIdProp,
     formId,
     formData,
     hasChanges,
     collectionName,
     pageName,
     createEmptyData,
-    router, // Předáváme router
-    route   // Předáváme route
+    router,
+    route
   };
 
   return {

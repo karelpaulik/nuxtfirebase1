@@ -5,6 +5,7 @@
           <q-route-tab to="/" label="Home" />
           <q-route-tab to="/load_direct/" label="Load direct" />
           <q-route-tab to="/users/" label="Users" />
+          <q-route-tab to="/books/" label="Books" />
         </q-tabs>
     </q-toolbar>
   </div>

@@ -29,15 +29,14 @@
             v-model="formData.currUserRefUsers"
             :options="userSelectOptions"
             label="Vyberte uživatele"
-            emit-value
-            map-options
-            option-label="label"
-            option-value="value"
-            @update:modelValue="setHasChanges(_handlerProps)"
-            @popup-show="userLoadOptions"
             clearable
             :loading="userSelectLoading"
-          />
+            :option-value="opt => opt.id"
+            :option-label="opt => `${opt.fName} ${opt.lName} ${opt.born}`"
+            @update:modelValue="setHasChanges(_handlerProps)"
+            @popup-show="userHandleLoadOptions"
+          /><!-- @popup-show vs. @focus -->
+          <q-badge color="secondary" multi-line>  Model: "{{ formData.currUserRefUsers }}" </q-badge>
 
         </div>
 
@@ -49,7 +48,7 @@
 </template>
 
 <script setup lang="ts">
-import { toRef, computed, onMounted } from 'vue';
+import { toRef, computed } from 'vue';
 
 const props = defineProps<{
   documentId?: string;
@@ -59,6 +58,18 @@ const documentIdPropRef = toRef(props, 'documentId');
 
 const COLLECTION_NAME = 'books';
 const PAGE_NAME = 'books';
+
+import type { Book } from '@/types/Book';
+interface FormData extends Omit<Book, 'id'> {}  //odstranění "id" z interface
+
+const createEmptyFormData = (): FormData => {
+  return {
+    title: '',
+    author: '',
+    createdDate: new Date(),
+    currUserRefUsers: null
+  };
+};
 
 import {
   useDocHandlers,
@@ -72,24 +83,6 @@ import {
   type FormHandlerProps
 } from '@/composables/useDocHandlers';
 
-import { useRefSelectHandlers } from '@/composables/useRefSelectHandlers';
-
-interface FormData {
-  title: string;
-  author: string;
-  createdDate: Date;
-  currUserRefUsers: string | null;
-}
-
-const createEmptyFormData = (): FormData => {
-  return {
-    title: '',
-    author: '',
-    createdDate: new Date(),
-    currUserRefUsers: null
-  };
-};
-
 const {
   formId,
   formData,
@@ -101,36 +94,30 @@ useWatchDocumentId(_handlerProps);
 useConfirmRouteLeave(_handlerProps);
 
 const createdDateFormatted = computed({
-  get: () => {
+  get: () => {                              //Pro input nutno převést datum: Date -> string
     const date = formData.value.createdDate;
     return date instanceof Date && !isNaN(date.getTime())
       ? date.toISOString().split('T')[0]
       : '';
   },
-  set: (newValue: string) => {
-    const parsedDate = new Date(newValue);
-    if (!isNaN(parsedDate.getTime())) {
+  set: (newValue: string) => {              //Při změně data v inputu je nutno datum převést: string -> Date
+    const parsedDate = new Date(newValue);  //Vytvoří nový Date objekt z přijatého stringu
+    if (!isNaN(parsedDate.getTime())) {     //Kontrola jestli převod na datom proběhl v pořádku
       formData.value.createdDate = parsedDate;
     }
   }
 });
 
 // --- Použití nového generického composable pro uživatele ---
+import { useInputSelectObjectOptions } from '@/composables/useInputSelectObjectOptions';
 const {
   selectOptions: userSelectOptions,
   loading: userSelectLoading,
-  loadOptions: userLoadOptions
-} = useRefSelectHandlers(
-  'users',
-  ['fName', 'lName']
+  handleLoadOptions: userHandleLoadOptions
+} = useInputSelectObjectOptions(
+  'users', // Název kolekce
+  ['id', 'fName', 'lName', 'born']
 );
-
-// Načtení možností uživatelů při namountování komponenty
-onMounted(async () => {
-  console.log('Komponenta BookForm.vue je namountována. Načítám možnosti uživatelů.');
-  await userLoadOptions();
-  //console.log('Načtené možnosti uživatelů (userSelectOptions):', userSelectOptions.value);
-});
 
 </script>
 

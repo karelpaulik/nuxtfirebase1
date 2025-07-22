@@ -31,6 +31,17 @@ tsconfig.json
 compilerOptions.strict: true/false
 
 npm run typecheck
+
+Vypnutí kontroly - přidávají se dvě lomítka + @příkaz
+
+Vpnutí kontroly pro následující řádek:
+// @ts-ignore
+nebo nově:
+// @ts-expect-error
+
+Vpnutí kontroly pro celý soubor (uvést na začátek souboru):
+// @ts-nocheck
+
 ```
 
 # Quasar instalace

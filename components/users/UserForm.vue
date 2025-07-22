@@ -63,33 +63,8 @@ const documentIdPropRef = toRef(props, 'documentId'); // Převedeme props.userId
 const COLLECTION_NAME = 'users';
 const PAGE_NAME = 'users';
 
-import { 
-  useDocHandlers, 
-  setHasChanges, 
-  handleRevertChanges, 
-  handleAddDoc, 
-  handleUpdateDoc, 
-  handleDelDoc, 
-  useWatchDocumentId, 
-  useConfirmRouteLeave,
-  type FormHandlerProps // Importujeme interface pro typování
-} from '~/composables/useDocHandlers'; // Nový composable soubor
-
-/**
- * Interface defining the structure of the form data.
- */
-interface FormData {
-  fName: string;
-  lName: string;
-  born: string;
-  hasDrivingLic: boolean;
-  hobbies: string[];
-  picked: string;
-  createdDate: Date;     // datum
-  childrenCount: number; // integer
-  userHeight: number;    // float
-
-}
+import type { User } from '@/types/User';
+interface FormData extends Omit<User, 'id'> {}  //odstranění "id" z interface
 
 const createEmptyFormData = (): FormData => {
   return {
@@ -104,6 +79,18 @@ const createEmptyFormData = (): FormData => {
     userHeight: 0.0,          // v-model.number // Desetinný oddělovač je tečka. // Jak zabránit čárce: @keydown="(event) => usePreventKeys([','])(event)"
   };
 };
+
+import { 
+  useDocHandlers, 
+  setHasChanges, 
+  handleRevertChanges, 
+  handleAddDoc, 
+  handleUpdateDoc, 
+  handleDelDoc, 
+  useWatchDocumentId, 
+  useConfirmRouteLeave,
+  type FormHandlerProps // Importujeme interface pro typování
+} from '~/composables/useDocHandlers'; // Nový composable soubor
 
 const {
   formId, //Používá se v Template

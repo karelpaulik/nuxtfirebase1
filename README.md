@@ -59,3 +59,17 @@ Když vkádám do inputu na mob. telefonu, objeví se nahoře lišta (možnost v
 FullScreen tedy dělá problém na mobilním zařízením - když se vkládají informace do inputu.
 Jinak asi OK.
 ```
+
+# Validace
+```
+npm install vee-validate zod @vee-validate/zod
+
+Definice schematu:
+schemas/userSchema.ts
+
+Validace na vstupu:
+composables/useDocHandlers.ts
+
+Validace formuláře:
+components/users/[id].vue
+```

@@ -4,6 +4,8 @@ import { useRoute, useRouter, onBeforeRouteLeave, type Router, type RouteLocatio
 // Předpokládáme, že tyto importy jsou správně nastaveny ve vašem projektu
 import { useReadDoc, useAddColl, useUpdateDoc, useDelDoc } from '~/composables/useFirestore';
 import { normalizeData } from '~/utils/normalizeData'; // Import normalizační funkce
+import { userApiSchema as userSchema} from '@/schemas/userSchema';
+import type { UserForApi as User} from '@/schemas/userSchema';
 
 /**
  * Interface pro props, které handlery potřebují.
@@ -34,9 +36,28 @@ export const handleReadDoc = async <T extends Record<string, any>>(props: FormHa
   try {
     const doc = await useReadDoc(collectionName, idToRead);
     if (doc) {
-      formData.value = normalizeData<T>(doc.data, createEmptyData());
-      formId.value = doc.id;
-      hasChanges.value = false;
+      //validace-----------------------------------
+      const validData = userSchema.safeParse(doc.data);
+      if (validData.success) {  // Validace proběhla úspěšně, data jsou validní
+        console.log('Data úspěšně validována:', validData.data);
+        formData.value = validData.data;
+        formId.value = doc.id;
+        hasChanges.value = false;
+      } else {                  // Validace selhala, validData.error obsahuje detaily chyby
+        //console.error('Chyba validace dat:', validData.error);
+
+        // Pro detailnější výpis konkrétních problémů můžete iterovat přes issues
+        validData.error.issues.forEach(issue => {
+          console.error(`Chyba na cestě: ${issue.path.join('.')}, Zpráva: ${issue.message}`);
+          notify(`Chyba na cestě: ${issue.path.join('.')}, Zpráva: ${issue.message}`, 'negative', 'top', 5000)
+        });
+        //await router.push(`/${pageName}/new`);
+      }
+      //validace-----------------------------------
+
+      //formData.value = normalizeData<T>(doc.data, createEmptyData());
+      //formId.value = doc.id;
+      //hasChanges.value = false;
     } else {
       console.log(`Dokument s ID '${idToRead}' nebyl nalezen v kolekci '${collectionName}'.`);
       notify(`Záznam s ID '${idToRead}' nebyl nalezen. Budete přesměrováni na vytvoření nového záznamu.`, 'negative', undefined, 5000)

@@ -44,6 +44,11 @@
         <q-radio v-model="formData.picked" val="Two" label="Two" @update:modelValue="setHasChanges(_handlerProps)" />
         </div>
 
+        formData <pre>{{ formData }}</pre>
+        values <pre>{{ values }}</pre>
+        errors <pre>{{ errors }}</pre>
+        meta <pre>{{ meta }}</pre>
+        
       </div>
 
     </div>
@@ -54,6 +59,14 @@
 <script setup lang="ts">
 import { toRef } from 'vue';
 
+import { useForm } from 'vee-validate';
+import { toTypedSchema } from '@vee-validate/zod';
+import { userFormSchema as userSchema } from '@/schemas/userSchema';
+import type { UserForForm as User} from '@/schemas/userSchema';
+
+//import type { User } from '@/types/User';
+interface FormData extends Omit<User, 'id'> {}  //odstranění "id" z interface
+
 const props = defineProps<{
   documentId?: string;
 }>();
@@ -62,9 +75,6 @@ const documentIdPropRef = toRef(props, 'documentId'); // Převedeme props.userId
 
 const COLLECTION_NAME = 'users';
 const PAGE_NAME = 'users';
-
-import type { User } from '@/types/User';
-interface FormData extends Omit<User, 'id'> {}  //odstranění "id" z interface
 
 const createEmptyFormData = (): FormData => {
   return {
@@ -99,6 +109,17 @@ const {
   _handlerProps // Získáme objekt handlerProps pro volání funkcí
 } = useDocHandlers<FormData>(documentIdPropRef, COLLECTION_NAME, PAGE_NAME, createEmptyFormData);
 
+const { errors, values,  meta, handleSubmit, setValues, defineField } = useForm({
+  validationSchema: toTypedSchema(userSchema), // Zde použijeme importované schéma
+  //initialValues: formData.value //toto nefunguje, protože initialValues pouze inicializuje hodnoty, ale nespojí: values s dataForm.
+});
+
+watch(formData, (newFormData) => {
+  if (newFormData) { // Nebo jiná podmínka, která značí, že data jsou načtena
+    setValues(newFormData);
+  }
+}, { immediate: true, deep: true }); // immediate: true pro prvotní nastavení, deep: true pro sledování změn uvnitř objektu
+
 // --- Zde voláme router-specifické Composables přímo z komponenty ---
 useWatchDocumentId(_handlerProps); // Voláme watcher pro documentId
 useConfirmRouteLeave(_handlerProps); // Voláme ochranu před opuštěním stránky
@@ -117,6 +138,32 @@ const createdDateFormatted = computed({
     }
   }
 });
+
+// // Propojení všech polí s VeeValidate pomocí defineField a formData
+// const [fName, fNameAttrs] = defineField('fName', { model: formData.value.fName });
+// const [lName, lNameAttrs] = defineField('lName', { model: formData.value.lName });
+// const [born, bornAttrs] = defineField('born', { model: formData.value.born });
+// const [childrenCount, childrenCountAttrs] = defineField('childrenCount', { model: formData.value.childrenCount });
+// const [userHeight, userHeightAttrs] = defineField('userHeight', { model: formData.value.userHeight });
+// const [hasDrivingLic, hasDrivingLicAttrs] = defineField('hasDrivingLic', { model: formData.value.hasDrivingLic });
+// const [hobbies, hobbiesAttrs] = defineField('hobbies', { model: formData.value.hobbies });
+// const [picked, pickedAttrs] = defineField('picked', { model: formData.value.picked });
+
+// // Speciální případ pro 'createdDate' s computed property
+// const [createdDateVee, createdDateVeeAttrs] = defineField('createdDate', {
+//   model: computed({
+//     get: () => {
+//       const date = formData.value.createdDate;
+//       return date instanceof Date && !isNaN(date.getTime()) ? date.toISOString().split('T')[0] : '';
+//     },
+//     set: (newValue: string) => {
+//       const parsedDate = new Date(newValue);
+//       if (!isNaN(parsedDate.getTime())) {
+//         formData.value.createdDate = parsedDate;
+//       }
+//     }
+//   })
+// });
 
 </script>
 

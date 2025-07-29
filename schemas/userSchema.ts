@@ -57,10 +57,12 @@ export const createUserSchema = (isFormValidation: boolean) => {
 };
 
 // Schéma a type pro formulář
+// Použití v komponentě
 export const userFormSchema = createUserSchema(true);
 export type UserForForm = z.infer<typeof userFormSchema>;
 
 // Schéma type pro API
+// Použití při načítání dat (useDocHandlers.ts, handleReadDoc)
 export const userApiSchema = createUserSchema(false);
 export type UserForApi = z.infer<typeof userApiSchema>;
 

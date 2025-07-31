@@ -1,3 +1,6 @@
+# Zobrazení formátovaného textu ve VSCODE
+Ctrl+K then V
+
 # Nasazení na static hosting google.
 
 ```
@@ -72,4 +75,41 @@ composables/useDocHandlers.ts
 
 Validace formuláře:
 components/users/[id].vue
+```
+
+# NPM práce s verzemi
+package.json - dependencies
+
+Např. "vee-validate": "^4.15.1"
+
+Jak mohou být uvedené verze (rozsahy verzí):
+- "^4.15.1" Rozsah verzí: 4.x.x
+- "~4.15.1" Rozsah verzí: 4.15.x
+- "4.15.1"  Konkrétní verze: 4.15.1
+
+### Sémantické verzování:
+
+MAJOR.MINOR.PATCH
+
+## Zjištění verzí
+### Nainstalovaných
+```
+npm list
+npm list zod
+```
+
+### Registry info
+```
+npm view zod version    (Nejnovější verze)
+npm view zod versions   (Všechny verze)
+
+Závislosti:
+npm view @vee-validate/zod dependencies
+npm view @vee-validate/zod peerdependencies
+```
+
+# Zjišťování typů
+```
+if (val instanceof Date) {}     //instanceof: Date, Timestamp, ...
+if (typeof val==='string') {}   //typeof: string, number, boolean, ... 
 ```

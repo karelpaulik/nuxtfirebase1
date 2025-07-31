@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { ZodType } from 'zod';
 import { Timestamp } from 'firebase/firestore'; 
 
 //coerce lze použít pouze u primitivních typů: number, string, boolean, ...
@@ -8,10 +9,12 @@ import { Timestamp } from 'firebase/firestore';
 //export const userSchema = z.object({
 export const createUserSchema = (isFormValidation: boolean) => {
   return z.object({
-    fName: z.string().min(1, 'Zadejte jméno').max(50, 'Max. 50 znaků'),
+    fName: isFormValidation
+      ? z.string().min(1, 'Zadejte jméno').max(50, 'Max. 50 znaků')
+      : z.string().nullable().optional(),
     lName: isFormValidation
       ? z.string().min(1, 'Zadejte příjmení')                   // Pro formulář: prázdné = chyba
-      : z.string().min(1, 'Zadejte příjmení').catch(null),      // Pro API: prázdné/nevalidní = null
+      : z.string().catch(null),                                 // Pro API: prázdné/nevalidní = null
     born: z.string().nullable().optional(),                     // Pozn. I bez nullable().optional() šlo mazat hodnotu v inputu, protože po smazání je hodnota ''. Tj. prázdný řetězec. Takto je to ale robustnější.
     childrenCount: z.coerce.number().int().min(0).catch(null),  // Celé číslo
     userHeight: z.coerce.number().min(40).max(300).catch(null), // Desetinné číslo
@@ -66,6 +69,15 @@ export type UserForForm = z.infer<typeof userFormSchema>;
 export const userApiSchema = createUserSchema(false);
 export type UserForApi = z.infer<typeof userApiSchema>;
 
+// //Návod, jak přidat .catch(null) ke každému atributu schematu
+// export const userApiSchemaCatchAllNull = z.object(
+//   Object.fromEntries(
+//     Object.entries(userApiSchema.shape).map(([key, schema]) => {
+//       const nullableSchema = (schema as ZodType).nullable();
+//       return [key, nullableSchema.catch(null)];
+//     })
+//   )
+// );
 
 // Původně bylo:
 // export const userSchema = z.object({

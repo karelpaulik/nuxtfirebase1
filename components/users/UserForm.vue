@@ -31,10 +31,20 @@
 
         <q-checkbox v-model="formData.hasDrivingLic" label="Řidičský průkaz" />
 
+        <!-- <div>
+          <q-checkbox v-model="formData.hobbies" val="fotbal" label="Fotbal" />
+          <q-checkbox v-model="formData.hobbies" val="hokej" label="Hokej" />
+          <q-checkbox v-model="formData.hobbies" val="cyklistika" label="cyklistika" />
+        </div> -->
+
         <div>
-          <q-checkbox v-model="formData.hobbies" val="Fotbal" label="fotbal" />
-          <q-checkbox v-model="formData.hobbies" val="Hokej" label="hokej" />
-          <q-checkbox v-model="formData.hobbies" val="Cyklistika" label="cyklistika" />
+          <q-checkbox
+            v-for="option in hobbiesOptions"
+            :key="option.value"
+            v-model="formData.hobbies"
+            :val="option.value"
+            :label="option.label"
+          />
         </div>
 
         <div>
@@ -73,7 +83,7 @@
 
 <script setup lang="ts">
 import { toRef, computed } from 'vue';
-import { userFormSchema } from '@/schemas/userSchema';
+import { userFormSchema, hobbiesOptions  } from '@/schemas/userSchema';
 import type { UserForForm as User} from '@/schemas/userSchema';
 import { usePreventKeys } from '~/composables/usePreventKeys';
 

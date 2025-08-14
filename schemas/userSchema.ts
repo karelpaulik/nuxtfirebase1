@@ -5,6 +5,16 @@ import { Timestamp } from 'firebase/firestore';
 //coerce lze použít pouze u primitivních typů: number, string, boolean, ...
 //coerce nelze použít u: array
 
+//Pro potřeby seznamu ve schématu
+export const hobbiesOptions = [
+  { label: 'Fotbal', value: 'fotbal' },
+  { label: 'Hokej', value: 'hokej' },
+  { label: 'Cyklistika', value: 'cyklistika' },
+  //{ label: 'Šachy', value: 'šachy' },
+];
+
+//Pro schéma musí být použito pole hodnot, ne pole objektů, tj. [fotbal, hokej, cyklistika]
+const hobbyValues = hobbiesOptions.map(option => option.value);
 
 //export const userSchema = z.object({
 export const createUserSchema = (isFormValidation: boolean) => {
@@ -19,7 +29,9 @@ export const createUserSchema = (isFormValidation: boolean) => {
     childrenCount: z.coerce.number().int().min(0).catch(null),  // Celé číslo
     userHeight: z.coerce.number().min(40).max(300).catch(null), // Desetinné číslo
     hasDrivingLic: z.boolean(),
-    hobbies: z.array(z.string()).catch([]),
+    //Dříve: hobbies: z.array(z.string()).catch([]),
+    //Toto: hobbies: z.array(z.enum(hobbyValues)).catch([]), by mohlo selhat. Vylepšeno (přetypování):
+    hobbies: z.array(z.enum(hobbyValues as [string, ...string[]])).catch([]),
     picked: z.string(),
 
     createdDate: z.preprocess((val) => {

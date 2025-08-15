@@ -116,8 +116,8 @@ const createEmptyFormData = (): FormData => {
     lName: '',
     born: '',
     hasDrivingLic: false,
-    childrenCount: 0,         // v-model.number
-    userHeight: 0.0,          // v-model.number // Desetinný oddělovač je tečka. // Jak zabránit čárce: @keydown="(event) => usePreventKeys([','])(event)"
+    childrenCount: null,         // v-model.number
+    userHeight: null,          // v-model.number // Desetinný oddělovač je tečka. // Jak zabránit čárce: @keydown="(event) => usePreventKeys([','])(event)"
     hobbies: [],
     picked: '',
     createdDate: new Date(),  // Pro v-model nutno computed (převod na string a zpět). Maybe quasar?
@@ -143,8 +143,9 @@ const {
 } = useDocHandlers<FormData>(documentIdPropRef, COLLECTION_NAME, PAGE_NAME, createEmptyFormData, userFormSchema);
 
 // --- Zde voláme router-specifické Composables přímo z komponenty ---
-useWatchDocumentId(_handlerProps);
-useConfirmRouteLeave(_handlerProps);
+useWatchDocumentId(_handlerProps);    // Pro načtení dokumentu
+useConfirmRouteLeave(_handlerProps);  // Hlídání odchodu ze stránky
+
 
 // --- Zde volám specifické "computed" ---
 import { useDateFormatter } from '@/composables/useDateFormatter';

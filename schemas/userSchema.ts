@@ -32,8 +32,23 @@ export const createUserSchema = (isFormValidation: boolean) => {
       ? z.string().min(1, 'Zadejte příjmení')                   // Pro formulář: prázdné = chyba
       : z.string().catch(null),                                 // Pro API: prázdné/nevalidní = null
     born: z.string().nullable().optional(),                     // Pozn. I bez nullable().optional() šlo mazat hodnotu v inputu, protože po smazání je hodnota ''. Tj. prázdný řetězec. Takto je to ale robustnější.
-    childrenCount: z.coerce.number().int().min(0).catch(null),  // Celé číslo
-    userHeight: z.coerce.number().min(40).max(300).catch(null), // Desetinné číslo
+    
+    //childrenCount: z.coerce.number().int().min(0).nullable().optional().catch(null),  // Celé číslo
+    childrenCount: z.preprocess((val) => {  // Preprocess nutný, aby se povolila "null" hodnota
+      if (val === '') {
+        return null;
+      }
+      return val;
+    }, z.coerce.number().int().min(0).nullable().optional().catch(null)),
+
+    //userHeight: z.coerce.number().min(30).max(300).nullable().optional().catch(null), // Desetinné číslo
+    userHeight: z.preprocess((val) => {  // Preprocess nutný, aby se povolila "null" hodnota
+      if (val === '') {
+        return null;
+      }
+      return val;
+    }, z.coerce.number().min(30).max(300).nullable().optional().catch(null)),
+
     hasDrivingLic: z.boolean(),
     hobbies: z.array(z.string()).catch([]), // Bez kontroly "hobbiesOptions.value"  // Bez kontroly je to zde vhodnější, než s kontrolou.
     //hobbies: z.array(z.enum(hobbyValues as [string, ...string[]])).catch([]), // S kontrolou "hobbiesOptions.value" //Toto: hobbies: z.array(z.enum(hobbyValues)).catch([]), by mohlo selhat. Vylepšeno (přetypování):

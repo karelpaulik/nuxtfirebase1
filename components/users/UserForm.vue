@@ -92,11 +92,12 @@
 </template>
 
 <script setup lang="ts">
+// Pozn. Ve vue/nuxt nebusí být všechny importy na začátku souboru.
+// Tato podmínka platí pouze pro čisté javascript/typescript soubory.
 import { toRef, computed } from 'vue';
 import { userFormSchema, hobbiesOptions, pickedOptions  } from '@/schemas/userSchema';
 import type { UserForForm as User} from '@/schemas/userSchema';
 import { usePreventKeys } from '~/composables/usePreventKeys';
-
 
 interface FormData extends Omit<User, 'id'> {}
 
@@ -115,11 +116,11 @@ const createEmptyFormData = (): FormData => {
     lName: '',
     born: '',
     hasDrivingLic: false,
+    childrenCount: 0,         // v-model.number
+    userHeight: 0.0,          // v-model.number // Desetinný oddělovač je tečka. // Jak zabránit čárce: @keydown="(event) => usePreventKeys([','])(event)"
     hobbies: [],
     picked: '',
     createdDate: new Date(),  // Pro v-model nutno computed (převod na string a zpět). Maybe quasar?
-    childrenCount: 0,         // v-model.number
-    userHeight: 0.0,          // v-model.number // Desetinný oddělovač je tečka. // Jak zabránit čárce: @keydown="(event) => usePreventKeys([','])(event)"
   };
 };
 
@@ -145,27 +146,29 @@ const {
 useWatchDocumentId(_handlerProps);
 useConfirmRouteLeave(_handlerProps);
 
+// --- Zde volám specifické "computed" ---
+import { useDateFormatter } from '@/composables/useDateFormatter';
+const createdDateFormatted = useDateFormatter(formData, 'createdDate');
 
-const createdDateFormatted = computed({
-  get: () => {
-    const date = formData.createdDate;
-    // Pokud je datum null/undefined nebo neplatné, vrátí prázdný string pro input
-    return date instanceof Date && !isNaN(date.getTime())
-      ? date.toISOString().split('T')[0]
-      : '';
-  },
-  set: (newValue: string) => {
-    if (newValue === '') { // <-- Pokud je input prázdný string
-      formData.createdDate = null; // <-- Nastavte na null (nebo undefined)
-    } else {
-      const parsedDate = new Date(newValue);
-      if (!isNaN(parsedDate.getTime())) {
-        formData.createdDate = parsedDate;
-      }
-    }
-  }
-});
-
+// const createdDateFormatted = computed({
+//   get: () => {
+//     const date = formData.createdDate;
+//     // Pokud je datum null/undefined nebo neplatné, vrátí prázdný string pro input
+//     return date instanceof Date && !isNaN(date.getTime())
+//       ? date.toISOString().split('T')[0]
+//       : '';
+//   },
+//   set: (newValue: string) => {
+//     if (newValue === '') { // <-- Pokud je input prázdný string
+//       formData.createdDate = null; // <-- Nastavte na null (nebo undefined)
+//     } else {
+//       const parsedDate = new Date(newValue);
+//       if (!isNaN(parsedDate.getTime())) {
+//         formData.createdDate = parsedDate;
+//       }
+//     }
+//   }
+// });
 
 </script>
 

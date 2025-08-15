@@ -40,16 +40,26 @@
         <div>
           <q-checkbox
             v-for="option in hobbiesOptions"
-            :key="option.value"
             v-model="formData.hobbies"
+            :key="option.value"
             :val="option.value"
             :label="option.label"
           />
         </div>
 
-        <div>
+        <!-- <div>
         <q-radio v-model="formData.picked" val="One" label="One" />
         <q-radio v-model="formData.picked" val="Two" label="Two" />
+        </div> -->
+
+        <div>
+          <q-radio 
+            v-for="option in pickedOptions"
+            v-model="formData.picked" 
+            :key="option.value"
+            :val="option.value" 
+            :label="option.label"
+          />
         </div>
 
         <h4>Debug Data:</h4>
@@ -83,7 +93,7 @@
 
 <script setup lang="ts">
 import { toRef, computed } from 'vue';
-import { userFormSchema, hobbiesOptions  } from '@/schemas/userSchema';
+import { userFormSchema, hobbiesOptions, pickedOptions  } from '@/schemas/userSchema';
 import type { UserForForm as User} from '@/schemas/userSchema';
 import { usePreventKeys } from '~/composables/usePreventKeys';
 

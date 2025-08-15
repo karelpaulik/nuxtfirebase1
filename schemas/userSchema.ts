@@ -13,7 +13,13 @@ export const hobbiesOptions = [
   //{ label: 'Šachy', value: 'šachy' },
 ];
 
-//Pro schéma musí být použito pole hodnot, ne pole objektů, tj. [fotbal, hokej, cyklistika]
+export const pickedOptions = [
+  { label: 'One', value: 'one' },
+  { label: 'Two', value: 'two' },
+  { label: 'Three', value: 'three' },
+];
+
+//Pro kontrolu ve schematu musí být použito pole hodnot, ne pole objektů, tj. [fotbal, hokej, cyklistika]
 const hobbyValues = hobbiesOptions.map(option => option.value);
 
 //export const userSchema = z.object({
@@ -29,9 +35,8 @@ export const createUserSchema = (isFormValidation: boolean) => {
     childrenCount: z.coerce.number().int().min(0).catch(null),  // Celé číslo
     userHeight: z.coerce.number().min(40).max(300).catch(null), // Desetinné číslo
     hasDrivingLic: z.boolean(),
-    //Dříve: hobbies: z.array(z.string()).catch([]),
-    //Toto: hobbies: z.array(z.enum(hobbyValues)).catch([]), by mohlo selhat. Vylepšeno (přetypování):
-    hobbies: z.array(z.enum(hobbyValues as [string, ...string[]])).catch([]),
+    hobbies: z.array(z.string()).catch([]), // Bez kontroly "hobbiesOptions.value"  // Bez kontroly je to zde vhodnější, než s kontrolou.
+    //hobbies: z.array(z.enum(hobbyValues as [string, ...string[]])).catch([]), // S kontrolou "hobbiesOptions.value" //Toto: hobbies: z.array(z.enum(hobbyValues)).catch([]), by mohlo selhat. Vylepšeno (přetypování):
     picked: z.string(),
 
     createdDate: z.preprocess((val) => {

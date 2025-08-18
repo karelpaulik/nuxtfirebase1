@@ -25,6 +25,11 @@ const hobbyValues = hobbiesOptions.map(option => option.value);
 //export const userSchema = z.object({
 export const createUserSchema = (isFormValidation: boolean) => {
   return z.object({
+    // ID je zde, protože může být součástí dat z formuláře (při úpravě existujícího)
+    // nebo z API (při načítání), ale pro nové záznamy nemusí existovat.
+    // proto je volitelné.
+    id: z.string().optional(), // ID dokumentu, volitelné
+
     fName: isFormValidation
       ? z.string().min(1, 'Zadejte jméno').max(50, 'Max. 50 znaků')
       : z.string().nullable().optional(),
@@ -87,7 +92,7 @@ export const createUserSchema = (isFormValidation: boolean) => {
       // Pokud se nic z toho neshoduje, vrátíme původní hodnotu,
       // a z.date() ji pak bude validovat a pravděpodobně selže.
       return val;
-    }, z.date('Očekává se platné datum.').nullable().optional()), // Konečná validace jako Date, null nebo undefined
+    }, z.date('Očekává se platné datum.').nullable().optional().catch(null)), // Konečná validace jako Date, null nebo undefined
   });
 };
 

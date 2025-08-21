@@ -96,8 +96,17 @@
 // Tato podmínka platí pouze pro čisté javascript/typescript soubory.
 import { toRef, computed } from 'vue';
 import { userFormSchema, hobbiesOptions, pickedOptions  } from '@/schemas/userSchema';
-import type { UserForForm as User} from '@/schemas/userSchema';
+import type { UserFormType as User} from '@/schemas/userSchema';
 import { usePreventKeys } from '~/composables/usePreventKeys';
+import {
+  useDocHandlers,
+  handleRevertChanges,
+  handleAddDoc,
+  handleUpdateDoc,
+  handleDelDoc,
+  useWatchDocumentId,
+  useConfirmRouteLeave
+} from '~/composables/useDocHandlers';
 
 interface FormData extends Omit<User, 'id'> {}
 
@@ -109,6 +118,7 @@ const documentIdPropRef = toRef(props, 'documentId'); // Převedeme props.userId
 
 const COLLECTION_NAME = 'users';
 const PAGE_NAME = 'users';
+const FORM_SCHEMA = userFormSchema;
 
 const createEmptyFormData = (): FormData => {
   return {
@@ -124,52 +134,21 @@ const createEmptyFormData = (): FormData => {
   };
 };
 
-import {
-  useDocHandlers,
-  handleRevertChanges,
-  handleAddDoc,
-  handleUpdateDoc,
-  handleDelDoc,
-  useWatchDocumentId,
-  useConfirmRouteLeave
-} from '~/composables/useDocHandlers';
-
 const {
   formId,
   formData,
   hasChanges,
   _handlerProps,
   formVee, // Přijímáme celou instanci VeeValidate formuláře s jasným názvem
-} = useDocHandlers<FormData>(documentIdPropRef, COLLECTION_NAME, PAGE_NAME, createEmptyFormData, userFormSchema);
+} = useDocHandlers<FormData>(documentIdPropRef, COLLECTION_NAME, PAGE_NAME, createEmptyFormData, FORM_SCHEMA);
 
 // --- Zde voláme router-specifické Composables přímo z komponenty ---
 useWatchDocumentId(_handlerProps);    // Pro načtení dokumentu
 useConfirmRouteLeave(_handlerProps);  // Hlídání odchodu ze stránky
 
-
 // --- Zde volám specifické "computed" ---
 import { useDateFormatter } from '@/composables/useDateFormatter';
 const createdDateFormatted = useDateFormatter(formData, 'createdDate');
-
-// const createdDateFormatted = computed({
-//   get: () => {
-//     const date = formData.createdDate;
-//     // Pokud je datum null/undefined nebo neplatné, vrátí prázdný string pro input
-//     return date instanceof Date && !isNaN(date.getTime())
-//       ? date.toISOString().split('T')[0]
-//       : '';
-//   },
-//   set: (newValue: string) => {
-//     if (newValue === '') { // <-- Pokud je input prázdný string
-//       formData.createdDate = null; // <-- Nastavte na null (nebo undefined)
-//     } else {
-//       const parsedDate = new Date(newValue);
-//       if (!isNaN(parsedDate.getTime())) {
-//         formData.createdDate = parsedDate;
-//       }
-//     }
-//   }
-// });
 
 </script>
 

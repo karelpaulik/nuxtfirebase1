@@ -52,9 +52,9 @@ export const createBookSchema = (isFormValidation: boolean) => {
 
 // Schéma a type pro formulář
 export const bookFormSchema = createBookSchema(true);
-export type BookForForm = z.infer<typeof bookFormSchema>;
+export type BookFormType = z.infer<typeof bookFormSchema>;
 
 // Schéma a type pro API
 // Není potřeba .extend(), protože 'id' je již součástí createBookSchema
 export const bookApiSchema = createBookSchema(false); 
-export type BookForApi = z.infer<typeof bookApiSchema>;
+export type BookApiType = z.infer<typeof bookApiSchema>;

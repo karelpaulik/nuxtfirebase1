@@ -43,18 +43,20 @@ import type { WhereFilterOp } from 'firebase/firestore';
 
 // Importujeme schéma přímo zde v komponentě
 import { userApiSchema } from '@/schemas/userSchema';
-import type { UserForApi } from '@/schemas/userSchema'; // Typ pro data po validaci
+import type { UserApiType } from '@/schemas/userSchema'; // Typ pro data po validaci
 
 const COLLECTION_NAME = 'users';
 const PAGE_NAME = 'users';
+const API_SCHEMA = userApiSchema;
+type ApiType = Omit<UserApiType, 'id'>; //interface DocumentDataType extends Omit<UserApiType, 'id'> {} - jiný způsob // Bez omit by bylo: type ApiType = UserApiType;
 
 const {
   documents,
   loading,
   error,
   _handlerProps
-} = useCollectionHandlers<UserForApi>(COLLECTION_NAME, {
-  validationSchema: userApiSchema // <-- Zde se předává schéma. No schema, nebo undefined = no validation.
+} = useCollectionHandlers<ApiType>(COLLECTION_NAME, {
+  validationSchema: API_SCHEMA // <-- Zde se předává schéma. No schema, nebo undefined = no validation.
 });
 
 // Načíst všechny dokumenty při načtení komponenty

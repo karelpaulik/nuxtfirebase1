@@ -7,8 +7,6 @@ import type { ZodObject, ZodRawShape } from 'zod';
 // Předpokládáme, že tyto importy jsou správně nastaveny ve vašem projektu
 import { useReadDoc, useAddColl, useUpdateDoc, useDelDoc } from '~/composables/useFirestore';
 // import { normalizeData } from '~/utils/normalizeData'; // Tato funkce se již nepoužívá, můžete ji odstranit
-import { userApiSchema } from '@/schemas/userSchema';
-import type { UserForApi as User } from '@/schemas/userSchema';
 import { notifyError, notify, displayVeeValidateErrors, displayZodErrors } from './useNotify';
 import { cleanObject } from '@/utils/cleanObject';
 
@@ -26,6 +24,7 @@ export interface FormHandlerProps<T extends Record<string, any>> {
     router: Router; // Použijte typ Router
     route: RouteLocationNormalizedLoaded; // Použijte typ RouteLocationNormalizedLoaded
     formVee: ReturnType<typeof useForm<T>>; // Předáváme celou instanci VeeValidate formuláře
+    validationSchema: ZodObject<ZodRawShape>; // Přidáváme schema do props
 }
 
 // --- Samostatné a individuálně exportované funkce pro handlery ---
@@ -33,16 +32,16 @@ export interface FormHandlerProps<T extends Record<string, any>> {
 // setHasChanges je redundantní, protože hasChanges je sledováno přes meta.dirty z VeeValidate.
 // Doporučuji tuto funkci odstranit a její volání.
 // export const setHasChanges = (props: FormHandlerProps<any>): void => {
-//   props.hasChanges.value = true;
+//    props.hasChanges.value = true;
 // };
 
 export const handleReadDoc = async <T extends Record<string, any>>(props: FormHandlerProps<T>, idToRead: string): Promise<void> => {
-    const { formId, hasChanges, collectionName, pageName, router, formVee } = props; // Destrukturalizujeme formVee
+    const { formId, hasChanges, collectionName, pageName, router, formVee, validationSchema } = props; // Destrukturalizujeme formVee a přidáváme validationSchema
 
     try {
         const doc = await useReadDoc(collectionName, idToRead);
         if (doc) {
-            const validData = userApiSchema.safeParse(doc.data);
+            const validData = validationSchema.safeParse(doc.data);
             if (validData.success) {
                 console.log('Data úspěšně validována:', validData.data);
                 // Nastavíme hodnoty do VeeValidate formuláře a resetujeme jej
@@ -52,8 +51,8 @@ export const handleReadDoc = async <T extends Record<string, any>>(props: FormHa
                 notify('Dokument úspěšně načten!', 'positive');
             } else {
                 // validData.error.issues.forEach(issue => {
-                //   console.error(`Chyba na cestě: ${issue.path.join('.')}, Zpráva: ${issue.message}`);
-                //   notify(`Chyba na cestě: ${issue.path.join('.')}, Zpráva: ${issue.message}`, 'negative', 'top', 5000);
+                //    console.error(`Chyba na cestě: ${issue.path.join('.')}, Zpráva: ${issue.message}`);
+                //    notify(`Chyba na cestě: ${issue.path.join('.')}, Zpráva: ${issue.message}`, 'negative', 'top', 5000);
                 // });
                 displayZodErrors(validData.error);
                 notifyError('Chyba validace dat z databáze.', validData.error);
@@ -116,7 +115,7 @@ export const handleAddDoc = async <T extends Record<string, any>>(props: FormHan
         // console.log('Raw data:', formVee);
         // console.log('Validated data:', values);
         // console.log('Cleaned data:', cleanedData);
-        const docId = await useAddColl(collectionName, cleanedData as User); // Použijeme validované hodnoty
+        const docId = await useAddColl(collectionName, cleanedData); // Použijeme validované hodnoty
         if (docId) {
             // hasChanges.value = false; // Automaticky se nastaví přes watch na formVee.meta.dirty
             formVee.resetForm(); // Reset VeeValidate form po uložení (resetuje na initialValues)
@@ -152,7 +151,7 @@ export const handleUpdateDoc = async <T extends Record<string, any>>(props: Form
     }
     try {
         const cleanedData = cleanObject(values); // <-- Čištění dat před odesláním. Tj. odstranění props s hodnotou "undefined".
-        const success = await useUpdateDoc(collectionName, formId.value, cleanedData as User); // Použijeme validované hodnoty
+        const success = await useUpdateDoc(collectionName, formId.value, cleanedData); // Použijeme validované hodnoty
         if (success) {
             console.log(`Dokument s ID '${formId.value}' v kolekci '${collectionName}' byl úspěšně aktualizován!`);
             // hasChanges.value = false; // Automaticky se nastaví přes watch na formVee.meta.dirty
@@ -314,6 +313,7 @@ export function useDocHandlers<T extends Record<string, any>>(
         router,
         route,
         formVee, // <-- Předáváme celou instanci formVee
+        validationSchema, // <-- Přidáváme schema do props
     };
 
     return {

@@ -95,8 +95,6 @@
 // Pozn. Ve vue/nuxt nebusí být všechny importy na začátku souboru.
 // Tato podmínka platí pouze pro čisté javascript/typescript soubory.
 import { toRef, computed } from 'vue';
-import { userFormSchema, hobbiesOptions, pickedOptions  } from '@/schemas/userSchema';
-import type { UserFormType as User} from '@/schemas/userSchema';
 import { usePreventKeys } from '~/composables/usePreventKeys';
 import {
   useDocHandlers,
@@ -108,7 +106,8 @@ import {
   useConfirmRouteLeave
 } from '~/composables/useDocHandlers';
 
-interface FormData extends Omit<User, 'id'> {}
+import { userFormSchema, hobbiesOptions, pickedOptions  } from '@/schemas/userSchema';
+import type { UserFormType } from '@/schemas/userSchema';
 
 const props = defineProps<{
   documentId?: string;
@@ -119,6 +118,7 @@ const documentIdPropRef = toRef(props, 'documentId'); // Převedeme props.userId
 const COLLECTION_NAME = 'users';
 const PAGE_NAME = 'users';
 const FORM_SCHEMA = userFormSchema;
+interface FormData extends Omit<UserFormType, 'id'> {}
 
 const createEmptyFormData = (): FormData => {
   return {

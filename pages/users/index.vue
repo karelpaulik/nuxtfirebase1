@@ -33,15 +33,14 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue';
+import type { CollectionHandlerProps } from '~/composables/useCollectionHandlers';
+import type { WhereFilterOp } from 'firebase/firestore';
 import {
   useCollectionHandlers,
   handleReadAllDocs,
   handleReadFilterDocs
 } from '~/composables/useCollectionHandlers';
-import type { CollectionHandlerProps } from '~/composables/useCollectionHandlers';
-import type { WhereFilterOp } from 'firebase/firestore';
 
-// Importujeme schéma přímo zde v komponentě
 import { userApiSchema } from '@/schemas/userSchema';
 import type { UserApiType } from '@/schemas/userSchema'; // Typ pro data po validaci
 

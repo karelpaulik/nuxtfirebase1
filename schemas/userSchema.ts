@@ -54,10 +54,10 @@ export const createUserSchema = (isFormValidation: boolean) => {
       return val;
     }, z.coerce.number().min(30).max(300).nullable().optional().catch(null)),
 
-    hasDrivingLic: z.boolean(),
+    hasDrivingLic: z.boolean().catch(null),
     hobbies: z.array(z.string()).catch([]), // Bez kontroly "hobbiesOptions.value"  // Bez kontroly je to zde vhodnější, než s kontrolou.
     //hobbies: z.array(z.enum(hobbyValues as [string, ...string[]])).catch([]), // S kontrolou "hobbiesOptions.value" //Toto: hobbies: z.array(z.enum(hobbyValues)).catch([]), by mohlo selhat. Vylepšeno (přetypování):
-    picked: z.string(),
+    picked: z.string().catch(null),
 
     createdDate: z.preprocess((val) => {
       // 1. Ošetření null/undefined na začátku

@@ -36,16 +36,24 @@ import {
   handleReadFilterDocs 
 } from '~/composables/useCollectionHandlers'; 
 import type { CollectionHandlerProps } from '~/composables/useCollectionHandlers'; 
+import type { WhereFilterOp } from 'firebase/firestore';
+
+import { bookApiSchema } from '@/schemas/bookSchema';
+import type { BookApiType } from '@/schemas/bookSchema'; // Typ pro data po validaci
 
 const COLLECTION_NAME = 'books';
 const PAGE_NAME = 'books';
+const API_SCHEMA = bookApiSchema;
+type ApiType = Omit<BookApiType, 'id'>;
 
 const {
   documents,
   loading,
   error,
-  _handlerProps 
-} = useCollectionHandlers(COLLECTION_NAME);
+  _handlerProps
+} = useCollectionHandlers<ApiType>(COLLECTION_NAME, {
+  validationSchema: API_SCHEMA // <-- Zde se předává schéma. No schema, nebo undefined = no validation.
+});
 
 // Načíst všechny dokumenty při načtení komponenty
 onMounted(() => {

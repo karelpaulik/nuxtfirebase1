@@ -106,6 +106,26 @@ export type UserFormType = z.infer<typeof userFormSchema>;
 export const userApiSchema = createUserSchema(false);
 export type UserApiType = z.infer<typeof userApiSchema>;
 
+// Redukované schema pro potřeby, kdy je objekt použit jako REFERENCE do jiného objektu.-------
+export const userSelectAttributes = ['id', 'fName', 'lName', 'born'] as const;
+
+export const userSelectSchema = userApiSchema
+  .pick(Object.fromEntries(userSelectAttributes.map((key) => [key, true])) as any)
+  .nullable()
+  .optional();
+
+// Toto odpovídá:
+// Nepoužívám, protože výše definuji seznam polí, který používám v dalším kódu.
+// export const userSelectSchema = userApiSchema.pick({
+//     id: true,
+//     fName: true,
+//     lName: true,
+//     born: true,
+// }).nullable().optional();
+  
+//----------------------------------------------------------------------------------------------
+
+
 // //Návod, jak přidat .catch(null) ke každému atributu schematu
 // export const userApiSchemaCatchAllNull = z.object(
 //   Object.fromEntries(

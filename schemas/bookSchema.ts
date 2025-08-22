@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { Timestamp } from 'firebase/firestore'; 
 
 // Importujeme userApiSchema pro vnoření
-import { userApiSchema } from './userSchema'; 
+import { userApiSchema, userSelectSchema } from './userSchema'; 
 
 export const createBookSchema = (isFormValidation: boolean) => {
   return z.object({
@@ -45,7 +45,7 @@ export const createBookSchema = (isFormValidation: boolean) => {
       return val;
     }, z.date('Očekává se platné datum pro vytvoření knihy.').nullable().optional()),
 
-    currUserRefUsers: userApiSchema.nullable().optional()
+    currUserRefUsers: userSelectSchema.nullable().optional()
 
   });
 };

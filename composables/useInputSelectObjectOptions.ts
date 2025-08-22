@@ -20,7 +20,7 @@ interface DocData {
  */
 export function useInputSelectObjectOptions<T extends Record<string, any>>(
   collectionName: string,
-  attributesToSelect?: string[] // Přidání volitelného argumentu
+  attributesToSelect?: string[] | readonly string[] // Přidání volitelného argumentu
 ) {
   // Reaktivní proměnná pro ukládání možností pro q-select
   const selectOptions: Ref<object[]> = ref([{}]);

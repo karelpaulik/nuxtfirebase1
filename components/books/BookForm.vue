@@ -21,9 +21,9 @@
         <h4 class="q-pa-xs q-ma-xs">{{ formId === 'new' ? 'Nový záznam' : 'Detail záznamu' }}</h4>
 
         <div class="q-pa-md" style="max-width: 300px">
-          <q-input v-model="formData.title" label="title" @update:modelValue="setHasChanges(_handlerProps)" />
-          <q-input v-model="formData.author" label="Author" @update:modelValue="setHasChanges(_handlerProps)" />
-          <q-input type="date" v-model="createdDateFormatted" label="createdDate" @update:modelValue="setHasChanges(_handlerProps)" />
+          <q-input v-model="formData.title" label="title" />
+          <q-input v-model="formData.author" label="Author" />
+          <q-input type="date" v-model="createdDateFormatted" label="createdDate" />
 
           <q-select
             v-model="formData.currUserRefUsers"
@@ -33,7 +33,6 @@
             :loading="userSelectLoading"
             :option-value="opt => opt.id"
             :option-label="opt => `${opt.fName} ${opt.lName} ${opt.born}`"
-            @update:modelValue="setHasChanges(_handlerProps)"
             @popup-show="userHandleLoadOptions"
           /><!-- @popup-show vs. @focus -->
           <q-badge color="secondary" multi-line>  Model: "{{ formData.currUserRefUsers }}" </q-badge>
@@ -48,7 +47,21 @@
 </template>
 
 <script setup lang="ts">
+// Pozn. Ve vue/nuxt nebusí být všechny importy na začátku souboru.
+// Tato podmínka platí pouze pro čisté javascript/typescript soubory.
 import { toRef, computed } from 'vue';
+import {
+  useDocHandlers,
+  handleRevertChanges,
+  handleAddDoc,
+  handleUpdateDoc,
+  handleDelDoc,
+  useWatchDocumentId,
+  useConfirmRouteLeave
+} from '~/composables/useDocHandlers';
+
+import { bookFormSchema  } from '@/schemas/bookSchema';
+import type { BookFormType } from '@/schemas/bookSchema';
 
 const props = defineProps<{
   documentId?: string;
@@ -58,9 +71,8 @@ const documentIdPropRef = toRef(props, 'documentId');
 
 const COLLECTION_NAME = 'books';
 const PAGE_NAME = 'books';
-
-import type { Book } from '@/types/Book';
-interface FormData extends Omit<Book, 'id'> {}  //odstranění "id" z interface
+const FORM_SCHEMA = bookFormSchema;
+interface FormData extends Omit<BookFormType, 'id'> {}
 
 const createEmptyFormData = (): FormData => {
   return {
@@ -71,52 +83,46 @@ const createEmptyFormData = (): FormData => {
   };
 };
 
-import {
-  useDocHandlers,
-  setHasChanges,
-  handleRevertChanges,
-  handleAddDoc,
-  handleUpdateDoc,
-  handleDelDoc,
-  useWatchDocumentId,
-  useConfirmRouteLeave,
-  type FormHandlerProps
-} from '@/composables/useDocHandlers';
-
 const {
   formId,
   formData,
   hasChanges,
-  _handlerProps
-} = useDocHandlers<FormData>(documentIdPropRef, COLLECTION_NAME, PAGE_NAME, createEmptyFormData);
+  _handlerProps,
+  formVee, // Přijímáme celou instanci VeeValidate formuláře s jasným názvem
+} = useDocHandlers<FormData>(documentIdPropRef, COLLECTION_NAME, PAGE_NAME, createEmptyFormData, FORM_SCHEMA);
 
 useWatchDocumentId(_handlerProps);
 useConfirmRouteLeave(_handlerProps);
 
-const createdDateFormatted = computed({
-  get: () => {                              //Pro input nutno převést datum: Date -> string
-    const date = formData.value.createdDate;
-    return date instanceof Date && !isNaN(date.getTime())
-      ? date.toISOString().split('T')[0]
-      : '';
-  },
-  set: (newValue: string) => {              //Při změně data v inputu je nutno datum převést: string -> Date
-    const parsedDate = new Date(newValue);  //Vytvoří nový Date objekt z přijatého stringu
-    if (!isNaN(parsedDate.getTime())) {     //Kontrola jestli převod na datom proběhl v pořádku
-      formData.value.createdDate = parsedDate;
-    }
-  }
-});
+// --- Zde volám specifické "computed" ---
+import { useDateFormatter } from '@/composables/useDateFormatter';
+const createdDateFormatted = useDateFormatter(formData, 'createdDate');
+
+// const createdDateFormatted = computed({
+//   get: () => {                              //Pro input nutno převést datum: Date -> string
+//     const date = formData.value.createdDate;
+//     return date instanceof Date && !isNaN(date.getTime())
+//       ? date.toISOString().split('T')[0]
+//       : '';
+//   },
+//   set: (newValue: string) => {              //Při změně data v inputu je nutno datum převést: string -> Date
+//     const parsedDate = new Date(newValue);  //Vytvoří nový Date objekt z přijatého stringu
+//     if (!isNaN(parsedDate.getTime())) {     //Kontrola jestli převod na datom proběhl v pořádku
+//       formData.value.createdDate = parsedDate;
+//     }
+//   }
+// });
 
 // --- Použití nového generického composable pro uživatele ---
 import { useInputSelectObjectOptions } from '@/composables/useInputSelectObjectOptions';
+import { userSelectAttributes } from '@/schemas/userSchema';
 const {
   selectOptions: userSelectOptions,
   loading: userSelectLoading,
   handleLoadOptions: userHandleLoadOptions
 } = useInputSelectObjectOptions(
   'users', // Název kolekce
-  ['id', 'fName', 'lName', 'born']
+  userSelectAttributes// ['id', 'fName', 'lName', 'born']
 );
 
 </script>

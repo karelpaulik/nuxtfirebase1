@@ -35,6 +35,11 @@
         <q-item v-for="(item, index) in downloadUrls" :key="index" clickable tag="a" :href="item.url" target="_blank" class="q-py-sm">
           <q-item-section>
             <q-item-label class="text-blue-7">{{ item.name }}</q-item-label>
+            <q-item-label caption>
+                Unikátní název: {{ item.uniqueName }}
+                <br>
+                Čas nahrání: {{ new Date(item.fileUpload).toLocaleString() }}
+            </q-item-label>
           </q-item-section>
           <q-item-section side>
             <q-icon name="link" color="grey-6" />
@@ -92,7 +97,11 @@ const handleUpload = async () => {
 
   for (const file of files) {
     try {
-      const storageRef = refStorage(storage, `uploads/${file.name}`);
+      const fileExtension = file.name.split('.').pop();// Získání přípony souboru
+      const uniqueId = crypto.randomUUID();// Generování unikátního UUID
+      const uniqueName = `${uniqueId}.${fileExtension}`;// Vytvoření unikátního názvu souboru
+
+      const storageRef = refStorage(storage, `uploads/${uniqueName}`);// Změna referenční cesty v úložišti pro použití unikátního názvu
       const uploadTask = uploadBytesResumable(storageRef, file);
 
       await new Promise((resolve, reject) => {
@@ -112,7 +121,7 @@ const handleUpload = async () => {
           async () => {
             const url = await getDownloadURL(uploadTask.snapshot.ref);
             console.log(`Soubor ${file.name} je dostupný na: ${url}`);
-            downloadUrls.value.push({ name: file.name, url: url, size: file.size });
+            downloadUrls.value.push({ origName: file.name, uniqueName: uniqueName, url: url, size: file.size, fileUpload: Date.now() });
             resolve();
           }
         );

@@ -29,6 +29,7 @@ async function readDoc(coll, idDocum) {
   const docSnap = await getDoc(docRef);
 
   if (docSnap.exists()) {
+    console.log("Document ref.:", docRef);
     console.log("Document data:", docSnap.data());
   } else {
     console.log("No such document!");
@@ -38,6 +39,6 @@ async function readDoc(coll, idDocum) {
 
 
 
-readDoc("users", "1hv7MLFAgbXxW99z6kLv");
+readDoc("users", "25FtIyKObF2YuY2Fhene");
 
 </script>

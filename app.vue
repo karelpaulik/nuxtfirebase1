@@ -4,6 +4,8 @@
         <q-tabs align="center" no-caps>
           <q-route-tab to="/" label="Home" />
           <q-route-tab to="/load_direct/" label="Load direct" />
+          <q-route-tab to="/storage_q-uploader/" label="q-uploader" />
+          <q-route-tab to="/storage_q-file/" label="q-file" />
           <q-route-tab to="/users/" label="Users" />
           <q-route-tab to="/books/" label="Books" />
         </q-tabs>

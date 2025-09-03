@@ -28,7 +28,7 @@ console.log("start scriptu");
 
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, addDoc, doc, getDoc, query, where, getDocs } from 'firebase/firestore';
-import { getStorage, ref as refStorage, uploadBytes, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { getStorage, ref as storageRef, uploadBytes, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
 const firebaseConfig = {
     apiKey: "AIzaSyDHwvn6z1b0Hl7lKTCDIa9bRzFNkMKhN0U",
@@ -51,7 +51,7 @@ const storage = getStorage(app);
 function uploadFile(files) {
   return new Promise((resolve, reject) => {
     const file = files[0]
-    const fileRef = refStorage(storage, 'uploads/' + file.name)
+    const fileRef = storageRef(storage, 'uploads/' + file.name)
     const uploadTask = uploadBytesResumable(fileRef, file)
 
     uploadTask.on(

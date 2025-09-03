@@ -53,14 +53,70 @@
         </div> -->
 
         <div>
-          <q-radio 
+          <q-radio
             v-for="option in pickedOptions"
-            v-model="formData.picked" 
+            v-model="formData.picked"
             :key="option.value"
-            :val="option.value" 
+            :val="option.value"
             :label="option.label"
           />
         </div>
+
+        <q-separator spaced />
+        <h4>Soubory</h4>
+        <div class="q-gutter-sm">
+          <q-file
+            v-model="filesToUpload"
+            label="Vyberte soubory"
+            multiple
+            dense
+            outlined
+            class="q-mb-md"
+            :disable="formId === 'new'"
+          >
+            <template v-slot:prepend>
+              <q-icon name="attach_file" />
+            </template>
+            <template v-slot:after>
+              <q-btn
+                round
+                dense
+                flat
+                icon="cloud_upload"
+                @click="handleUpload"
+                :disable="!filesToUpload.length || isUploading || formId === 'new'"
+                :loading="isUploading"
+              />
+            </template>
+            <template v-slot:hint v-if="formId === 'new'">
+              <span class="text-negative">Nejdříve uložte formulář pro nahrání souborů</span>
+            </template>
+          </q-file>
+          
+          <q-list bordered separator v-if="formData.files && formData.files.length">
+            <q-item v-for="file in formData.files" :key="file.url">
+              <q-item-section>
+                <q-item-label>{{ file.name }}</q-item-label>
+                <q-item-label caption><a :href="file.url" target="_blank">{{ file.url }}</a></q-item-label>
+              </q-item-section>
+              <q-item-section side>
+                <q-btn
+                  icon="delete"
+                  color="negative"
+                  round
+                  flat
+                  dense
+                  @click="handleRemoveFile(file)"
+                />
+              </q-item-section>
+            </q-item>
+          </q-list>
+          <div v-else>
+            Žádné soubory nebyly nahrány.
+          </div>
+        </div>
+
+        <q-separator spaced />
 
         <h4>Debug Data:</h4>
         <p>
@@ -85,7 +141,7 @@
                 hasChanges (Vlastní stav):<pre>{{ hasChanges }}</pre>
             </div>
         </div>
-        
+
       </div>
     </div>
   </section>
@@ -94,7 +150,7 @@
 <script setup lang="ts">
 // Pozn. Ve vue/nuxt nebusí být všechny importy na začátku souboru.
 // Tato podmínka platí pouze pro čisté javascript/typescript soubory.
-import { toRef, computed } from 'vue';
+import { toRef } from 'vue';
 import { usePreventKeys } from '~/composables/usePreventKeys';
 import {
   useDocHandlers,
@@ -105,6 +161,7 @@ import {
   useWatchDocumentId,
   useConfirmRouteLeave
 } from '~/composables/useDocHandlers';
+import { useStorageHandlers, type UploadedFile } from '~/composables/useStorageHandlers';
 
 import { userFormSchema, hobbiesOptions, pickedOptions  } from '@/schemas/userSchema';
 import type { UserFormType } from '@/schemas/userSchema';
@@ -129,8 +186,9 @@ const createEmptyFormData = (): FormData => {
     childrenCount: null,         // v-model.number
     userHeight: null,          // v-model.number // Desetinný oddělovač je tečka. // Jak zabránit čárce: @keydown="(event) => usePreventKeys([','])(event)"
     hobbies: [],
-    picked: '',
+    picked: null,
     createdDate: new Date(),  // Pro v-model nutno computed (převod na string a zpět). Maybe quasar?
+    files: []
   };
 };
 
@@ -139,7 +197,7 @@ const {
   formData,
   hasChanges,
   _handlerProps,
-  formVee, // Přijímáme celou instanci VeeValidate formuláře s jasným názvem
+  formVee,
 } = useDocHandlers<FormData>(documentIdPropRef, COLLECTION_NAME, PAGE_NAME, createEmptyFormData, FORM_SCHEMA);
 
 // --- Zde voláme router-specifické Composables přímo z komponenty ---
@@ -150,6 +208,13 @@ useConfirmRouteLeave(_handlerProps);  // Hlídání odchodu ze stránky
 import { useDateFormatter } from '@/composables/useDateFormatter';
 const createdDateFormatted = useDateFormatter(formData, 'createdDate');
 
+// useStorageHandlers
+const { handleUpload, handleRemoveFile, isUploading, filesToUpload } = useStorageHandlers(
+  COLLECTION_NAME,// Po uploadu souborů, pro aktualizaci dokumentu
+  formId,// Po uploadu souborů, pro aktualizaci dokumentu
+  toRef(formData, 'files'),// Po uploadu souborů, nutno aktualizovat tuto vlastnost
+  formVee// Pro: updateDocInFirestore
+);
 </script>
 
 <style scoped>

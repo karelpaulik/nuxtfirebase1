@@ -23,7 +23,7 @@ export default defineNuxtPlugin(() => {
   return {
     provide: {
       firestore: db,
-      storage: storage
+      fireStorage: storage
     }
   }
 })

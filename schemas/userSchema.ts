@@ -1,9 +1,17 @@
+// schemas/userSchema.ts
 import { z } from 'zod';
 import type { ZodType } from 'zod';
-import { Timestamp } from 'firebase/firestore'; 
+import { Timestamp } from 'firebase/firestore';
 
-//coerce lze použít pouze u primitivních typů: number, string, boolean, ...
-//coerce nelze použít u: array
+// Zde definujeme schéma pro jeden soubor.
+export const fileSchema = z.object({
+  url: z.string().url('URL souboru musí být platná URL adresa.'),
+  name: z.string().min(1, 'Název souboru je povinný.'),
+  // Můžete přidat další metadata, např. velikost, typ, ID pro správu
+});
+
+// coerc lze použít pouze u primitivních typů: number, string, boolean, ...
+// coerc nelze použít u: array
 
 //Pro potřeby seznamu ve schématu
 export const hobbiesOptions = [
@@ -37,7 +45,7 @@ export const createUserSchema = (isFormValidation: boolean) => {
       ? z.string().min(1, 'Zadejte příjmení')                   // Pro formulář: prázdné = chyba
       : z.string().catch(null),                                 // Pro API: prázdné/nevalidní = null
     born: z.string().nullable().optional(),                     // Pozn. I bez nullable().optional() šlo mazat hodnotu v inputu, protože po smazání je hodnota ''. Tj. prázdný řetězec. Takto je to ale robustnější.
-    
+
     //childrenCount: z.coerce.number().int().min(0).nullable().optional().catch(null),  // Celé číslo
     childrenCount: z.preprocess((val) => {  // Preprocess nutný, aby se povolila "null" hodnota
       if (val === '') {
@@ -88,11 +96,14 @@ export const createUserSchema = (isFormValidation: boolean) => {
         // Převedeme sekundy na milisekundy a vytvoříme Date
         return new Date((val as any).seconds * 1000);
       }
-      
+
       // Pokud se nic z toho neshoduje, vrátíme původní hodnotu,
       // a z.date() ji pak bude validovat a pravděpodobně selže.
       return val;
     }, z.date('Očekává se platné datum.').nullable().optional().catch(null)), // Konečná validace jako Date, null nebo undefined
+
+    // Nové pole pro soubory
+    files: z.array(fileSchema).optional().catch([]),
   });
 };
 

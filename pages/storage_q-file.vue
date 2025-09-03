@@ -60,7 +60,7 @@
 <script setup>
 import { ref } from 'vue';
 import { initializeApp } from "firebase/app";
-import { getStorage, ref as refStorage, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDHwvn6z1b0Hl7lKTCDIa9bRzFNkMKhN0U",
@@ -101,8 +101,8 @@ const handleUpload = async () => {
       const uniqueId = crypto.randomUUID();// Generování unikátního UUID
       const uniqueName = `${uniqueId}.${fileExtension}`;// Vytvoření unikátního názvu souboru
 
-      const storageRef = refStorage(storage, `uploads/${uniqueName}`);// Změna referenční cesty v úložišti pro použití unikátního názvu
-      const uploadTask = uploadBytesResumable(storageRef, file);
+      const fileRef = storageRef(storage, `uploads/${uniqueName}`);// Změna referenční cesty v úložišti pro použití unikátního názvu
+      const uploadTask = uploadBytesResumable(fileRef, file);
 
       await new Promise((resolve, reject) => {
         uploadTask.on('state_changed',

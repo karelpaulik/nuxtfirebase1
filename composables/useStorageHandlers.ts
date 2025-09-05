@@ -7,22 +7,21 @@ import { ref, type Ref } from 'vue';
 import { cleanObject } from '~/utils/cleanObject';
 import type { FormActions, FormState } from 'vee-validate';
 
-export interface UploadedFile {
-  url: string;
-  name: string;
-}
+// Import typu ze separátního souboru
+import type { FileSchemaType } from '@/schemas/fileSchema';
+export interface StoredFile extends FileSchemaType {}//Pro případné budoucí rozžíření schematu. Např. uploadProgress
 
 /**
  * Kompozitní funkce pro správu nahrávání a mazání souborů.
  * @param {string} collectionName Název kolekce, kam soubory patří.
  * @param {Ref<string | null>} docIdRef Ref na ID dokumentu, ke kterému soubory patří.
- * @param {Ref<UploadedFile[]>} filesRef Ref na pole nahraných souborů ve formuláři.
+ * @param {Ref<StoredFile[]>} filesRef Ref na pole nahraných souborů ve formuláři.
  * @param {FormState & FormActions} formVee Celý objekt formuláře z VeeValidate.
  */
 export function useStorageHandlers(
   collectionName: string,
   docIdRef: Ref<string | null>,
-  filesRef: Ref<UploadedFile[]>,
+  filesRef: Ref<StoredFile[]>,
   formVee: FormState<UserFormType> & FormActions<UserFormType>
 ) {
   const isUploading = ref(false);
@@ -34,7 +33,7 @@ export function useStorageHandlers(
   
     const dataToUpdate = { ...formVee.values, ...newData };// Vytvoříme dočasný objekt s daty pro aktualizaci
     const cleanedData = cleanObject(dataToUpdate);// Vyčištění dat od undefined hodnoty.
-    
+  
     // Aktualizace ve Firestore
     try {
       const success = await useUpdateDoc(collectionName, docIdRef.value, cleanedData);
@@ -48,40 +47,40 @@ export function useStorageHandlers(
     }
   };
 
-const handleUpload = async () => {
-  if (!docIdRef.value || docIdRef.value === 'new') {// Pokud je ID dokumentu buď "new", nebo null, nebo undefined. null + undefined: neočekávané stavy.
-    notify('Nejdříve uložte formulář, abyste mohli nahrávat soubory.', 'warning');
-    return;
-  }
+  const handleUpload = async () => {
+    if (!docIdRef.value || docIdRef.value === 'new') {// Pokud je ID dokumentu buď "new", nebo null, nebo undefined. null + undefined: neočekávané stavy.
+      notify('Nejdříve uložte formulář, abyste mohli nahrávat soubory.', 'warning');
+      return;
+    }
 
-  if (!filesToUpload.value.length) {
-    notify('Nejsou vybrány žádné soubory k nahrání.', 'info');
-    return;
-  }
+    if (!filesToUpload.value.length) {
+      notify('Nejsou vybrány žádné soubory k nahrání.', 'info');
+      return;
+    }
 
-  isUploading.value = true;
+    isUploading.value = true;
 
-  try {
-    const filePromises = filesToUpload.value.map(file => useUploadFile(`${collectionName}/${docIdRef.value}`, file));// Vytoření pole promises pro paralelní nahrávání více souborů. Nic ale nenahrává.
-    const urls = await Promise.all(filePromises);// Čekáme na dokončení nahrávání souborů
-    const newFiles = urls.map((url, index) => ({// Vytvoříme nová data pro pole files
-      url,
-      name: filesToUpload.value[index].name,
-    }));    
+    try {
+      const filePromises = filesToUpload.value.map(file => useUploadFile(`${collectionName}/${docIdRef.value}`, file));// Vytoření pole promises pro paralelní nahrávání více souborů. Nic ale nenahrává.
+      const urls = await Promise.all(filePromises);// Čekáme na dokončení nahrávání souborů
+      const newFiles = urls.map((url, index) => ({// Vytvoříme nová data pro pole files
+        url,
+        name: filesToUpload.value[index].name,
+      }));    
     
-    const updatedFiles = [...filesRef.value, ...newFiles];// Přidáme nová data k existujícím
-    await updateDocInFirestore({ files: updatedFiles });// Aktualizujeme Firestore a čekáme na potvrzení   
-    filesRef.value = updatedFiles;// Teprve po úspěšné aktualizaci Firestore aktualizujeme lokální stav
-    filesToUpload.value = [];    
-    notify('Všechny soubory byly úspěšně nahrány a uloženy!', 'positive');
-  } catch (e: any) {
-    notifyError('Nahrávání souborů selhalo:', e);
-  } finally {
-    isUploading.value = false;
-  }
-};
+      const updatedFiles = [...filesRef.value, ...newFiles];// Přidáme nová data k existujícím
+      await updateDocInFirestore({ files: updatedFiles });// Aktualizujeme Firestore a čekáme na potvrzení    
+      filesRef.value = updatedFiles;// Teprve po úspěšné aktualizaci Firestore aktualizujeme lokální stav
+      filesToUpload.value = [];    
+      notify('Všechny soubory byly úspěšně nahrány a uloženy!', 'positive');
+    } catch (e: any) {
+      notifyError('Nahrávání souborů selhalo:', e);
+    } finally {
+      isUploading.value = false;
+    }
+  };
 
-  const handleRemoveFile = async (fileToRemove: UploadedFile) => {
+  const handleRemoveFile = async (fileToRemove: StoredFile) => {
     if (!docIdRef.value || docIdRef.value === 'new') {
       notify('Dokument není platný, nelze smazat soubor.', 'warning');
       return;

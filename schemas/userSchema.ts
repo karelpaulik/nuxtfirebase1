@@ -3,12 +3,8 @@ import { z } from 'zod';
 import type { ZodType } from 'zod';
 import { Timestamp } from 'firebase/firestore';
 
-// Zde definujeme schéma pro jeden soubor.
-export const fileSchema = z.object({
-  url: z.string().url('URL souboru musí být platná URL adresa.'),
-  name: z.string().min(1, 'Název souboru je povinný.'),
-  // Můžete přidat další metadata, např. velikost, typ, ID pro správu
-});
+// Import přesunutého schématu
+import { fileSchema } from './fileSchema';
 
 // coerc lze použít pouze u primitivních typů: number, string, boolean, ...
 // coerc nelze použít u: array
@@ -42,12 +38,12 @@ export const createUserSchema = (isFormValidation: boolean) => {
       ? z.string().min(1, 'Zadejte jméno').max(50, 'Max. 50 znaků')
       : z.string().nullable().optional(),
     lName: isFormValidation
-      ? z.string().min(1, 'Zadejte příjmení')                   // Pro formulář: prázdné = chyba
-      : z.string().catch(null),                                 // Pro API: prázdné/nevalidní = null
-    born: z.string().nullable().optional(),                     // Pozn. I bez nullable().optional() šlo mazat hodnotu v inputu, protože po smazání je hodnota ''. Tj. prázdný řetězec. Takto je to ale robustnější.
+      ? z.string().min(1, 'Zadejte příjmení')                 // Pro formulář: prázdné = chyba
+      : z.string().catch(null),                                // Pro API: prázdné/nevalidní = null
+    born: z.string().nullable().optional(),                    // Pozn. I bez nullable().optional() šlo mazat hodnotu v inputu, protože po smazání je hodnota ''. Tj. prázdný řetězec. Takto je to ale robustnější.
 
     //childrenCount: z.coerce.number().int().min(0).nullable().optional().catch(null),  // Celé číslo
-    childrenCount: z.preprocess((val) => {  // Preprocess nutný, aby se povolila "null" hodnota
+    childrenCount: z.preprocess((val) => {   // Preprocess nutný, aby se povolila "null" hodnota
       if (val === '') {
         return null;
       }
@@ -55,7 +51,7 @@ export const createUserSchema = (isFormValidation: boolean) => {
     }, z.coerce.number().int().min(0).nullable().optional().catch(null)),
 
     //userHeight: z.coerce.number().min(30).max(300).nullable().optional().catch(null), // Desetinné číslo
-    userHeight: z.preprocess((val) => {  // Preprocess nutný, aby se povolila "null" hodnota
+    userHeight: z.preprocess((val) => {   // Preprocess nutný, aby se povolila "null" hodnota
       if (val === '') {
         return null;
       }

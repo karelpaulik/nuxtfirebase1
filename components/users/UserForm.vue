@@ -161,7 +161,7 @@ import {
   useWatchDocumentId,
   useConfirmRouteLeave
 } from '~/composables/useDocHandlers';
-import { useStorageHandlers, type UploadedFile } from '~/composables/useStorageHandlers';
+import { useStorageHandlers } from '~/composables/useStorageHandlers';
 
 import { userFormSchema, hobbiesOptions, pickedOptions  } from '@/schemas/userSchema';
 import type { UserFormType } from '@/schemas/userSchema';

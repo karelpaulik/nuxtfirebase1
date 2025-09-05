@@ -2,7 +2,7 @@
   <section class="column border1">
     <q-toolbar class="bg-blue-grey text-white shadow-2">
       <div v-if="formId === 'new'" class="row q-pa-xs">
-        <q-btn flat stretch no-caps @click="handleAddDoc(_handlerProps)" label="Create new doc." class="text-no-wrap" />
+        <q-btn flat stretch no-caps :disable="!hasChanges" @click="handleAddDoc(_handlerProps)" label="Create new doc." class="text-no-wrap" />
       </div>
 
       <q-btn v-if="formId !== 'new'" flat stretch no-caps :disable="!hasChanges" label="Save changes" @click="handleUpdateDoc(_handlerProps)" class="text-no-wrap" />
@@ -179,6 +179,7 @@ interface FormData extends Omit<UserFormType, 'id'> {}
 
 const createEmptyFormData = (): FormData => {
   return {
+    id: undefined,  // Toto být nemusí, ale asi je to čistější řešení
     fName: '',
     lName: '',
     born: '',

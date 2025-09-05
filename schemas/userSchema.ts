@@ -39,7 +39,7 @@ export const createUserSchema = (isFormValidation: boolean) => {
       : z.string().nullable().optional(),
     lName: isFormValidation
       ? z.string().min(1, 'Zadejte příjmení')                 // Pro formulář: prázdné = chyba
-      : z.string().catch(null),                                // Pro API: prázdné/nevalidní = null
+      : z.string().nullable().optional(),                     // Pro API: prázdné/nevalidní = null
     born: z.string().nullable().optional(),                    // Pozn. I bez nullable().optional() šlo mazat hodnotu v inputu, protože po smazání je hodnota ''. Tj. prázdný řetězec. Takto je to ale robustnější.
 
     //childrenCount: z.coerce.number().int().min(0).nullable().optional().catch(null),  // Celé číslo

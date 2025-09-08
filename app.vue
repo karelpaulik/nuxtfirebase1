@@ -49,4 +49,10 @@ main {
 .q-toolbar::-webkit-scrollbar {
   display: none;
 }
+
+/*Jinak by se dlouhá slova nezalamovala*/
+pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
 </style>

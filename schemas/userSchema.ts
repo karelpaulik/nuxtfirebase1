@@ -2,6 +2,7 @@
 import { z } from 'zod';
 import type { ZodType } from 'zod';
 import { Timestamp } from 'firebase/firestore';
+import { datePreprocessor } from '@/utils/zod';
 
 // Import přesunutého schématu
 import { fileSchema } from './fileSchema';
@@ -63,40 +64,7 @@ export const createUserSchema = (isFormValidation: boolean) => {
     //hobbies: z.array(z.enum(hobbyValues as [string, ...string[]])).catch([]), // S kontrolou "hobbiesOptions.value" //Toto: hobbies: z.array(z.enum(hobbyValues)).catch([]), by mohlo selhat. Vylepšeno (přetypování):
     picked: z.string().catch(null),
 
-    createdDate: z.preprocess((val) => {
-      // 1. Ošetření null/undefined na začátku
-      if (val === null || typeof val === 'undefined') {
-        return null; // Zod z.date().nullable().optional() to pak zpracuje
-      }
-      // 2. Pokud je to instance Firestore Timestamp
-      if (val instanceof Timestamp) {
-        return val.toDate();
-      }
-      // 3. Pokud je to instance JavaScript Date
-      if (val instanceof Date) {
-        return val;
-      }
-      // 4. Pokud je to string, zkusíme parsovat
-      if (typeof val === 'string') {
-        const parsed = new Date(val);
-        // Pokud je datum neplatné, vrátíme undefined, což způsobí chybu ve z.date()
-        return isNaN(parsed.getTime()) ? undefined : parsed;
-      }
-      // 5. Pokud je to prostý objekt { seconds, nanoseconds } (serializovaný Timestamp)
-      if (
-        typeof val === 'object' &&
-        val !== null &&
-        typeof (val as any).seconds === 'number' &&
-        typeof (val as any).nanoseconds === 'number'
-      ) {
-        // Převedeme sekundy na milisekundy a vytvoříme Date
-        return new Date((val as any).seconds * 1000);
-      }
-
-      // Pokud se nic z toho neshoduje, vrátíme původní hodnotu,
-      // a z.date() ji pak bude validovat a pravděpodobně selže.
-      return val;
-    }, z.date('Očekává se platné datum.').nullable().optional().catch(null)), // Konečná validace jako Date, null nebo undefined
+    createdDate: datePreprocessor.nullable().optional().catch(null),
 
     // Nové pole pro soubory
     files: z.array(fileSchema).optional().catch([]),

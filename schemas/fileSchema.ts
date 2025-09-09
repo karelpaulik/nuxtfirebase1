@@ -1,6 +1,7 @@
 // schemas/fileSchema.ts
 import { z } from 'zod';
 import { Timestamp } from 'firebase/firestore';
+import { datePreprocessor } from '@/utils/zod';
 
 /**
  * Zod schéma pro jeden soubor.
@@ -11,7 +12,8 @@ export const fileSchema = z.object({
   url: z.string().url('URL souboru musí být platná URL adresa.'),
   fileSize: z.number().nonnegative('Velikost souboru musí být nezáporné číslo.'),
   fileType: z.string().optional(),
-  uploadedDate: z.instanceof(Date, { message: 'Datum nahrání musí být platné' }).or(z.instanceof(Timestamp)).nullable().optional()
+  //uploadedDate: z.instanceof(Date, { message: 'Datum nahrání musí být platné' }).or(z.instanceof(Timestamp)).nullable().optional(),
+  uploadedDate: datePreprocessor.nullable().optional().catch(null),
 });
 
 /**

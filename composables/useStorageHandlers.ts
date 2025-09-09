@@ -9,7 +9,7 @@ import type { FormActions, FormState } from 'vee-validate';
 
 // Import typu ze separátního souboru
 import type { FileSchemaType } from '@/schemas/fileSchema';
-export interface StoredFile extends FileSchemaType {}//Pro případné budoucí rozžíření schematu. Např. uploadProgress
+interface StoredFile extends FileSchemaType {}//Pro případné budoucí rozžíření schematu. Např. uploadProgress
 
 /**
  * Kompozitní funkce pro správu nahrávání a mazání souborů.
@@ -62,16 +62,12 @@ export function useStorageHandlers(
 
     try {
       const filePromises = filesToUpload.value.map(file => useUploadFile(`${collectionName}/${docIdRef.value}`, file));// Vytoření pole promises pro paralelní nahrávání více souborů. Nic ale nenahrává.
-      const urls = await Promise.all(filePromises);// Čekáme na dokončení nahrávání souborů
-      const newFiles = urls.map((url, index) => ({// Vytvoříme nová data pro pole files
-        url,
-        name: filesToUpload.value[index].name,
-      }));    
-    
+      const newFiles = await Promise.all(filePromises);// Čekáme na dokončení nahrávání souborů, nyní se vrací objekt s metadaty
+
       const updatedFiles = [...filesRef.value, ...newFiles];// Přidáme nová data k existujícím
-      await updateDocInFirestore({ files: updatedFiles });// Aktualizujeme Firestore a čekáme na potvrzení    
+      await updateDocInFirestore({ files: updatedFiles });// Aktualizujeme Firestore a čekáme na potvrzení   
       filesRef.value = updatedFiles;// Teprve po úspěšné aktualizaci Firestore aktualizujeme lokální stav
-      filesToUpload.value = [];    
+      filesToUpload.value = [];   
       notify('Všechny soubory byly úspěšně nahrány a uloženy!', 'positive');
     } catch (e: any) {
       notifyError('Nahrávání souborů selhalo:', e);
@@ -85,7 +81,7 @@ export function useStorageHandlers(
       notify('Dokument není platný, nelze smazat soubor.', 'warning');
       return;
     }
-    if (confirm(`Opravdu chcete smazat soubor '${fileToRemove.name}'?`)) {
+    if (confirm(`Opravdu chcete smazat soubor '${fileToRemove.origName}'?`)) {
       try {
         await useDeleteFile(fileToRemove.url);
         filesRef.value = filesRef.value.filter(file => file.url !== fileToRemove.url);// Odstranění souboru z pole: formData.files

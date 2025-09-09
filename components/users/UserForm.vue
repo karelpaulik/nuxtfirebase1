@@ -96,8 +96,8 @@
           <q-list bordered separator v-if="formData.files && formData.files.length">
             <q-item v-for="file in formData.files" :key="file.url">
               <q-item-section>
-                <q-item-label>{{ file.name }}</q-item-label>
-                <q-item-label caption><a :href="file.url" target="_blank">{{ file.url }}</a></q-item-label>
+                <q-item-label>{{ file.origName }}</q-item-label>
+                <q-item-label caption><a :href="file.url" target="_blank">{{ file.origName }}</a></q-item-label>
               </q-item-section>
               <q-item-section side>
                 <q-btn

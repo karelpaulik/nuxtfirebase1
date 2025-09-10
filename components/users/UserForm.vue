@@ -97,17 +97,31 @@
             <q-item v-for="file in formData.files" :key="file.url">
               <q-item-section>
                 <q-item-label>{{ file.origName }}</q-item-label>
+                <q-item-label caption v-if="file.note">
+                  Note: {{ file.note }}
+                </q-item-label>
                 <q-item-label caption><a :href="file.url" target="_blank">{{ file.origName }}</a></q-item-label>
               </q-item-section>
               <q-item-section side>
-                <q-btn
-                  icon="delete"
-                  color="negative"
-                  round
-                  flat
-                  dense
-                  @click="handleRemoveFile(file)"
-                />
+                <div class="row items-center q-gutter-xs">
+                  <q-btn
+                    icon="edit_note"
+                    color="primary"
+                    round
+                    flat
+                    dense
+                    @click="openNoteDialog(file)"
+                    title="Přidat/upravit poznámku"
+                  />
+                  <q-btn
+                    icon="delete"
+                    color="negative"
+                    round
+                    flat
+                    dense
+                    @click="handleRemoveFile(file)"
+                  />
+                </div>
               </q-item-section>
             </q-item>
           </q-list>
@@ -141,16 +155,36 @@
                 hasChanges (Vlastní stav):<pre>{{ hasChanges }}</pre>
             </div>
         </div>
-
       </div>
     </div>
+
+    <q-dialog v-model="showNoteDialog">
+      <q-card style="width: 350px">
+        <q-card-section>
+          <div class="text-h6">Poznámka k souboru</div>
+        </q-card-section>
+        <q-card-section class="q-pt-none">
+          <q-input
+            v-model="currentNote"
+            filled
+            type="textarea"
+            placeholder="Zadejte poznámku..."
+          />
+        </q-card-section>
+        <q-card-actions align="right" class="text-primary">
+          <q-btn flat label="Zrušit" v-close-popup />
+          <q-btn flat label="Uložit" @click="saveNote" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
   </section>
 </template>
 
 <script setup lang="ts">
 // Pozn. Ve vue/nuxt nebusí být všechny importy na začátku souboru.
 // Tato podmínka platí pouze pro čisté javascript/typescript soubory.
-import { toRef } from 'vue';
+import { ref, toRef } from 'vue';
 import { usePreventKeys } from '~/composables/usePreventKeys';
 import {
   useDocHandlers,
@@ -163,8 +197,9 @@ import {
 } from '~/composables/useDocHandlers';
 import { useStorageHandlers } from '~/composables/useStorageHandlers';
 
-import { userFormSchema, hobbiesOptions, pickedOptions  } from '@/schemas/userSchema';
+import { userFormSchema, hobbiesOptions, pickedOptions  } from '@/schemas/userSchema';
 import type { UserFormType } from '@/schemas/userSchema';
+import type { FileSchemaType } from '@/schemas/fileSchema'; // Import nového typu souboru
 
 const props = defineProps<{
   documentId?: string;
@@ -216,6 +251,39 @@ const { handleUpload, handleRemoveFile, isUploading, filesToUpload } = useStorag
   toRef(formData, 'files'),// Po uploadu souborů, nutno aktualizovat tuto vlastnost
   formVee// Pro: updateDocInFirestore
 );
+
+// --- NOVÁ LOGIKA PRO POZNÁMKY ---
+const showNoteDialog = ref(false);
+const currentNote = ref('');
+const fileToUpdate = ref<FileSchemaType | null>(null);
+
+/**
+ * Otevře dialogové okno pro přidání/editaci poznámky.
+ */
+const openNoteDialog = (file: FileSchemaType) => {
+  fileToUpdate.value = file;// Uložení objektu souboru, který se má aktualizovat
+  currentNote.value = file.note || ''; // Načte existující poznámku, pokud existuje
+  showNoteDialog.value = true;
+};
+
+/**
+ * Uloží poznámku do lokálního stavu a následně do Firestore.
+ */
+const saveNote = async () => {
+  if (!fileToUpdate.value || !formData.files) return;// Kontrola zda existuje soubor. Zda je pole souborů definováno.
+
+  // Následující tři řádky byly nahrazeny jedním řádkem níže.
+  // const fileIndex = formData.files.findIndex(f => f.url === fileToUpdate.value?.url);//Vyhledání indexu souboru v poli souborů
+  // if (fileIndex === -1) return;//Pokud není soubor nalezen.
+  // formData.files[fileIndex].note = currentNote.value;// Aktualizujeme data v lokálním stavu formuláře (formData)
+
+  fileToUpdate.value.note = currentNote.value;//fileToUpdate.value - reaktivní objekt. Tzn. změny v "fileToUpdate.value" se projeví i v "formData.files"
+  await handleUpdateDoc(_handlerProps);// Zavoláme handler pro uložení dat
+
+  // Vyčistíme stavy dialogu
+  currentNote.value = '';
+  fileToUpdate.value = null;
+};
 </script>
 
 <style scoped>

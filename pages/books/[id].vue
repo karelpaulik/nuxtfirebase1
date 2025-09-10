@@ -10,7 +10,7 @@ const route = useRoute();
 
 <template>
   <div>
-    <h2>Detail knihy {{ route.params.id }}</h2>
+    <h4>Detail knihy {{ route.params.id }}</h4>
     <BookForm class="q-ma-sm q-pa-sm" :documentId="route.params.id as string || 'new'" />
   </div>
 </template>

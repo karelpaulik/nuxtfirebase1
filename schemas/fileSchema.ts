@@ -14,6 +14,7 @@ export const fileSchema = z.object({
   fileType: z.string().optional(),
   //uploadedDate: z.instanceof(Date, { message: 'Datum nahrání musí být platné' }).or(z.instanceof(Timestamp)).nullable().optional(),
   uploadedDate: datePreprocessor.nullable().optional().catch(null),
+  note: z.string().nullable().optional(),
 });
 
 /**

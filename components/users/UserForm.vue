@@ -2,15 +2,15 @@
   <section class="column border1">
     <q-toolbar class="bg-blue-grey text-white shadow-2">
       <div v-if="formId === 'new'" class="row q-pa-xs">
-        <q-btn flat stretch no-caps :disable="!hasChanges" @click="handleAddDoc(_handlerProps)" label="Create new doc." class="text-no-wrap" />
+        <q-btn flat stretch no-caps :disable="!hasChanges" @click="handleAddDoc" label="Create new doc." class="text-no-wrap" />
       </div>
 
-      <q-btn v-if="formId !== 'new'" flat stretch no-caps :disable="!hasChanges" label="Save changes" @click="handleUpdateDoc(_handlerProps)" class="text-no-wrap" />
-      <q-btn flat stretch no-caps :disable="!hasChanges" label="Revert changes" @click="handleRevertChanges(_handlerProps)" class="text-no-wrap" />
+      <q-btn v-if="formId !== 'new'" flat stretch no-caps :disable="!hasChanges" label="Save changes" @click="handleUpdateDoc" class="text-no-wrap" />
+      <q-btn flat stretch no-caps :disable="!hasChanges" label="Revert changes" @click="handleRevertChanges" class="text-no-wrap" />
 
       <div v-if="formId !== 'new'" class="row no-wrap q-pa-xs">
-        <q-btn flat stretch no-caps @click="handleAddDoc(_handlerProps)" label="Save as new doc." class="text-no-wrap" />
-        <q-btn flat stretch no-caps @click="handleDelDoc(_handlerProps)" label="Del doc." class="text-no-wrap" />
+        <q-btn flat stretch no-caps @click="handleAddDoc" label="Save as new doc." class="text-no-wrap" />
+        <q-btn flat stretch no-caps @click="handleDelDoc" label="Del doc." class="text-no-wrap" />
       </div>
 
     </q-toolbar>
@@ -186,18 +186,11 @@
 // Tato podmínka platí pouze pro čisté javascript/typescript soubory.
 import { ref, toRef } from 'vue';
 import { usePreventKeys } from '~/composables/usePreventKeys';
-import {
-  useDocHandlers,
-  handleRevertChanges,
-  handleAddDoc,
-  handleUpdateDoc,
-  handleDelDoc,
-  useWatchDocumentId,
-  useConfirmRouteLeave
-} from '~/composables/useDocHandlers';
+
+import { useDocHandlers } from '~/composables/useDocHandlers';
 import { useStorageHandlers } from '~/composables/useStorageHandlers';
 
-import { userFormSchema, hobbiesOptions, pickedOptions  } from '@/schemas/userSchema';
+import { userFormSchema, hobbiesOptions, pickedOptions  } from '@/schemas/userSchema';
 import type { UserFormType } from '@/schemas/userSchema';
 import type { FileSchemaType } from '@/schemas/fileSchema'; // Import nového typu souboru
 
@@ -232,13 +225,13 @@ const {
   formId,
   formData,
   hasChanges,
-  _handlerProps,
+  docHandlers: { handleAddDoc, handleUpdateDoc, handleRevertChanges, handleDelDoc, useWatchDocumentId, useConfirmRouteLeave },
   formVee,
 } = useDocHandlers<FormData>(documentIdPropRef, COLLECTION_NAME, PAGE_NAME, createEmptyFormData, FORM_SCHEMA);
 
 // --- Zde voláme router-specifické Composables přímo z komponenty ---
-useWatchDocumentId(_handlerProps);    // Pro načtení dokumentu
-useConfirmRouteLeave(_handlerProps);  // Hlídání odchodu ze stránky
+useWatchDocumentId();    // Pro načtení dokumentu
+useConfirmRouteLeave();  // Hlídání odchodu ze stránky
 
 // --- Zde volám specifické "computed" ---
 import { useDateFormatter } from '@/composables/useDateFormatter';
@@ -278,7 +271,7 @@ const saveNote = async () => {
   // formData.files[fileIndex].note = currentNote.value;// Aktualizujeme data v lokálním stavu formuláře (formData)
 
   fileToUpdate.value.note = currentNote.value;//fileToUpdate.value - reaktivní objekt. Tzn. změny v "fileToUpdate.value" se projeví i v "formData.files"
-  await handleUpdateDoc(_handlerProps);// Zavoláme handler pro uložení dat
+  await handleUpdateDoc();// Zavoláme handler pro uložení dat
 
   // Vyčistíme stavy dialogu
   currentNote.value = '';

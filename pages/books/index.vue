@@ -22,21 +22,16 @@
       </div>
       <p v-else>Žádná data v databázi (nebo žádné výsledky filtru).</p>
 
-      
+
 
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'; 
-import {
-  useCollectionHandlers, 
-  handleReadAllDocs,    
-  handleReadFilterDocs 
-} from '~/composables/useCollectionHandlers'; 
-import type { CollectionHandlerProps } from '~/composables/useCollectionHandlers'; 
-import type { WhereFilterOp } from 'firebase/firestore';
+import { onMounted } from 'vue';
+
+import { useCollectionHandlers } from '~/composables/useCollectionHandlers';
 
 import { bookApiSchema } from '@/schemas/bookSchema';
 import type { BookApiType } from '@/schemas/bookSchema'; // Typ pro data po validaci
@@ -50,14 +45,14 @@ const {
   documents,
   loading,
   error,
-  _handlerProps
+  handleReadAllDocs, // <- Handler, který byl dříve exportován
 } = useCollectionHandlers<ApiType>(COLLECTION_NAME, {
   validationSchema: API_SCHEMA // <-- Zde se předává schéma. No schema, nebo undefined = no validation.
 });
 
 // Načíst všechny dokumenty při načtení komponenty
 onMounted(() => {
-  handleReadAllDocs(_handlerProps);
+  handleReadAllDocs();
   console.log(documents);
 });
 

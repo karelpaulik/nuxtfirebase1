@@ -33,13 +33,8 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue';
-import type { CollectionHandlerProps } from '~/composables/useCollectionHandlers';
-import type { WhereFilterOp } from 'firebase/firestore';
-import {
-  useCollectionHandlers,
-  handleReadAllDocs,
-  handleReadFilterDocs
-} from '~/composables/useCollectionHandlers';
+
+import { useCollectionHandlers } from '~/composables/useCollectionHandlers';
 
 import { userApiSchema } from '@/schemas/userSchema';
 import type { UserApiType } from '@/schemas/userSchema'; // Typ pro data po validaci
@@ -53,14 +48,15 @@ const {
   documents,
   loading,
   error,
-  _handlerProps
+  handleReadAllDocs,
+  handleReadFilterDocs,
 } = useCollectionHandlers<ApiType>(COLLECTION_NAME, {
   validationSchema: API_SCHEMA // <-- Zde se předává schéma. No schema, nebo undefined = no validation.
 });
 
 // Načíst všechny dokumenty při načtení komponenty
 onMounted(() => {
-  handleReadAllDocs(_handlerProps);
+  handleReadAllDocs();
 });
 
 //Dále již volitelné
@@ -68,22 +64,21 @@ onMounted(() => {
 //Jednoduchý filter, kde se filtruje podle jednoho pole
 const handleFilterByFName = (name: string) => {
   const filters = [{ field: 'fName', operator: '==', value: name }];
-  handleReadFilterDocs(_handlerProps, filters);
+  handleReadFilterDocs(filters);
 };
 
 // Funkce pro aplikování komplexního AND filtru
 const filterByPetrN = () => {
-    //const filters = [
-  const filters: Array<{ field: string; operator: WhereFilterOp; value: any }> = [
-    { field: 'fName', operator: '==', value: 'Petr' },
-    { field: 'lName', operator: '>=', value: 'N' }, // lName začíná na N nebo více
-    { field: 'lName', operator: '<', value: 'O' }   // lName je menší než O (zachytí N, Na, Nb, ... Nz)
-  ];
-  handleReadFilterDocs(_handlerProps, filters);
+    const filters = [ // Typová anotace WhereFilterOp je nyní zbytečná
+        { field: 'fName', operator: '==', value: 'Petr' },
+        { field: 'lName', operator: '>=', value: 'N' },
+        { field: 'lName', operator: '<', value: 'O' }
+    ];
+    handleReadFilterDocs(filters);
 };
 
 // Funkce pro resetování filtru a opětovné načtení všech dat
 const resetFilterAndLoadAll = () => {
-  handleReadAllDocs(_handlerProps);
+  handleReadAllDocs();
 };
 </script>

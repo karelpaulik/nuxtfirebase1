@@ -92,7 +92,23 @@
               <span class="text-negative">Nejdříve uložte formulář pro nahrání souborů</span>
             </template>
           </q-file>
-          
+
+          <div v-if="isUploading">
+            <q-linear-progress
+              :value="uploadProgress / 100"
+              color="primary"
+              stripe
+              rounded
+              animation-speed="200"
+              class="q-mt-sm"
+              style="height:16px;"
+            >
+              <div class="absolute-full flex flex-center">
+                <q-badge color="white" text-color="primary" :label="`${uploadProgress.toFixed(0)}%`" />
+              </div>
+            </q-linear-progress>
+          </div>
+
           <q-list bordered separator v-if="formData.files && formData.files.length">
             <q-item v-for="file in formData.files" :key="file.url">
               <q-item-section>
@@ -256,7 +272,7 @@ import { useDateFormatter } from '@/composables/useDateFormatter';
 const createdDateFormatted = useDateFormatter(formData, 'createdDate');
 
 // useStorageHandlers
-const { handleUpload, handleRemoveFile, handleDownloadFile, isUploading, filesToUpload, downloadProgress, currentDownloadingFileId } = useStorageHandlers(
+const { handleUpload, handleRemoveFile, handleDownloadFile, isUploading, filesToUpload, downloadProgress, currentDownloadingFileId, uploadProgress } = useStorageHandlers(
   COLLECTION_NAME,// Po uploadu souborů, pro aktualizaci dokumentu
   formId,// Po uploadu souborů, pro aktualizaci dokumentu
   toRef(formData, 'files'),// Po uploadu souborů, nutno aktualizovat tuto vlastnost

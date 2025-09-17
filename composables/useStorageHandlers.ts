@@ -9,7 +9,9 @@ import type { FormActions, FormState } from 'vee-validate';
 
 // Import typu ze separátního souboru
 import type { FileSchemaType } from '@/schemas/fileSchema';
-interface StoredFile extends FileSchemaType {}//Pro případné budoucí rozžíření schematu. Např. uploadProgress
+interface StoredFile extends FileSchemaType {
+  uploadProgress?: number; // Nová volitelná vlastnost pro průběh nahrávání
+}
 
 /**
  * Kompozitní funkce pro správu nahrávání a mazání souborů.
@@ -26,16 +28,17 @@ export function useStorageHandlers(
 ) {
   const isUploading = ref(false);
   const filesToUpload = ref<File[]>([]);
-  const downloadProgress = ref(0); // Nová reaktivní proměnná pro zobrazení průběhu
+  const downloadProgress = ref(0); // Nová reaktivní proměnná pro zobrazení průběhu stahování
+  const uploadProgress = ref(0); // Nová reaktivní proměnná pro zobrazení průběhu nahrávání
   const currentDownloadingFileId = ref<string | null>(null); // Ukládá ID souboru, který se právě stahuje. Jinak se by progres stahování zobrazoval u všech souborů.
 
-  // Funkce pro aktualizaci dokumentu.
+    // Funkce pro aktualizaci dokumentu.
   const updateDocInFirestore = async (newData: Partial<UserFormType>) => {
     if (!docIdRef.value || docIdRef.value === 'new') return;
-  
+
     const dataToUpdate = { ...formVee.values, ...newData };// Vytvoříme dočasný objekt s daty pro aktualizaci
     const cleanedData = cleanObject(dataToUpdate);// Vyčištění dat od undefined hodnoty.
-  
+
     // Aktualizace ve Firestore
     try {
       const success = await useUpdateDoc(collectionName, docIdRef.value, cleanedData);
@@ -61,20 +64,35 @@ export function useStorageHandlers(
     }
 
     isUploading.value = true;
+    uploadProgress.value = 0; // Resetování průběhu na 0
 
     try {
-      const filePromises = filesToUpload.value.map(file => useUploadFile(`${collectionName}/${docIdRef.value}`, file));// Vytoření pole promises pro paralelní nahrávání více souborů. Nic ale nenahrává.
-      const newFiles = await Promise.all(filePromises);// Čekáme na dokončení nahrávání souborů, nyní se vrací objekt s metadaty
+      // Nyní se dá nahrávat buď 1. paraleně, nebo 2. sekvenčně 
+
+      // Paralelní nahrávání. Rychlejší, ale progress je progress náhodného souboru.
+      // const filePromises = filesToUpload.value.map(file => useUploadFile(`${collectionName}/${docIdRef.value}`, file, (progress: number) => uploadProgress.value = progress));// Vytoření pole promises pro paralelní nahrávání více souborů. Nic ale nenahrává.
+      // const newFiles = await Promise.all(filePromises);// Čekáme na dokončení nahrávání souborů, nyní se vrací objekt s metadaty
+
+      // Sekvenční nahrávání: Procházíme soubory jeden po druhém pomocí for...of. Pomalejší, ale jasný význam progressu.
+      const newFiles: StoredFile[] = [];
+      let fileIndex = 0; // Sledování indexu nahráváného souboru
+      for (const file of filesToUpload.value) {
+        fileIndex++;
+        notify(`Nahrávám soubor ${fileIndex} z ${filesToUpload.value.length}`);
+        const uploadedFile = await useUploadFile(`${collectionName}/${docIdRef.value}`, file, (progress: number) => uploadProgress.value = progress);
+        newFiles.push(uploadedFile);
+      }
 
       const updatedFiles = [...filesRef.value, ...newFiles];// Přidáme nová data k existujícím
-      await updateDocInFirestore({ files: updatedFiles });// Aktualizujeme Firestore a čekáme na potvrzení   
+      await updateDocInFirestore({ files: updatedFiles });// Aktualizujeme Firestore a čekáme na potvrzení 
       filesRef.value = updatedFiles;// Teprve po úspěšné aktualizaci Firestore aktualizujeme lokální stav
-      filesToUpload.value = [];    
+      filesToUpload.value = [];
       notify('Všechny soubory byly úspěšně nahrány a uloženy!', 'positive');
     } catch (e: any) {
       notifyError('Nahrávání souborů selhalo:', e);
     } finally {
       isUploading.value = false;
+      uploadProgress.value = 0; // Zajistíme, že progress bar zmizí
     }
   };
 
@@ -96,10 +114,6 @@ export function useStorageHandlers(
     }
   };
 
-  /**
-   * Stáhne soubor pomocí URL, zobrazí průběh a použije jeho původní název.
-   * Vytvoří dočasný <a> element a programově na něj klikne.
-   */
   const handleDownloadFile = async (file: StoredFile) => {
     currentDownloadingFileId.value = file.currName; // Zde použijeme currName jako dočasné ID
     downloadProgress.value = 0; // Resetování průběhu
@@ -113,7 +127,7 @@ export function useStorageHandlers(
       const contentLength = response.headers.get('content-length');
       const totalBytes = contentLength ? parseInt(contentLength, 10) : 0;
       let downloadedBytes = 0;
-      
+
       const reader = response.body?.getReader();
       const chunks = [];
 
@@ -134,7 +148,7 @@ export function useStorageHandlers(
         chunks.push(blob);
         downloadProgress.value = 100;
       }
-      
+
       const blob = new Blob(chunks);
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -144,7 +158,7 @@ export function useStorageHandlers(
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-      
+
       notify(`Soubor '${file.origName}' byl úspěšně stažen!`, 'positive');
 
     } catch (e: any) {
@@ -163,6 +177,7 @@ export function useStorageHandlers(
     filesToUpload,
     updateDocInFirestore,
     downloadProgress, // Průběh stahování
-    currentDownloadingFileId // Id stahovaného souboru.
+    currentDownloadingFileId, // Id stahovaného souboru.
+    uploadProgress, // Průběh uploadu
   };
 }

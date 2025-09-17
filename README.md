@@ -1,3 +1,101 @@
+# Instalace
+## firebase-tools
+Pro používání:
+- firebase login
+- firebase init
+- firebase deploy
+```
+npm install -g firebase-tools
+```
+
+## firebase
+Pro používání:
+- import { initializeApp } from "firebase/app";
+- import { getFirestore } from 'firebase/firestore';
+- import { getStorage } from "firebase/storage";
+```
+npm install firebase
+```
+
+## gcloud CLI
+Pro:
+- nastavení CORS na storage bucketu
+
+### Instalace
+```
+Nutno stáhnout instalátor: GoogleCloudSDKInstaller.exe (velikost: 0,2 MB)
+Stáhnout ze stránky: https://cloud.google.com/sdk/docs/install
+Nainstalovtat - stačí uživatelský účet
+- Turn on screeen reader mode: nevybírat
+
+User
+- Single user
+
+Výběr component:
+- Google Cloud CLI Core Libraries and Tools
+- Bundled Python
+Není třeba:
+- Cloud Tools for PowerShell (pokud použiji gcloud z cmd, nepotřebuji)
+
+Instaluje se do:
+c:\users\jmeno.prijmeni\appdata\local\google\
+
+Test, že nainstalováno:
+- Měl by stačit běžný: cmd. 
+- Google Cloud SDK Shell - asi nepřináší žádnou výhodu.
+gcloud version
+```
+
+
+### Inicializace
+```
+gcloud init
+```
+
+### Další příkazy:
+```
+Kontrola konfigurace:
+gcloud config list
+
+Help:
+gcloud -h       (list of available commands)
+gcloud --help
+gcloud topic --help
+gcloud cheat-sheet
+
+Pozn: základní příkazy
+gcloud init: Initialize, authorize, and configure the gcloud CLI.
+gcloud version: Display version and installed components.
+gcloud components install: Install specific components.
+gcloud components update: Update your gcloud CLI to the latest version.
+gcloud config set project: Set a default Google Cloud project to work on.
+gcloud info: Display current gcloud CLI environment details.
+```
+
+# Nastavení CORS
+## Zobrazení souč. stavu
+```
+gcloud storage buckets describe gs://<NAZEV_VASEHO_BUCKETU>
+```
+
+## Nastavení nového CORS
+1. Vytvoření cors.json
+```
+[
+  {
+    "origin": ["*"],
+    "method": ["GET"],
+    "maxAgeSeconds": 3600
+  }
+]
+```
+
+2. Spuštění příkazu:
+- Nutno být ve stejném adresáři, kde je cors.json
+```
+gcloud storage buckets update gs://....app --cors-file=cors.json
+```
+
 # Zobrazení formátovaného textu ve VSCODE
 Ctrl+K then V
 

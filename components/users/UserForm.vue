@@ -105,6 +105,24 @@
               <q-item-section side>
                 <div class="row items-center q-gutter-xs">
                   <q-btn
+                    v-if="currentDownloadingFileId !== file.currName"
+                    icon="download"
+                    color="primary"
+                    round
+                    flat
+                    dense
+                    @click="handleDownloadFile(file)"
+                    title="Stáhnout soubor"
+                  />
+                  <q-circular-progress
+                    v-else
+                    :value="downloadProgress"
+                    size="24px"
+                    :thickness="0.2"
+                    color="primary"
+                    :title="`Stahování ${downloadProgress.toFixed(0)}%`"
+                  />
+                  <q-btn
                     icon="edit_note"
                     color="primary"
                     round
@@ -238,7 +256,7 @@ import { useDateFormatter } from '@/composables/useDateFormatter';
 const createdDateFormatted = useDateFormatter(formData, 'createdDate');
 
 // useStorageHandlers
-const { handleUpload, handleRemoveFile, isUploading, filesToUpload } = useStorageHandlers(
+const { handleUpload, handleRemoveFile, handleDownloadFile, isUploading, filesToUpload, downloadProgress, currentDownloadingFileId } = useStorageHandlers(
   COLLECTION_NAME,// Po uploadu souborů, pro aktualizaci dokumentu
   formId,// Po uploadu souborů, pro aktualizaci dokumentu
   toRef(formData, 'files'),// Po uploadu souborů, nutno aktualizovat tuto vlastnost

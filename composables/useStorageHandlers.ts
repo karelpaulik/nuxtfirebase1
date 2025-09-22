@@ -18,39 +18,19 @@ interface StoredFile extends FileSchemaType {
  * @param {string} collectionName Název kolekce, kam soubory patří.
  * @param {Ref<string | null>} docIdRef Ref na ID dokumentu, ke kterému soubory patří.
  * @param {Ref<StoredFile[]>} filesRef Ref na pole nahraných souborů ve formuláři.
- * @param {FormState & FormActions} formVee Celý objekt formuláře z VeeValidate.
+ * @param {(updatedFiles: StoredFile[]) => Promise<void>} updateDocCallback Callback funkce pro aktualizaci dokumentu
  */
 export function useStorageHandlers(
   collectionName: string,
   docIdRef: Ref<string | null>,
   filesRef: Ref<StoredFile[]>,
-  formVee: FormState<UserFormType> & FormActions<UserFormType>
+  updateDocCallback: (updatedFiles: StoredFile[]) => Promise<void>
 ) {
   const isUploading = ref(false);
   const filesToUpload = ref<File[]>([]);
   const downloadProgress = ref(0); // Nová reaktivní proměnná pro zobrazení průběhu stahování
   const uploadProgress = ref(0); // Nová reaktivní proměnná pro zobrazení průběhu nahrávání
-  const currentDownloadingFileId = ref<string | null>(null); // Ukládá ID souboru, který se právě stahuje. Jinak se by progres stahování zobrazoval u všech souborů.
-
-    // Funkce pro aktualizaci dokumentu.
-  const updateDocInFirestore = async (newData: Partial<UserFormType>) => {
-    if (!docIdRef.value || docIdRef.value === 'new') return;
-
-    const dataToUpdate = { ...formVee.values, ...newData };// Vytvoříme dočasný objekt s daty pro aktualizaci
-    const cleanedData = cleanObject(dataToUpdate);// Vyčištění dat od undefined hodnoty.
-
-    // Aktualizace ve Firestore
-    try {
-      const success = await useUpdateDoc(collectionName, docIdRef.value, cleanedData);
-      if (success) {
-        formVee.resetForm({ values: dataToUpdate as UserFormType });// Po úspěšné aktualizaci resetujeme formulář s novými hodnotami
-        // notify('Dokument byl úspěšně aktualizován!', 'positive'); // Notifikace se posílá z useStorageHandlers
-      }
-    } catch (e: any) {
-      // notifyError('Chyba při aktualizaci dokumentu po nahrání souborů:', e); // Notifikace se posílá z useStorageHandlers
-      throw e; // Přepošleme chybu pro další zpracování
-    }
-  };
+  const currentDownloadingFileId = ref<string | null>(null); // Ukládá ID souboru, který se právě stahuje. Jinak by se progres stahování zobrazoval u všech souborů.
 
   const handleUpload = async () => {
     if (!docIdRef.value || docIdRef.value === 'new') {// Pokud je ID dokumentu buď "new", nebo null, nebo undefined. null + undefined: neočekávané stavy.
@@ -84,8 +64,7 @@ export function useStorageHandlers(
       }
 
       const updatedFiles = [...filesRef.value, ...newFiles];// Přidáme nová data k existujícím
-      await updateDocInFirestore({ files: updatedFiles });// Aktualizujeme Firestore a čekáme na potvrzení 
-      filesRef.value = updatedFiles;// Teprve po úspěšné aktualizaci Firestore aktualizujeme lokální stav
+      await updateDocCallback(updatedFiles); // Aktualizujeme přes callback
       filesToUpload.value = [];
       notify('Všechny soubory byly úspěšně nahrány a uloženy!', 'positive');
     } catch (e: any) {
@@ -104,9 +83,8 @@ export function useStorageHandlers(
     if (confirm(`Opravdu chcete smazat soubor '${fileToRemove.origName}'?`)) {
       try {
         await useDeleteFile(fileToRemove.url);
-        filesRef.value = filesRef.value.filter(file => file.url !== fileToRemove.url);// Odstranění souboru z pole: formData.files
-        await updateDocInFirestore({ files: filesRef.value });// Aktualizace dokumentu ve Firestore
-
+        const updatedFiles = filesRef.value.filter((file) => file.url !== fileToRemove.url);
+        await updateDocCallback(updatedFiles); // Aktualizujeme přes callback
         notify('Soubor byl úspěšně smazán a odstraněn z dokumentu.', 'positive');
       } catch (e: any) {
         notifyError('Mazání souboru selhalo:', e);
@@ -123,7 +101,7 @@ export function useStorageHandlers(
       if (!response.ok) {
         throw new Error(`Chyba při stahování: ${response.statusText}`);
       }
-      
+
       const contentLength = response.headers.get('content-length');
       const totalBytes = contentLength ? parseInt(contentLength, 10) : 0;
       let downloadedBytes = 0;
@@ -175,7 +153,6 @@ export function useStorageHandlers(
     handleDownloadFile,
     isUploading,
     filesToUpload,
-    updateDocInFirestore,
     downloadProgress, // Průběh stahování
     currentDownloadingFileId, // Id stahovaného souboru.
     uploadProgress, // Průběh uploadu

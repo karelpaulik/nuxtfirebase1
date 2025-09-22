@@ -170,7 +170,7 @@ export function useDocHandlers<T extends Record<string, any>>(
         }
     };
 
-    const handleUpdateDoc = async (): Promise<void> => {
+    const handleUpdateDoc = async (confirmUpdate = true): Promise<void> => {
         const { formId, collectionName, formVee } = handlerProps;
 
         // Spustíme validaci formuláře
@@ -187,7 +187,7 @@ export function useDocHandlers<T extends Record<string, any>>(
             notify('Nelze aktualizovat: Žádné platné ID dokumentu k úpravě.', 'warning');
             return;
         }
-        if (!confirm(`Opravdu chcete updatovat data s ID: ${formId.value} v kolekci '${collectionName}'?`)) {
+        if (confirmUpdate && !confirm(`Opravdu chcete updatovat data s ID: ${formId.value} v kolekci '${collectionName}'?`)) {
             console.log('Neupravuji');
             return;
         }

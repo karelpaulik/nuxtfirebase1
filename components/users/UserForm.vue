@@ -63,107 +63,14 @@
         </div>
 
         <q-separator spaced />
-        <h4>Soubory</h4>
-        <div class="q-gutter-sm">
-          <q-file
-            v-model="filesToUpload"
-            label="Vyberte soubory"
-            multiple
-            dense
-            outlined
-            class="q-mb-md"
-            :disable="formId === 'new'"
-          >
-            <template v-slot:prepend>
-              <q-icon name="attach_file" />
-            </template>
-            <template v-slot:after>
-              <q-btn
-                round
-                dense
-                flat
-                icon="cloud_upload"
-                @click="handleUpload"
-                :disable="!filesToUpload.length || isUploading || formId === 'new'"
-                :loading="isUploading"
-              />
-            </template>
-            <template v-slot:hint v-if="formId === 'new'">
-              <span class="text-negative">Nejdříve uložte formulář pro nahrání souborů</span>
-            </template>
-          </q-file>
 
-          <div v-if="isUploading">
-            <q-linear-progress
-              :value="uploadProgress / 100"
-              color="primary"
-              stripe
-              rounded
-              animation-speed="200"
-              class="q-mt-sm"
-              style="height:16px;"
-            >
-              <div class="absolute-full flex flex-center">
-                <q-badge color="white" text-color="primary" :label="`${uploadProgress.toFixed(0)}%`" />
-              </div>
-            </q-linear-progress>
-          </div>
-
-          <q-list bordered separator v-if="formData.files && formData.files.length">
-            <q-item v-for="file in formData.files" :key="file.url">
-              <q-item-section>
-                <q-item-label>{{ file.origName }}</q-item-label>
-                <q-item-label caption v-if="file.note">
-                  Note: {{ file.note }}
-                </q-item-label>
-                <q-item-label caption><a :href="file.url" target="_blank">{{ file.origName }}</a></q-item-label>
-              </q-item-section>
-              <q-item-section side>
-                <div class="row items-center q-gutter-xs">
-                  <q-btn
-                    v-if="currentDownloadingFileId !== file.currName"
-                    icon="download"
-                    color="primary"
-                    round
-                    flat
-                    dense
-                    @click="handleDownloadFile(file)"
-                    title="Stáhnout soubor"
-                  />
-                  <q-circular-progress
-                    v-else
-                    :value="downloadProgress"
-                    size="24px"
-                    :thickness="0.2"
-                    color="primary"
-                    :title="`Stahování ${downloadProgress.toFixed(0)}%`"
-                  />
-                  <q-btn
-                    icon="edit_note"
-                    color="primary"
-                    round
-                    flat
-                    dense
-                    @click="openNoteDialog(file)"
-                    title="Přidat/upravit poznámku"
-                  />
-                  <q-btn
-                    icon="delete"
-                    color="negative"
-                    round
-                    flat
-                    dense
-                    @click="handleRemoveFile(file)"
-                  />
-                </div>
-              </q-item-section>
-            </q-item>
-          </q-list>
-          <div v-else>
-            Žádné soubory nebyly nahrány.
-          </div>
-        </div>
-
+        <FileUploader
+          :form-id="formId"
+          :collection-name="COLLECTION_NAME"
+          :files="formData.files"
+          :target-path="['files']"
+          @update:files="handleFilesUpdate"
+        />
         <q-separator spaced />
 
         <h4>Debug Data:</h4>
@@ -173,45 +80,24 @@
             Oba by měly být synchronní.
         </p>
         <div class="bg-grey-2 q-pa-md q-gutter-md">
-            <div>
-                formData (pro v-model):<pre>{{ formData }}</pre>
-            </div>
-            <div>
-                formVee.values (VeeValidate interní):<pre>{{ formVee.values }}</pre>
-            </div>
-            <div>
-                formVee.errors:<pre>{{ formVee.errors }}</pre>
-            </div>
-            <div>
-                formVee.meta:<pre>{{ formVee.meta }}</pre>
-            </div>
-            <div>
-                hasChanges (Vlastní stav):<pre>{{ hasChanges }}</pre>
-            </div>
+          <div>
+            formData (pro v-model):<pre>{{ formData }}</pre>
+          </div>
+          <div>
+            formVee.values (VeeValidate interní):<pre>{{ formVee.values }}</pre>
+          </div>
+          <div>
+            formVee.errors:<pre>{{ formVee.errors }}</pre>
+          </div>
+          <div>
+            formVee.meta:<pre>{{ formVee.meta }}</pre>
+          </div>
+          <div>
+            hasChanges (Vlastní stav):<pre>{{ hasChanges }}</pre>
+          </div>
         </div>
       </div>
     </div>
-
-    <q-dialog v-model="showNoteDialog">
-      <q-card style="width: 350px">
-        <q-card-section>
-          <div class="text-h6">Poznámka k souboru</div>
-        </q-card-section>
-        <q-card-section class="q-pt-none">
-          <q-input
-            v-model="currentNote"
-            filled
-            type="textarea"
-            placeholder="Zadejte poznámku..."
-          />
-        </q-card-section>
-        <q-card-actions align="right" class="text-primary">
-          <q-btn flat label="Zrušit" v-close-popup />
-          <q-btn flat label="Uložit" @click="saveNote" v-close-popup />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
-
   </section>
 </template>
 
@@ -222,10 +108,9 @@ import { ref, toRef } from 'vue';
 import { usePreventKeys } from '~/composables/usePreventKeys';
 
 import { useDocHandlers } from '~/composables/useDocHandlers';
-import { useStorageHandlers } from '~/composables/useStorageHandlers';
-
 import { userFormSchema, hobbiesOptions, pickedOptions  } from '@/schemas/userSchema';
 import type { UserFormType } from '@/schemas/userSchema';
+import FileUploader from '~/components/FileUploader.vue';
 import type { FileSchemaType } from '@/schemas/fileSchema'; // Import nového typu souboru
 
 const props = defineProps<{
@@ -271,45 +156,21 @@ useConfirmRouteLeave();  // Hlídání odchodu ze stránky
 import { useDateFormatter } from '@/composables/useDateFormatter';
 const createdDateFormatted = useDateFormatter(formData, 'createdDate');
 
-// useStorageHandlers
-const { handleUpload, handleRemoveFile, handleDownloadFile, isUploading, filesToUpload, downloadProgress, currentDownloadingFileId, uploadProgress } = useStorageHandlers(
-  COLLECTION_NAME,// Po uploadu souborů, pro aktualizaci dokumentu
-  formId,// Po uploadu souborů, pro aktualizaci dokumentu
-  toRef(formData, 'files'),// Po uploadu souborů, nutno aktualizovat tuto vlastnost
-  formVee// Pro: updateDocInFirestore
-);
-
-// --- NOVÁ LOGIKA PRO POZNÁMKY ---
-const showNoteDialog = ref(false);
-const currentNote = ref('');
-const fileToUpdate = ref<FileSchemaType | null>(null);
-
 /**
- * Otevře dialogové okno pro přidání/editaci poznámky.
+ * Handler pro aktualizaci souborů přijatý z komponenty FileUploader.
+ * Aktualizuje stav formuláře a uloží změny do Firestore.
  */
-const openNoteDialog = (file: FileSchemaType) => {
-  fileToUpdate.value = file;// Uložení objektu souboru, který se má aktualizovat
-  currentNote.value = file.note || ''; // Načte existující poznámku, pokud existuje
-  showNoteDialog.value = true;
-};
+const handleFilesUpdate = async (path: string[], newFiles: FileSchemaType[]) => {
+  //formData.files = newFiles;
 
-/**
- * Uloží poznámku do lokálního stavu a následně do Firestore.
- */
-const saveNote = async () => {
-  if (!fileToUpdate.value || !formData.files) return;// Kontrola zda existuje soubor. Zda je pole souborů definováno.
-
-  // Následující tři řádky byly nahrazeny jedním řádkem níže.
-  // const fileIndex = formData.files.findIndex(f => f.url === fileToUpdate.value?.url);//Vyhledání indexu souboru v poli souborů
-  // if (fileIndex === -1) return;//Pokud není soubor nalezen.
-  // formData.files[fileIndex].note = currentNote.value;// Aktualizujeme data v lokálním stavu formuláře (formData)
-
-  fileToUpdate.value.note = currentNote.value;//fileToUpdate.value - reaktivní objekt. Tzn. změny v "fileToUpdate.value" se projeví i v "formData.files"
-  await handleUpdateDoc();// Zavoláme handler pro uložení dat
-
-  // Vyčistíme stavy dialogu
-  currentNote.value = '';
-  fileToUpdate.value = null;
+  // Toto je pro případ zanořené cesty
+  let target = formData;
+  for (let i = 0; i < path.length - 1; i++) {
+    target = target[path[i]];
+  }
+  target[path[path.length - 1]] = newFiles;  
+  
+  await handleUpdateDoc(false);// false: Bez confirm okna.
 };
 </script>
 

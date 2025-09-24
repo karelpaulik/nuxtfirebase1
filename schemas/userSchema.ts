@@ -4,8 +4,9 @@ import type { ZodType } from 'zod';
 import { Timestamp } from 'firebase/firestore';
 import { datePreprocessor } from '@/utils/zod';
 
-// Import přesunutého schématu
+// Importy samostatných schématů
 import { fileSchema } from './fileSchema';
+import { addressSchema, createEmptyAddress } from './addressSchema';
 
 // coerc lze použít pouze u primitivních typů: number, string, boolean, ...
 // coerc nelze použít u: array
@@ -39,12 +40,12 @@ export const createUserSchema = (isFormValidation: boolean) => {
       ? z.string().min(1, 'Zadejte jméno').max(50, 'Max. 50 znaků')
       : z.string().nullable().optional(),
     lName: isFormValidation
-      ? z.string().min(1, 'Zadejte příjmení')                 // Pro formulář: prázdné = chyba
-      : z.string().nullable().optional(),                     // Pro API: prázdné/nevalidní = null
-    born: z.string().nullable().optional(),                    // Pozn. I bez nullable().optional() šlo mazat hodnotu v inputu, protože po smazání je hodnota ''. Tj. prázdný řetězec. Takto je to ale robustnější.
+      ? z.string().min(1, 'Zadejte příjmení')               // Pro formulář: prázdné = chyba
+      : z.string().nullable().optional(),                   // Pro API: prázdné/nevalidní = null
+    born: z.string().nullable().optional(),                  // Pozn. I bez nullable().optional() šlo mazat hodnotu v inputu, protože po smazání je hodnota ''. Tj. prázdný řetězec. Takto je to ale robustnější.
 
-    //childrenCount: z.coerce.number().int().min(0).nullable().optional().catch(null),  // Celé číslo
-    childrenCount: z.preprocess((val) => {   // Preprocess nutný, aby se povolila "null" hodnota
+    //childrenCount: z.coerce.number().int().min(0).nullable().optional().catch(null), // Celé číslo
+    childrenCount: z.preprocess((val) => {    // Preprocess nutný, aby se povolila "null" hodnota
       if (val === '') {
         return null;
       }
@@ -52,7 +53,7 @@ export const createUserSchema = (isFormValidation: boolean) => {
     }, z.coerce.number().int().min(0).nullable().optional().catch(null)),
 
     //userHeight: z.coerce.number().min(30).max(300).nullable().optional().catch(null), // Desetinné číslo
-    userHeight: z.preprocess((val) => {   // Preprocess nutný, aby se povolila "null" hodnota
+    userHeight: z.preprocess((val) => {    // Preprocess nutný, aby se povolila "null" hodnota
       if (val === '') {
         return null;
       }
@@ -63,11 +64,10 @@ export const createUserSchema = (isFormValidation: boolean) => {
     hobbies: z.array(z.string()).catch([]), // Bez kontroly "hobbiesOptions.value"  // Bez kontroly je to zde vhodnější, než s kontrolou.
     //hobbies: z.array(z.enum(hobbyValues as [string, ...string[]])).catch([]), // S kontrolou "hobbiesOptions.value" //Toto: hobbies: z.array(z.enum(hobbyValues)).catch([]), by mohlo selhat. Vylepšeno (přetypování):
     picked: z.string().catch(null),
-
     createdDate: datePreprocessor.nullable().optional().catch(null),
-
-    // Nové pole pro soubory
     files: z.array(fileSchema).optional().catch([]),
+    mainAddress: addressSchema.optional().catch(createEmptyAddress()),
+    addresses: z.array(addressSchema).optional().catch([]),
   });
 };
 

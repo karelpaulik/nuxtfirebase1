@@ -62,6 +62,11 @@
           />
         </div>
 
+        <h4>Hlavní adresa:</h4>
+        <AddressForm v-model="formData.mainAddress" />
+
+        <AddressesList v-model="formData.addresses" />
+        
         <q-separator spaced />
 
         <FileUploader
@@ -108,10 +113,12 @@ import { ref, toRef } from 'vue';
 import { usePreventKeys } from '~/composables/usePreventKeys';
 
 import { useDocHandlers } from '~/composables/useDocHandlers';
-import { userFormSchema, hobbiesOptions, pickedOptions  } from '@/schemas/userSchema';
+import { userFormSchema, hobbiesOptions, pickedOptions } from '@/schemas/userSchema';
 import type { UserFormType } from '@/schemas/userSchema';
 import FileUploader from '~/components/FileUploader.vue';
 import type { FileSchemaType } from '@/schemas/fileSchema'; // Import nového typu souboru
+import AddressesList from '~/components/AddressesList.vue'; // Import nové komponenty pro seznam adres
+import AddressForm from '~/components/AddressForm.vue'; // Importujeme novou komponentu pro jednu adresu
 
 const props = defineProps<{
   documentId?: string;
@@ -126,17 +133,26 @@ interface FormData extends Omit<UserFormType, 'id'> {}
 
 const createEmptyFormData = (): FormData => {
   return {
-    id: undefined,  // Toto být nemusí, ale asi je to čistější řešení
+    id: undefined, // Toto být nemusí, ale asi je to čistější řešení
     fName: '',
     lName: '',
     born: '',
     hasDrivingLic: false,
-    childrenCount: null,         // v-model.number
-    userHeight: null,          // v-model.number // Desetinný oddělovač je tečka. // Jak zabránit čárce: @keydown="(event) => usePreventKeys([','])(event)"
+    childrenCount: null, // v-model.number
+    userHeight: null, // v-model.number // Desetinný oddělovač je tečka. // Jak zabránit čárce: @keydown="(event) => usePreventKeys([','])(event)"
     hobbies: [],
     picked: null,
-    createdDate: new Date(),  // Pro v-model nutno computed (převod na string a zpět). Maybe quasar?
-    files: []
+    createdDate: new Date(), // Pro v-model nutno computed (převod na string a zpět). Maybe quasar?
+    files: [],
+    addresses: [], // Inicializace prázdného pole pro adresy
+    mainAddress: {
+      country: '',
+      city: '',
+      street: '',
+      houseNr: '',
+      postalCode: '',
+      note: '',
+    }, // Inicializace adresy - samotný objekt, není to typ: pole.
   };
 };
 
@@ -149,8 +165,8 @@ const {
 } = useDocHandlers<FormData>(documentIdPropRef, COLLECTION_NAME, PAGE_NAME, createEmptyFormData, FORM_SCHEMA);
 
 // --- Zde voláme router-specifické Composables přímo z komponenty ---
-useWatchDocumentId();    // Pro načtení dokumentu
-useConfirmRouteLeave();  // Hlídání odchodu ze stránky
+useWatchDocumentId(); // Pro načtení dokumentu
+useConfirmRouteLeave(); // Hlídání odchodu ze stránky
 
 // --- Zde volám specifické "computed" ---
 import { useDateFormatter } from '@/composables/useDateFormatter';
@@ -168,7 +184,7 @@ const handleFilesUpdate = async (path: string[], newFiles: FileSchemaType[]) => 
   for (let i = 0; i < path.length - 1; i++) {
     target = target[path[i]];
   }
-  target[path[path.length - 1]] = newFiles;  
+  target[path[path.length - 1]] = newFiles;
   
   await handleUpdateDoc(false);// false: Bez confirm okna.
 };

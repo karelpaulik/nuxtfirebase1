@@ -41,7 +41,7 @@ export const createUserSchema = (isFormValidation: boolean) => {
       : z.string().nullable().optional(),
     lName: isFormValidation
       ? z.string().min(1, 'Zadejte příjmení')               // Pro formulář: prázdné = chyba
-      : z.string().nullable().optional(),                   // Pro API: prázdné/nevalidní = null
+      : z.string().nullable().optional(),                    // Pro API: prázdné/nevalidní = null
     born: z.string().nullable().optional(),                  // Pozn. I bez nullable().optional() šlo mazat hodnotu v inputu, protože po smazání je hodnota ''. Tj. prázdný řetězec. Takto je to ale robustnější.
 
     //childrenCount: z.coerce.number().int().min(0).nullable().optional().catch(null), // Celé číslo
@@ -81,6 +81,26 @@ export type UserFormType = z.infer<typeof userFormSchema>;
 export const userApiSchema = createUserSchema(false);
 export type UserApiType = z.infer<typeof userApiSchema>;
 
+// Funkce pro inicializaci prázdných dat formuláře
+// Zde je umístěna, aby byla blízko definice typu UserFormType a schématu
+export const createEmptyFormData = (): Omit<UserFormType, 'id'> => {
+  return {
+    id: undefined, // Toto být nemusí, ale asi je to čistější řešení
+    fName: '',
+    lName: '',
+    born: '',
+    hasDrivingLic: false,
+    childrenCount: null, // v-model.number
+    userHeight: null, // v-model.number // Desetinný oddělovač je tečka. // Jak zabránit čárce: @keydown="(event) => usePreventKeys([','])(event)"
+    hobbies: [],
+    picked: null,
+    createdDate: new Date(), // Pro v-model nutno computed (převod na string a zpět). Maybe quasar?
+    files: [],
+    addresses: [], // Inicializace prázdného pole pro adresy
+    mainAddress: createEmptyAddress(), // Používáme importovanou funkci
+  };
+};
+
 // Redukované schema pro potřeby, kdy je objekt použit jako REFERENCE do jiného objektu.-------
 export const userSelectAttributes = ['id', 'fName', 'lName', 'born'] as const;
 
@@ -89,7 +109,7 @@ export const userSelectSchema = userApiSchema
   .nullable()
   .optional();
 
-// Toto odpovídá:
+  // Toto odpovídá:
 // Nepoužívám, protože výše definuji seznam polí, který používám v dalším kódu.
 // export const userSelectSchema = userApiSchema.pick({
 //     id: true,

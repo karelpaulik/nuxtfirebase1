@@ -58,3 +58,17 @@ export type BookFormType = z.infer<typeof bookFormSchema>;
 // Není potřeba .extend(), protože 'id' je již součástí createBookSchema
 export const bookApiSchema = createBookSchema(false); 
 export type BookApiType = z.infer<typeof bookApiSchema>;
+
+/**
+ * Funkce pro vytvoření prázdných dat formuláře.
+ * Umístěna zde, aby byla blízko definice typu BookFormType a schématu.
+ */
+export const createEmptyFormData = (): Omit<BookFormType, 'id'> => {
+  return {
+    id: undefined, // Toto být nemusí, ale asi je to čistější řešení
+    title: '',
+    author: '',
+    createdDate: new Date(),
+    currUserRefUsers: null
+  };
+};

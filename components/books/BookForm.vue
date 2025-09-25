@@ -34,8 +34,7 @@
             :option-value="opt => opt.id"
             :option-label="opt => `${opt.fName} ${opt.lName} ${opt.born}`"
             @popup-show="userHandleLoadOptions"
-          /><!-- @popup-show vs. @focus -->
-          <q-badge color="secondary" multi-line> Model: "{{ formData.currUserRefUsers }}" </q-badge>
+          /><q-badge color="secondary" multi-line> Model: "{{ formData.currUserRefUsers }}" </q-badge>
 
         </div>
 
@@ -53,7 +52,8 @@ import { toRef } from 'vue';
 
 import { useDocHandlers } from '~/composables/useDocHandlers';
 
-import { bookFormSchema } from '@/schemas/bookSchema';
+// Importujeme funkci pro vytvoření prázdných dat a schéma
+import { bookFormSchema, createEmptyFormData } from '@/schemas/bookSchema';
 import type { BookFormType } from '@/schemas/bookSchema';
 
 const props = defineProps<{
@@ -66,15 +66,6 @@ const COLLECTION_NAME = 'books';
 const PAGE_NAME = 'books';
 const FORM_SCHEMA = bookFormSchema;
 interface FormData extends Omit<BookFormType, 'id'> {}
-
-const createEmptyFormData = (): FormData => {
-  return {
-    title: '',
-    author: '',
-    createdDate: new Date(),
-    currUserRefUsers: null
-  };
-};
 
 const {
   formId,

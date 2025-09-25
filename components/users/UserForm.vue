@@ -31,12 +31,6 @@
 
         <q-checkbox v-model="formData.hasDrivingLic" label="Řidičský průkaz" />
 
-        <!-- <div>
-          <q-checkbox v-model="formData.hobbies" val="fotbal" label="Fotbal" />
-          <q-checkbox v-model="formData.hobbies" val="hokej" label="Hokej" />
-          <q-checkbox v-model="formData.hobbies" val="cyklistika" label="cyklistika" />
-        </div> -->
-
         <div>
           <q-checkbox
             v-for="option in hobbiesOptions"
@@ -46,11 +40,6 @@
             :label="option.label"
           />
         </div>
-
-        <!-- <div>
-        <q-radio v-model="formData.picked" val="One" label="One" />
-        <q-radio v-model="formData.picked" val="Two" label="Two" />
-        </div> -->
 
         <div>
           <q-radio
@@ -113,7 +102,7 @@ import { ref, toRef } from 'vue';
 import { usePreventKeys } from '~/composables/usePreventKeys';
 
 import { useDocHandlers } from '~/composables/useDocHandlers';
-import { userFormSchema, hobbiesOptions, pickedOptions } from '@/schemas/userSchema';
+import { userFormSchema, hobbiesOptions, pickedOptions, createEmptyFormData } from '@/schemas/userSchema';
 import type { UserFormType } from '@/schemas/userSchema';
 import FileUploader from '~/components/FileUploader.vue';
 import type { FileSchemaType } from '@/schemas/fileSchema'; // Import nového typu souboru
@@ -130,31 +119,6 @@ const COLLECTION_NAME = 'users';
 const PAGE_NAME = 'users';
 const FORM_SCHEMA = userFormSchema;
 interface FormData extends Omit<UserFormType, 'id'> {}
-
-const createEmptyFormData = (): FormData => {
-  return {
-    id: undefined, // Toto být nemusí, ale asi je to čistější řešení
-    fName: '',
-    lName: '',
-    born: '',
-    hasDrivingLic: false,
-    childrenCount: null, // v-model.number
-    userHeight: null, // v-model.number // Desetinný oddělovač je tečka. // Jak zabránit čárce: @keydown="(event) => usePreventKeys([','])(event)"
-    hobbies: [],
-    picked: null,
-    createdDate: new Date(), // Pro v-model nutno computed (převod na string a zpět). Maybe quasar?
-    files: [],
-    addresses: [], // Inicializace prázdného pole pro adresy
-    mainAddress: {
-      country: '',
-      city: '',
-      street: '',
-      houseNr: '',
-      postalCode: '',
-      note: '',
-    }, // Inicializace adresy - samotný objekt, není to typ: pole.
-  };
-};
 
 const {
   formId,

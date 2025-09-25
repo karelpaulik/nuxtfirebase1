@@ -118,7 +118,7 @@ const documentIdPropRef = toRef(props, 'documentId'); // Převedeme props.userId
 const COLLECTION_NAME = 'users';
 const PAGE_NAME = 'users';
 const FORM_SCHEMA = userFormSchema;
-interface FormData extends Omit<UserFormType, 'id'> {}
+type FormDataType = UserFormType
 
 const {
   formId,
@@ -126,7 +126,7 @@ const {
   hasChanges,
   docHandlers: { handleAddDoc, handleUpdateDoc, handleRevertChanges, handleDelDoc, useWatchDocumentId, useConfirmRouteLeave },
   formVee,
-} = useDocHandlers<FormData>(documentIdPropRef, COLLECTION_NAME, PAGE_NAME, createEmptyFormData, FORM_SCHEMA);
+} = useDocHandlers<FormDataType>(documentIdPropRef, COLLECTION_NAME, PAGE_NAME, createEmptyFormData, FORM_SCHEMA);
 
 // --- Zde voláme router-specifické Composables přímo z komponenty ---
 useWatchDocumentId(); // Pro načtení dokumentu
@@ -144,7 +144,7 @@ const handleFilesUpdate = async (path: string[], newFiles: FileSchemaType[]) => 
   //formData.files = newFiles;
 
   // Toto je pro případ zanořené cesty
-  let target = formData;
+  let target: any = formData; // Použijeme 'any' nebo specifický zanořený typ pro zjednodušení práce s dynamickou cestou
   for (let i = 0; i < path.length - 1; i++) {
     target = target[path[i]];
   }
@@ -160,7 +160,7 @@ const handleFilesUpdate = async (path: string[], newFiles: FileSchemaType[]) => 
   overflow-y: auto; /* Povolí vertikální skrolování, když obsah přesáhne max-height */
   max-height: calc(100vh - 400px); /* Přibližný výpočet */
 
-  /* Styly pro skrytí scrollbaru (volitelné, pro čistší vzhled) */
+  /* Styly pro skrytí scrollbaru (volitelné, pro čistější vzhled) */
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
 }

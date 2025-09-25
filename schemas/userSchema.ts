@@ -83,7 +83,7 @@ export type UserApiType = z.infer<typeof userApiSchema>;
 
 // Funkce pro inicializaci prázdných dat formuláře
 // Zde je umístěna, aby byla blízko definice typu UserFormType a schématu
-export const createEmptyFormData = (): Omit<UserFormType, 'id'> => {
+export const createEmptyFormData = (): UserFormType => {
   return {
     id: undefined, // Toto být nemusí, ale asi je to čistější řešení
     fName: '',

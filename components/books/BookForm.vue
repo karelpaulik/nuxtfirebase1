@@ -2,7 +2,7 @@
   <section class="column border1">
     <q-toolbar class="bg-blue-grey text-white shadow-2">
       <div v-if="formId === 'new'" class="row q-pa-xs">
-        <q-btn flat stretch no-caps @click="handleAddDoc" label="Create new doc." class="text-no-wrap" />
+        <q-btn flat stretch no-caps :disable="!hasChanges" @click="handleAddDoc" label="Create new doc." class="text-no-wrap" />
       </div>
 
       <q-btn v-if="formId !== 'new'" flat stretch no-caps :disable="!hasChanges" label="Save changes" @click="handleUpdateDoc" class="text-no-wrap" />
@@ -65,7 +65,7 @@ const documentIdPropRef = toRef(props, 'documentId');
 const COLLECTION_NAME = 'books';
 const PAGE_NAME = 'books';
 const FORM_SCHEMA = bookFormSchema;
-interface FormData extends Omit<BookFormType, 'id'> {}
+type FormDataType = BookFormType
 
 const {
   formId,
@@ -73,7 +73,7 @@ const {
   hasChanges,
   docHandlers: { handleAddDoc, handleUpdateDoc, handleRevertChanges, handleDelDoc, useWatchDocumentId, useConfirmRouteLeave },
   formVee, // Přijímáme celou instanci VeeValidate formuláře s jasným názvem
-} = useDocHandlers<FormData>(documentIdPropRef, COLLECTION_NAME, PAGE_NAME, createEmptyFormData, FORM_SCHEMA);
+} = useDocHandlers<FormDataType>(documentIdPropRef, COLLECTION_NAME, PAGE_NAME, createEmptyFormData, FORM_SCHEMA);
 
 useWatchDocumentId();
 useConfirmRouteLeave();

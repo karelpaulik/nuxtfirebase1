@@ -63,7 +63,7 @@ export type BookApiType = z.infer<typeof bookApiSchema>;
  * Funkce pro vytvoření prázdných dat formuláře.
  * Umístěna zde, aby byla blízko definice typu BookFormType a schématu.
  */
-export const createEmptyFormData = (): Omit<BookFormType, 'id'> => {
+export const createEmptyFormData = (): BookFormType => {
   return {
     id: undefined, // Toto být nemusí, ale asi je to čistější řešení
     title: '',

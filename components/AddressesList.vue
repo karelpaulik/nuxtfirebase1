@@ -1,3 +1,4 @@
+//component/AddressesList.vue
 <template>
   <div class="q-pa-md q-gutter-md">
     <div class="text-h4">Seznam adres:</div>
@@ -23,14 +24,10 @@
 </template>
 
 <script setup lang="ts">
-import { z } from 'zod';
-import { addressSchema, createEmptyAddress } from '@/schemas/addressSchema';
+import { createEmptyAddress, type AddressType as ItemType } from '@/schemas/addressSchema';
 import AddressForm from './AddressForm.vue';
 
-// V tomto případě je položka typu Adresa
-type ItemType = z.infer<typeof addressSchema>;
 type ItemsArrayType = ItemType[];
-
 const items = defineModel<ItemsArrayType>();
 
 const addNewItem = () => {

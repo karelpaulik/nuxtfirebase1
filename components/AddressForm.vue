@@ -1,3 +1,4 @@
+//components/AddressForm.vue
 <template>
   <div class="q-gutter-md">
     <q-input v-model="item.country" label="Stát" />
@@ -10,12 +11,8 @@
 </template>
 
 <script setup lang="ts">
-import { z } from 'zod';
-import { addressSchema } from '@/schemas/addressSchema';
+import type { AddressType as ItemType } from '@/schemas/addressSchema';
 
-// V tomto případě je položka typu Adresa
-type ItemType = z.infer<typeof addressSchema>;
-
-// Používáme defineModel pro obousměrnou vazbu na jednu položku
+// Používáme defineModel pro obousměrnou vazbu na jednu položku.
 const item = defineModel<ItemType>({ required: true });
 </script>

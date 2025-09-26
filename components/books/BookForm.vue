@@ -1,19 +1,13 @@
 <template>
   <section class="column border1">
-    <q-toolbar class="bg-blue-grey text-white shadow-2">
-      <div v-if="formId === 'new'" class="row q-pa-xs">
-        <q-btn flat stretch no-caps :disable="!hasChanges" @click="handleAddDoc" label="Create new doc." class="text-no-wrap" />
-      </div>
-
-      <q-btn v-if="formId !== 'new'" flat stretch no-caps :disable="!hasChanges" label="Save changes" @click="handleUpdateDoc" class="text-no-wrap" />
-      <q-btn flat stretch no-caps :disable="!hasChanges" label="Revert changes" @click="handleRevertChanges" class="text-no-wrap" />
-
-      <div v-if="formId !== 'new'" class="row no-wrap q-pa-xs">
-        <q-btn flat stretch no-caps @click="handleAddDoc" label="Save as new doc." class="text-no-wrap" />
-        <q-btn flat stretch no-caps @click="handleDelDoc" label="Del doc." class="text-no-wrap" />
-      </div>
-
-    </q-toolbar>
+    <FormToolbar
+      :form-id="formId"
+      :has-changes="hasChanges"
+      @add-doc="handleAddDoc"
+      @update-doc="handleUpdateDoc"
+      @revert-changes="handleRevertChanges"
+      @del-doc="handleDelDoc"
+    />
 
     <div class="column">
       <div class="form-content-scroll q-pa-md">
@@ -55,6 +49,7 @@ import { useDocHandlers } from '~/composables/useDocHandlers';
 // Importujeme funkci pro vytvoření prázdných dat a schéma
 import { bookFormSchema, createEmptyFormData } from '@/schemas/bookSchema';
 import type { BookFormType } from '@/schemas/bookSchema';
+import FormToolbar from '~/components/FormToolbar.vue';
 
 const props = defineProps<{
   documentId?: string;

@@ -1,6 +1,6 @@
 //components/AddressForm.vue
 <template>
-  <div class="q-gutter-md">
+  <div class="q-gutter-xs">
     <q-input v-model="item.country" label="Stát" />
     <q-input v-model="item.city" label="Město" />
     <q-input v-model="item.street" label="Ulice (nepovinné)" />

@@ -56,7 +56,7 @@
           :form-id="formId"
           :collection-name="COLLECTION_NAME"
           :files="formData.files"
-          @update:files="(newFiles) => formData.files = newFiles"
+          @update:files="(newFiles: FileSchemaType[]) => formData.files = newFiles"
           @save-request="handleUpdateDoc(false)"
         />
         <q-separator spaced />

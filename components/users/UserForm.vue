@@ -56,7 +56,7 @@
           :form-id="formId"
           :collection-name="COLLECTION_NAME"
           :files="formData.files"
-          @update:files="(newFiles) => handleFilesUpdate(formData, 'files', newFiles)"
+          @update:files="(newFiles) => formData.files = newFiles"
           @save-request="handleUpdateDoc(false)"
         />
         <q-separator spaced />
@@ -130,14 +130,6 @@ useConfirmRouteLeave(); // Hlídání odchodu ze stránky
 // --- Zde volám specifické "computed" ---
 import { useDateFormatter } from '@/composables/useDateFormatter';
 const createdDateFormatted = useDateFormatter(formData, 'createdDate');
-
-/**
- * Handler pro aktualizaci souborů přijatý z komponenty FileUploader.
- * Aktualizuje stav formuláře a uloží změny do Firestore.
- */
-const handleFilesUpdate = async (parentObj: Record<string, any>, key: string, newFiles: FileSchemaType[]) => { 
-  parentObj[key]=newFiles;
-};
 </script>
 
 <style scoped>

@@ -56,8 +56,8 @@
           :form-id="formId"
           :collection-name="COLLECTION_NAME"
           :files="formData.files"
-          :target-path="['files']"
-          @update:files="handleFilesUpdate"
+          @update:files="(newFiles) => handleFilesUpdate(formData, 'files', newFiles)"
+          @save-request="handleUpdateDoc(false)"
         />
         <q-separator spaced />
 
@@ -135,17 +135,8 @@ const createdDateFormatted = useDateFormatter(formData, 'createdDate');
  * Handler pro aktualizaci souborů přijatý z komponenty FileUploader.
  * Aktualizuje stav formuláře a uloží změny do Firestore.
  */
-const handleFilesUpdate = async (path: string[], newFiles: FileSchemaType[]) => {
-  //formData.files = newFiles;
-
-  // Toto je pro případ zanořené cesty
-  let target: any = formData; // Použijeme 'any' nebo specifický zanořený typ pro zjednodušení práce s dynamickou cestou
-  for (let i = 0; i < path.length - 1; i++) {
-    target = target[path[i]];
-  }
-  target[path[path.length - 1]] = newFiles;
-  
-  await handleUpdateDoc(false);// false: Bez confirm okna.
+const handleFilesUpdate = async (parentObj: Record<string, any>, key: string, newFiles: FileSchemaType[]) => { 
+  parentObj[key]=newFiles;
 };
 </script>
 

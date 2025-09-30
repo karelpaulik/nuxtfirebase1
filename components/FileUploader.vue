@@ -134,11 +134,10 @@ const props = defineProps<{
   formId: string | null;
   collectionName: string;
   files: FileSchemaType[];
-  targetPath: string[]; //Zanořená cesta např. pro person.files: ['person', 'files']
 }>();
 
 // Definice emit událostí
-const emit = defineEmits(['update:files']);
+const emit = defineEmits(['update:files', 'save-request']);
 
 // Místní reaktivní stav pro soubory, který synchronizujeme s propsem
 //const localFiles = ref<FileSchemaType[]>(props.files);
@@ -168,7 +167,10 @@ const {
   props.collectionName,
   ref(props.formId),
   localFiles,
-  (updatedFiles) => emit('update:files', props.targetPath, updatedFiles)
+  (updatedFiles) => {
+    emit('update:files', updatedFiles);
+    emit('save-request'); 
+  }
 );
 
 // --- LOGIKA PRO POZNÁMKY ---
@@ -196,7 +198,8 @@ const saveNote = async () => {
 
   // Emitování události s aktualizovaným polem souborů
   // Díky tomu, že `localFiles` je ref a je propojen s propsem `files`, můžeme emitovat `update:files` přímo s `localFiles.value`
-  emit('update:files', props.targetPath, localFiles.value);
+  emit('update:files', localFiles.value);
+  
 
   // Vyčistíme stavy dialogu
   currentNote.value = '';

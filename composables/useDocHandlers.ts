@@ -1,3 +1,4 @@
+// composables/useDocHandlers.ts
 import { ref, reactive, watch, type Ref } from 'vue';
 import { useRoute, useRouter, onBeforeRouteLeave, type Router, type RouteLocationNormalizedLoaded } from 'vue-router';
 import { useForm } from 'vee-validate';
@@ -25,13 +26,22 @@ interface FormHandlerProps<T extends Record<string, any>> {
     validationSchema: ZodObject<ZodRawShape>;
 }
 
-// --- HLAVNÍ COMPOSABLE FUNKCE ---
+// NOVÝ INTERFACE PRO VOLITELNOU KONFIGURACI
+interface DocHandlersConfig {    
+    watchIdOnLoad?: boolean;//Pokud true, ID dokumentu z propse bude sledováno a dokument se automaticky načte.    
+    confirmLeave?: boolean;// Pokud true, uživatel bude upozorněn při pokusu o odchod se neuloženými změnami. 
+}
+
+// --- HLAVNÍ COMPOSABLE FUNKCE (UPRAVENO) ---
 export function useDocHandlers<T extends Record<string, any>>(
+    // Povinné poziční argumenty
     initialDocumentIdProp: Ref<string | undefined>,
     collectionName: string,
     pageName: string,
     createEmptyData: () => T,
-    validationSchema: ZodObject<ZodRawShape>
+    validationSchema: ZodObject<ZodRawShape>,
+    // Volitelný konfigurační objekt, hodnoty za rovnítkem jsou defaultní hodnoty
+    config: DocHandlersConfig = { watchIdOnLoad: true, confirmLeave: true }
 ) {
     const formId = ref<string | null>(null);
     const hasChanges = ref<boolean>(false);
@@ -96,8 +106,8 @@ export function useDocHandlers<T extends Record<string, any>>(
                     notify('Dokument úspěšně načten!', 'positive');
                 } else {
                     // validData.error.issues.forEach(issue => {
-                    //    console.error(`Chyba na cestě: ${issue.path.join('.')}, Zpráva: ${issue.message}`);
-                    //    notify(`Chyba na cestě: ${issue.path.join('.')}, Zpráva: ${issue.message}`, 'negative', 'top', 5000);
+                    //     console.error(`Chyba na cestě: ${issue.path.join('.')}, Zpráva: ${issue.message}`);
+                    //     notify(`Chyba na cestě: ${issue.path.join('.')}, Zpráva: ${issue.message}`, 'negative', 'top', 5000);
                     // });
                     displayZodErrors(validData.error);
                     notifyError('Chyba validace dat z databáze.', validData.error);
@@ -276,13 +286,20 @@ export function useDocHandlers<T extends Record<string, any>>(
         });
     };
 
-    // Zde můžu volat interní funkce, aby se spustily při spuštění composable
-    // useWatchDocumentId();
-    // useConfirmRouteLeave();
+    // Default je true, ale pokud uživatel zadá { watchIdOnLoad: false }, nebude spuštěno
+    if (config.watchIdOnLoad) { 
+        useWatchDocumentId();
+    }
+
+    // Default je true, ale pokud uživatel zadá { confirmLeave: false }, nebude spuštěno
+    if (config.confirmLeave) {
+        useConfirmRouteLeave();
+    }
+    // --------------------------------------------------------
 
     return {
         formId,
-        formData, // Vracíme náš speciální 'formData' objekt s Refy
+        formData, // Vracíme náš speciální 'formData' objekt s Ref pro v-model
         hasChanges,
         formVee, // <-- Vracíme celou instanci VeeValidate formuláře pro přístup z komponenty (např. pro debug)
         docHandlers: {
@@ -290,8 +307,6 @@ export function useDocHandlers<T extends Record<string, any>>(
             handleAddDoc,
             handleUpdateDoc,
             handleDelDoc,
-            useWatchDocumentId,
-            useConfirmRouteLeave,
         }
     };
 }

@@ -1,5 +1,5 @@
 <template>
-  <section class="column border1">    
+  <section class="column border1">
     <FormToolbar
       :form-id="formId"
       :has-changes="hasChanges"
@@ -119,13 +119,19 @@ const {
   formId,
   formData,
   hasChanges,
-  docHandlers: { handleAddDoc, handleUpdateDoc, handleRevertChanges, handleDelDoc, useWatchDocumentId, useConfirmRouteLeave },
+  docHandlers: { handleAddDoc, handleUpdateDoc, handleRevertChanges, handleDelDoc },
   formVee,
-} = useDocHandlers<FormDataType>(documentIdPropRef, COLLECTION_NAME, PAGE_NAME, createEmptyFormData, FORM_SCHEMA);
-
-// --- Zde voláme router-specifické Composables přímo z komponenty ---
-useWatchDocumentId(); // Pro načtení dokumentu
-useConfirmRouteLeave(); // Hlídání odchodu ze stránky
+} = useDocHandlers<FormDataType>(
+  documentIdPropRef,
+  COLLECTION_NAME,
+  PAGE_NAME,
+  createEmptyFormData,
+  FORM_SCHEMA,
+  {
+    watchIdOnLoad: true, // Chceme, aby se dokument načítal
+    confirmLeave: true,  // Chceme varovat při odchodu
+  }
+);
 
 // --- Zde volám specifické "computed" ---
 import { useDateFormatter } from '@/composables/useDateFormatter';

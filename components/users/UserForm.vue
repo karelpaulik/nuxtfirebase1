@@ -18,7 +18,7 @@
           <q-input v-model="formData.fName" label="fName" />
           <q-input v-model="formData.lName" label="lName" />
           <q-input v-model="formData.born" label="Born" />
-          <q-input type="date" v-model="createdDateFormatted" label="createdDate" />
+          <DateInput v-model="formData.createdDate" label="createdDate" />
           <q-input v-model.number="formData.childrenCount" label="childrenCount" />
           <q-input v-model.number="formData.userHeight" label="userHeight" @keydown="(event) => usePreventKeys([','], false)(event)" />
         </div>
@@ -103,6 +103,7 @@ import type { FileSchemaType } from '@/schemas/fileSchema'; // Import nového ty
 import AddressesList from '~/components/AddressesList.vue'; // Import nové komponenty pro seznam adres
 import AddressForm from '~/components/AddressForm.vue'; // Importujeme novou komponentu pro jednu adresu
 import FormToolbar from '~/components/FormToolbar.vue';
+import DateInput from '~/components/DateInput.vue';
 
 const props = defineProps<{
   documentId?: string;
@@ -132,10 +133,6 @@ const {
     confirmLeave: true,  // Chceme varovat při odchodu
   }
 );
-
-// --- Zde volám specifické "computed" ---
-import { useDateFormatter } from '@/composables/useDateFormatter';
-const createdDateFormatted = useDateFormatter(formData, 'createdDate');
 </script>
 
 <style scoped>

@@ -17,7 +17,7 @@
         <div class="q-pa-md" style="max-width: 300px">
           <q-input v-model="formData.title" label="title" />
           <q-input v-model="formData.author" label="Author" />
-          <q-input type="date" v-model="createdDateFormatted" label="createdDate" />
+          <DateInput v-model="formData.createdDate" label="createdDate" />
 
           <q-select
             v-model="formData.currUserRefUsers"
@@ -50,6 +50,7 @@ import { useDocHandlers } from '~/composables/useDocHandlers';
 import { bookFormSchema, createEmptyFormData } from '@/schemas/bookSchema';
 import type { BookFormType } from '@/schemas/bookSchema';
 import FormToolbar from '~/components/FormToolbar.vue';
+import DateInput from '~/components/DateInput.vue';
 
 const props = defineProps<{
   documentId?: string;
@@ -66,16 +67,14 @@ const {
   formId,
   formData,
   hasChanges,
-  docHandlers: { handleAddDoc, handleUpdateDoc, handleRevertChanges, handleDelDoc, useWatchDocumentId, useConfirmRouteLeave },
-  formVee, // Přijímáme celou instanci VeeValidate formuláře s jasným názvem
-} = useDocHandlers<FormDataType>(documentIdPropRef, COLLECTION_NAME, PAGE_NAME, createEmptyFormData, FORM_SCHEMA);
-
-useWatchDocumentId();
-useConfirmRouteLeave();
-
-// --- Zde volám specifické "computed" ---
-import { useDateFormatter } from '@/composables/useDateFormatter';
-const createdDateFormatted = useDateFormatter(formData, 'createdDate');
+  docHandlers: { handleAddDoc, handleUpdateDoc, handleRevertChanges, handleDelDoc },
+  formVee,
+} = useDocHandlers<FormDataType>(documentIdPropRef, COLLECTION_NAME, PAGE_NAME, createEmptyFormData, FORM_SCHEMA,
+  {
+    watchIdOnLoad: true,
+    confirmLeave: true,
+  }
+);
 
 import { useInputSelectObjectOptions } from '@/composables/useInputSelectObjectOptions';
 import { userSelectAttributes } from '@/schemas/userSchema';

@@ -21,7 +21,7 @@ interface DocData<T> {
 /**
  * Rozhraní pro volitelné parametry composable useCollectionHandlers.
  */
-export interface CollectionHandlerOptions {
+interface CollectionHandlerConfig {
   validationSchema?: ZodObject<ZodRawShape>; // Validační schéma je volitelné
   // Zde se přidají další volitelné parametry. Např.: anotherOptionalParam?: string;
 }
@@ -31,12 +31,12 @@ export interface CollectionHandlerOptions {
  * Inicializuje reaktivní proměnné pro dokumenty, stav načítání a chyby.
  * Nyní vrací i handlery pro čtení dat.
  * @param collectionName Název kolekce Firestore.
- * @param options Volitelný objekt s dalšími parametry, včetně validationSchema.
+ * @param config Volitelný objekt s dalšími parametry, včetně validationSchema.
  * @returns Objekt s reaktivními proměnnými a handlery.
  */
 export function useCollectionHandlers<T extends Record<string, any>>(
   collectionName: string,
-  options: CollectionHandlerOptions = {}
+  config: CollectionHandlerConfig = {}
 ) {
   const documents = ref<DocData<T>[]>([]);
   const loading = ref(true);//true, protože se očekává, že se handler spustí hned po: onMounted
@@ -44,12 +44,12 @@ export function useCollectionHandlers<T extends Record<string, any>>(
 
   /**
    * Handler pro načtení všech dokumentů z dané kolekce.
-   * Validace proběhne, pokud je poskytnuto validační schéma v options.
+   * Validace proběhne, pokud je poskytnuto validační schéma v config.
    * @returns {Promise<void>}
    */
   const handleReadAllDocs = async (): Promise<void> => {
-    // Destrukturalizujeme validationSchema z options
-    const { validationSchema } = options;
+    // Destrukturalizujeme validationSchema z config
+    const { validationSchema } = config;
 
     loading.value = true;// true na začátku každého volání asynchronní operace.
     error.value = null;
@@ -114,7 +114,7 @@ export function useCollectionHandlers<T extends Record<string, any>>(
 
   /**
    * Handler pro načtení dokumentů z dané kolekce s použitím jednoho nebo více filtrů.
-   * Validace proběhne, pokud je poskytnuto validační schéma v options.
+   * Validace proběhne, pokud je poskytnuto validační schéma v config.
    *
    * @param filters Pole objektů definujících filtry.
    * Příklad: [{ field: 'fName', operator: '==', value: 'Petr' }, { field: 'lName', operator: '>=', value: 'N' }]
@@ -123,8 +123,8 @@ export function useCollectionHandlers<T extends Record<string, any>>(
   const handleReadFilterDocs = async (
     filters: Array<{ field: string; operator: WhereFilterOp; value: any }>
   ): Promise<void> => {
-    // Destrukturalizujeme validationSchema z options
-    const { validationSchema } = options;
+    // Destrukturalizujeme validationSchema z config
+    const { validationSchema } = config;
 
     if (!filters || filters.length === 0) {
       console.warn('handleReadFilterDocs: Nebyly poskytnuty žádné filtry. Načítání se neprovede.');

@@ -1,5 +1,12 @@
 <template>
-  <section class="column border1">
+  <section class="column border1 relative-position">
+    <div v-if="loading" class="loading-overlay"></div>
+    
+    <div v-if="loading" class="absolute-center q-pa-md text-center text-primary z-top">
+      <q-spinner size="3em" color="primary" />
+      <p class="q-mt-sm">Zpracovávám data, prosím čekejte...</p>
+    </div>
+
     <FormToolbar
       :form-id="formId"
       :has-changes="hasChanges"
@@ -11,6 +18,16 @@
 
     <div class="column">
       <div class="form-content-scroll q-pa-md">
+
+        <q-banner v-if="error" inline-actions class="text-white bg-negative q-mb-md">
+          <template v-slot:avatar>
+            <q-icon name="warning" color="white" />
+          </template>          
+          <p class="q-ma-none">Chyba při zpracování dat: <strong>{{ error.message }}</strong></p>          
+          <template v-slot:action>
+            <q-btn flat color="white" label="Zavřít" @click="error = null" /> 
+          </template>
+        </q-banner>
 
         <h4 class="q-pa-xs q-ma-xs">{{ formId === 'new' ? 'Nový záznam' : 'Detail záznamu' }}</h4>
 
@@ -67,6 +84,8 @@ const {
   formId,
   formData,
   hasChanges,
+  loading,
+  error,
   docHandlers: { handleAddDoc, handleUpdateDoc, handleRevertChanges, handleDelDoc },
   formVee,
 } = useDocHandlers<FormDataType>(documentIdPropRef, COLLECTION_NAME, PAGE_NAME, createEmptyFormData, FORM_SCHEMA,
@@ -105,5 +124,16 @@ const {
 .border1 {
   border: 5px solid gray;
   border-radius: 5px;
+}
+
+.loading-overlay {
+  position: absolute;
+  inset: 0;
+  /* Poloprůhledné pozadí pro vizuální blokování a "ošednutí" */
+  background: rgba(255, 255, 255, 0.6); 
+  /* Změní kurzor na přesýpací hodiny (protože prvek přijímá události) */
+  cursor: wait;
+  /* Důležité: z-index pod spinnerem, ale nad celým formulářem */
+  z-index: 1000;
 }
 </style>

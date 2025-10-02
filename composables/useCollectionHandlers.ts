@@ -167,11 +167,13 @@ export function useCollectionHandlers<T extends Record<string, any>>(
     }
   };
 
-  return {
+    return {
     documents,
     loading,
     error,
-    handleReadAllDocs, // Vracíme handler v hlavním objektu
-    handleReadFilterDocs, // Vracíme handler v hlavním objektu
+    collectionHandlers: {
+        handleReadAllDocs, 
+        handleReadFilterDocs, 
+    },
   };
 }

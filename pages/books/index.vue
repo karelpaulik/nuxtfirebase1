@@ -45,7 +45,7 @@ const {
   documents,
   loading,
   error,
-  handleReadAllDocs, // <- Handler, který byl dříve exportován
+  collectionHandlers: { handleReadAllDocs, handleReadFilterDocs },
 } = useCollectionHandlers<ApiType>(COLLECTION_NAME, {
   validationSchema: API_SCHEMA // <-- Zde se předává schéma. No schema, nebo undefined = no validation.
 });

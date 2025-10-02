@@ -48,8 +48,7 @@ const {
   documents,
   loading,
   error,
-  handleReadAllDocs,
-  handleReadFilterDocs,
+  collectionHandlers: { handleReadAllDocs, handleReadFilterDocs },
 } = useCollectionHandlers<ApiType>(COLLECTION_NAME, {
   validationSchema: API_SCHEMA // <-- Zde se předává schéma. No schema, nebo undefined = no validation.
 });

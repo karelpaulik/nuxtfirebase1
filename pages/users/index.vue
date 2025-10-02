@@ -10,7 +10,7 @@
       <h4 class="q-pa-xs q-mt-none q-mb-none">Všechny dokumenty</h4>
 
       <p v-if="loading">Načítám data...</p>
-      <p v-else-if="error?.message">Chyba při načítání dat: {{ error.message }}</p>
+      <p v-else-if="error">Chyba při načítání dat: {{ error.message }}</p>
       <div v-else-if="documents && documents.length > 0">
         <ul>
           <li v-for="doc in documents" :key="doc.id" class="q-pa-xs">

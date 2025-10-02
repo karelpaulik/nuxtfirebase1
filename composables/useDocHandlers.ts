@@ -17,6 +17,8 @@ interface FormHandlerProps<T extends Record<string, any>> {
     initialDocumentIdRef: Ref<string | undefined>;
     formId: Ref<string | null>;
     hasChanges: Ref<boolean>;
+    loading: Ref<boolean>; // Přidáno: Reaktivní stav načítání
+    error: Ref<Error | null>; // Přidáno: Reaktivní stav chyby
     collectionName: string;
     pageName: string;
     createEmptyData: () => T;
@@ -45,6 +47,8 @@ export function useDocHandlers<T extends Record<string, any>>(
 ) {
     const formId = ref<string | null>(null);
     const hasChanges = ref<boolean>(false);
+    const loading = ref(false); // Nová proměnná pro stav načítání. Výchozí stav je false.
+    const error = ref<Error | null>(null); // Nová proměnná pro chyby.
 
     const router = useRouter();
     const route = useRoute();
@@ -76,6 +80,8 @@ export function useDocHandlers<T extends Record<string, any>>(
         initialDocumentIdRef: initialDocumentIdProp,
         formId,
         hasChanges,
+        loading, // Předáno do props
+        error, // Předáno do props
         collectionName,
         pageName,
         createEmptyData,
@@ -91,8 +97,10 @@ export function useDocHandlers<T extends Record<string, any>>(
      * Tím se zjednoduší volání v komponentě (handleRevertChanges() místo handleRevertChanges(_handlerProps)).
      */
     const handleReadDoc = async (idToRead: string): Promise<void> => {
-        const { formId, collectionName, router, formVee, validationSchema } = handlerProps;
+        const { formId, collectionName, router, formVee, validationSchema, loading, error, pageName } = handlerProps;
 
+        loading.value = true; // Spuštění načítání
+        error.value = null; // Reset chyby
         try {
             const doc = await useReadDoc(collectionName, idToRead);
             if (doc) {
@@ -119,8 +127,11 @@ export function useDocHandlers<T extends Record<string, any>>(
                 await router.push(`/${pageName}/new`);
             }
         } catch (e) {
+            error.value = e as Error; // Nastavíme chybu
             notifyError('Chyba při čtení dokumentu:', e);
             await router.push(`/${pageName}/new`);
+        } finally {
+            loading.value = false; // Ukončení načítání
         }
     };
 
@@ -138,7 +149,7 @@ export function useDocHandlers<T extends Record<string, any>>(
                 notify('Formulář pro nový záznam byl resetován!', 'positive');
                 console.log('Formulář pro nový záznam byl resetován.');
             } else {
-                await handleReadDoc(formId.value); // Znovu načte dokument a resetuje formulář
+                await handleReadDoc(formId.value); // Znovu načte dokument a resetuje formulář (zde je již loading a error ošetřen)
                 notify('Změny byly vráceny!', 'positive');
                 console.log('Změny byly vráceny opětovným načtením dokumentu.');
             }
@@ -146,7 +157,7 @@ export function useDocHandlers<T extends Record<string, any>>(
     };
 
     const handleAddDoc = async (): Promise<void> => {
-        const { collectionName, pageName, router, formVee } = handlerProps;
+        const { collectionName, pageName, router, formVee, loading, error } = handlerProps;
 
         // Spustíme validaci formuláře
         const { valid, errors, values } = await formVee.validate();
@@ -161,6 +172,9 @@ export function useDocHandlers<T extends Record<string, any>>(
             console.log('Nevytvářím');
             return;
         }
+
+        loading.value = true; // Spuštění načítání
+        error.value = null; // Reset chyby
         try {
             const cleanedData = cleanObject(values); // <-- Čištění dat před odesláním. Tj. odstranění props s hodnotou "undefined".
             // console.log('Formvee.values', formVee.values);
@@ -176,12 +190,15 @@ export function useDocHandlers<T extends Record<string, any>>(
                 console.log(`Vytvořen dokument s ID: ${docId} v kolekci ${collectionName}`);
             }
         } catch (e) {
+            error.value = e as Error; // Nastavíme chybu
             notifyError('Chyba při ukládání z komponenty:', e);
+        } finally {
+            loading.value = false; // Ukončení načítání
         }
     };
 
     const handleUpdateDoc = async (confirmUpdate = true): Promise<void> => {
-        const { formId, collectionName, formVee } = handlerProps;
+        const { formId, collectionName, formVee, loading, error } = handlerProps;
 
         // Spustíme validaci formuláře
         const { valid, errors, values } = await formVee.validate();
@@ -201,6 +218,9 @@ export function useDocHandlers<T extends Record<string, any>>(
             console.log('Neupravuji');
             return;
         }
+        
+        loading.value = true; // Spuštění načítání
+        error.value = null; // Reset chyby
         try {
             const cleanedData = cleanObject(values); // <-- Čištění dat před odesláním. Tj. odstranění props s hodnotou "undefined".
             const success = await useUpdateDoc(collectionName, formId.value, cleanedData); // Použijeme validované hodnoty
@@ -213,12 +233,15 @@ export function useDocHandlers<T extends Record<string, any>>(
                 notify('Dokument nebyl aktualizován.', 'info');
             }
         } catch (e) {
+            error.value = e as Error; // Nastavíme chybu
             notifyError('Došlo k chybě při aktualizaci dokumentu:', e);
+        } finally {
+            loading.value = false; // Ukončení načítání
         }
     };
 
     const handleDelDoc = async (): Promise<void> => {
-        const { formId, collectionName, pageName, createEmptyData, router, formVee } = handlerProps;
+        const { formId, collectionName, pageName, createEmptyData, router, formVee, loading, error } = handlerProps; // Destrukturalizujeme loading a error
 
         if (!formId.value || formId.value === 'new') {
             console.warn('Žádné platné ID dokumentu k smazání.');
@@ -229,6 +252,9 @@ export function useDocHandlers<T extends Record<string, any>>(
             console.log('Nemažu');
             return;
         }
+
+        loading.value = true; // Spuštění načítání
+        error.value = null; // Reset chyby
         try {
             const success = await useDelDoc(collectionName, formId.value);
             if (success) {
@@ -242,7 +268,10 @@ export function useDocHandlers<T extends Record<string, any>>(
                 notify('Dokument nebyl smazán.', 'info');
             }
         } catch (e) {
+            error.value = e as Error; // Nastavíme chybu
             notifyError('Došlo k chybě při mazání dokumentu:', e);
+        } finally {
+            loading.value = false; // Ukončení načítání
         }
     };
 
@@ -250,7 +279,7 @@ export function useDocHandlers<T extends Record<string, any>>(
     const useWatchDocumentId = (): void => {
         watch(() => handlerProps.initialDocumentIdRef.value, async (newIdParam) => {
             const id = newIdParam as string;
-            const { formId, pageName, createEmptyData, formVee } = handlerProps;
+            const { formId, createEmptyData, formVee } = handlerProps;
         
             if (id === 'new') {
                 console.log(`Document ID prop je 'new', inicializuji formulář pro nový záznam.`);
@@ -259,7 +288,7 @@ export function useDocHandlers<T extends Record<string, any>>(
             } else if (id) {
                 console.log(`Document ID prop se změnilo na '${id}', načítám záznam.`);
                 formId.value = id;
-                await handleReadDoc(id);
+                await handleReadDoc(id); // handleReadDoc se postará o loading/error
             } else {
                 console.warn('Neočekávaný stav: Document ID prop chybí nebo je neplatné.');
                 formId.value = null;
@@ -301,6 +330,8 @@ export function useDocHandlers<T extends Record<string, any>>(
         formId,
         formData, // Vracíme náš speciální 'formData' objekt s Ref pro v-model
         hasChanges,
+        loading, // Přidáno: Vracíme loading stav
+        error, // Přidáno: Vracíme error stav
         formVee, // <-- Vracíme celou instanci VeeValidate formuláře pro přístup z komponenty (např. pro debug)
         docHandlers: {
             handleRevertChanges,

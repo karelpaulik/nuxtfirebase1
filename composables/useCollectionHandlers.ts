@@ -39,7 +39,7 @@ export function useCollectionHandlers<T extends Record<string, any>>(
   options: CollectionHandlerOptions = {}
 ) {
   const documents = ref<DocData<T>[]>([]);
-  const loading = ref(true);
+  const loading = ref(true);//true, protože se očekává, že se handler spustí hned po: onMounted
   const error = ref<Error | null>(null);
 
   /**
@@ -51,7 +51,7 @@ export function useCollectionHandlers<T extends Record<string, any>>(
     // Destrukturalizujeme validationSchema z options
     const { validationSchema } = options;
 
-    loading.value = true;
+    loading.value = true;// true na začátku každého volání asynchronní operace.
     error.value = null;
     try {   
     // //bez validace
@@ -78,7 +78,7 @@ export function useCollectionHandlers<T extends Record<string, any>>(
     //   console.warn('Validace celého pole dokumentů selhala:', validatedResult.error);
     //   displayZodErrors(validatedResult.error); // Zobrazíme notifikace pro Zod chyby
     //   documents.value = []; // Vyprázdníme seznam, protože data nejsou validní
-    // }    
+    // }  
       const fetchedDocs = await useGetAllDocs(collectionName);
 
       // Validace proběhne pouze, pokud je validationSchema poskytnuto
@@ -132,7 +132,7 @@ export function useCollectionHandlers<T extends Record<string, any>>(
       return;
     }
 
-    loading.value = true;
+    loading.value = true;// true na začátku každého volání
     error.value = null;
     try {
       const fetchedDocs = await useReadDocsByFilter(collectionName, filters);

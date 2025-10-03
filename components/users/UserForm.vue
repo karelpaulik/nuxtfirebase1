@@ -173,15 +173,4 @@ const {
   border: 5px solid gray;
   border-radius: 5px;
 }
-
-.loading-overlay {
-  position: absolute;
-  inset: 0;
-  /* Poloprůhledné pozadí pro vizuální blokování a "ošednutí" */
-  background: rgba(255, 255, 255, 0.6); 
-  /* Změní kurzor na přesýpací hodiny (protože prvek přijímá události) */
-  cursor: wait;
-  /* Důležité: z-index pod spinnerem, ale nad celým formulářem */
-  z-index: 1000;
-}
 </style>

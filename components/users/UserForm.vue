@@ -29,7 +29,7 @@
           </template>
         </q-banner>
         
-        <h4 class="q-pa-xs q-ma-xs">{{ formId === 'new' ? 'Nový záznam' : 'Detail záznamu' }}</h4>
+        <div class="text-h4 q-pa-xs q-ma-xs">{{ formId === 'new' ? 'Nový záznam' : 'Detail záznamu' }}</div>
 
         <div class="q-pa-md" style="max-width: 300px">
           <q-input v-model="formData.fName" label="fName" />
@@ -62,14 +62,24 @@
           />
         </div>
 
-        <h4>Hlavní adresa:</h4>
+        <div class="q-pa-md text-h4">Hlavní adresa:</div>
         <AddressForm v-model="formData.mainAddress" />
 
         <AddressesList v-model="formData.addresses" />
-        
         <q-separator spaced />
 
-        <FileUploader
+        <div class="q-pa-md text-h4">Nahrát soubory</div>
+        <FileUpload
+          :form-id="formId"
+          :collection-name="COLLECTION_NAME"
+          :files="formData.files"
+          @update:files="(newFiles: FileSchemaType[]) => formData.files = newFiles"
+          @save-request="handleUpdateDoc(false)"
+        />        
+        <q-separator spaced class="q-mt-lg" />
+
+        <div class="q-pa-md text-h4">Seznam nahraných souborů</div>
+        <FileList
           :form-id="formId"
           :collection-name="COLLECTION_NAME"
           :files="formData.files"
@@ -78,7 +88,7 @@
         />
         <q-separator spaced />
 
-        <h4>Debug Data:</h4>
+        <div class="q-pa-md text-h4">Debug Data:</div>
         <p>
             POZN: formData je reaktivní objekt se Ref pro v-model.
             formVee.values je interní readonly stav VeeValidate.
@@ -115,7 +125,9 @@ import { usePreventKeys } from '~/composables/usePreventKeys';
 import { useDocHandlers } from '~/composables/useDocHandlers';
 import { userFormSchema, hobbiesOptions, pickedOptions, createEmptyFormData } from '@/schemas/userSchema';
 import type { UserFormType } from '@/schemas/userSchema';
-import FileUploader from '~/components/FileUploader.vue';
+import FileUpload from '~/components/FileUpload.vue';
+import FileList from '~/components/FileList.vue';
+
 import type { FileSchemaType } from '@/schemas/fileSchema'; // Import nového typu souboru
 import AddressesList from '~/components/AddressesList.vue'; // Import nové komponenty pro seznam adres
 import AddressForm from '~/components/AddressForm.vue'; // Importujeme novou komponentu pro jednu adresu

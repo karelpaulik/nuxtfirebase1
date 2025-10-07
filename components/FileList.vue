@@ -1,55 +1,5 @@
 <template>
   <div class="q-gutter-sm">
-    <h4>Soubory</h4>
-
-    <q-file
-      v-model="filesToUpload"
-      label="Vyberte soubory"
-      multiple
-      dense
-      outlined
-      class="q-mb-md"
-      :disable="!formId || formId === 'new'"
-    >
-      <template v-slot:prepend>
-        <q-icon name="attach_file" />
-      </template>
-      <template v-slot:after>
-        <q-btn
-          round
-          dense
-          flat
-          icon="cloud_upload"
-          @click="handleUpload"
-          :disable="!filesToUpload.length || isUploading || !formId || formId === 'new'"
-          :loading="isUploading"
-        />
-      </template>
-      <template v-slot:hint v-if="!formId || formId === 'new'">
-        <span class="text-negative">Nejdříve uložte formulář pro nahrání souborů</span>
-      </template>
-    </q-file>
-
-    <div v-if="isUploading">
-      <q-linear-progress
-        :value="uploadProgress / 100"
-        color="primary"
-        stripe
-        rounded
-        animation-speed="200"
-        class="q-mt-sm"
-        style="height: 16px"
-      >
-        <div class="absolute-full flex flex-center">
-          <q-badge
-            color="white"
-            text-color="primary"
-            :label="`${uploadProgress.toFixed(0)}%`"
-          />
-        </div>
-      </q-linear-progress>
-    </div>
-
     <q-list bordered separator v-if="files && files.length">
       <q-item v-for="file in files" :key="file.url">
         <q-item-section>
@@ -95,6 +45,7 @@
               flat
               dense
               @click="handleRemoveFile(file)"
+              title="Smazat soubor"
             />
           </div>
         </q-item-section>
@@ -126,7 +77,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, toRef } from 'vue';
 import { useStorageHandlers } from '~/composables/useStorageHandlers';
 import type { FileSchemaType } from '@/schemas/fileSchema';
 
@@ -155,21 +106,17 @@ watch(
 
 // Používáme useStorageHandlers composable
 const {
-  handleUpload,
   handleRemoveFile,
   handleDownloadFile,
-  isUploading,
-  filesToUpload,
   downloadProgress,
   currentDownloadingFileId,
-  uploadProgress,
 } = useStorageHandlers(
   props.collectionName,
-  ref(props.formId),
+  toRef(props, 'formId'),
   localFiles,
-  (updatedFiles) => {
+  (updatedFiles) => { // Callback pro aktualizaci a uložení
     emit('update:files', updatedFiles);
-    emit('save-request'); 
+    emit('save-request');
   }
 );
 
@@ -190,7 +137,7 @@ const openNoteDialog = (file: FileSchemaType) => {
 /**
  * Uloží poznámku do lokálního stavu a následně emituje událost pro aktualizaci nadřazené komponenty.
  */
-const saveNote = async () => {
+const saveNote = () => {
   if (!fileToUpdate.value) return;
 
   // Aktualizace poznámky v lokálním stavu
@@ -199,7 +146,7 @@ const saveNote = async () => {
   // Emitování události s aktualizovaným polem souborů
   // Díky tomu, že `localFiles` je ref a je propojen s propsem `files`, můžeme emitovat `update:files` přímo s `localFiles.value`
   emit('update:files', localFiles.value);
-  
+
 
   // Vyčistíme stavy dialogu
   currentNote.value = '';

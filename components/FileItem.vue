@@ -8,8 +8,6 @@
       <q-item-label caption><a :href="fileModel.url" target="_blank">{{ fileModel.origName }}</a></q-item-label>
     </q-item-section>
 
-    <pre>Is downloading: {{ isDownloading }}</pre>
-
     <q-item-section side>
       <div class="row items-center q-gutter-xs">
         <q-btn

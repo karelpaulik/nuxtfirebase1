@@ -48,38 +48,26 @@
         </div>
       </q-linear-progress>
     </div>
-  </div>
+    </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, toRef, toRaw } from 'vue';
+import { ref, toRef } from 'vue';
 import { useStorageHandlers } from '~/composables/useStorageHandlers';
 import type { FileSchemaType } from '@/schemas/fileSchema';
 
 const props = defineProps<{
   formId: string | null;
   collectionName: string;
-  files: FileSchemaType[];
 }>();
 
-// Definice emit událostí
-const emit = defineEmits(['update:files', 'save-request']);
+const files = defineModel<FileSchemaType[]>({
+  required: true,
+  defaultValue: [], 
+});
 
-// Místní reaktivní stav pro soubory, který synchronizujeme s propsem
-//const localFiles = ref<FileSchemaType[]>(props.files);
-const localFiles = ref<FileSchemaType[]>(structuredClone(toRaw(props.files)));
+const emit = defineEmits(['save-request']);
 
-// Hlídáme změny v `files` props a aktualizujeme `localFiles`
-// To je důležité pro jednosměrný datový tok
-watch(
-  () => props.files,
-  (newFiles) => {
-    localFiles.value = newFiles;
-  },
-  { deep: true }
-);
-
-// Používáme useStorageHandlers composable
 const {
   handleUpload,
   isUploading,
@@ -88,9 +76,9 @@ const {
 } = useStorageHandlers(
   props.collectionName,
   toRef(props, 'formId'),
-  localFiles,
-  (updatedFiles) => { // Callback pro aktualizaci a uložení
-    emit('update:files', updatedFiles);
+  files, 
+  (updatedFiles: FileSchemaType[]) => { // Callback pro aktualizaci a uložení
+    files.value = updatedFiles;     
     emit('save-request');
   }
 );

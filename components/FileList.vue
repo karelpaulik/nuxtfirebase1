@@ -1,155 +1,71 @@
 <template>
   <div class="q-gutter-sm">
-    <q-list bordered separator v-if="files && files.length">
-      <q-item v-for="file in files" :key="file.url">
-        <q-item-section>
-          <q-item-label>{{ file.origName }}</q-item-label>
-          <q-item-label caption v-if="file.note">
-            Note: {{ file.note }}
-          </q-item-label>
-          <q-item-label caption><a :href="file.url" target="_blank">{{ file.origName }}</a></q-item-label>
-        </q-item-section>
-        <q-item-section side>
-          <div class="row items-center q-gutter-xs">
-            <q-btn
-              v-if="currentDownloadingFileId !== file.currName"
-              icon="download"
-              color="primary"
-              round
-              flat
-              dense
-              @click="handleDownloadFile(file)"
-              title="Stáhnout soubor"
-            />
-            <q-circular-progress
-              v-else
-              :value="downloadProgress"
-              size="24px"
-              :thickness="0.2"
-              color="primary"
-              :title="`Stahování ${downloadProgress.toFixed(0)}%`"
-            />
-            <q-btn
-              icon="edit_note"
-              color="primary"
-              round
-              flat
-              dense
-              @click="openNoteDialog(file)"
-              title="Přidat/upravit poznámku"
-            />
-            <q-btn
-              icon="delete"
-              color="negative"
-              round
-              flat
-              dense
-              @click="handleRemoveFile(file)"
-              title="Smazat soubor"
-            />
-          </div>
-        </q-item-section>
-      </q-item>
+    <q-list bordered separator v-if="filesModel && filesModel.length">
+      <FileItem
+        v-for="(file, index) in filesModel" 
+        :key="file.url"
+        v-model="filesModel[index]"       
+        :is-downloading="currentDownloadingFileId === file.currName" 
+        :download-progress="currentDownloadingFileId === file.currName ? downloadProgress : 0"
+        @download-request="handleDownloadFile(file)"
+        @remove-file="removeItem(file, index)"
+      />
     </q-list>
-
     <div v-else>Žádné soubory nebyly nahrány.</div>
-    
-    <q-dialog v-model="showNoteDialog">
-      <q-card style="width: 350px">
-        <q-card-section>
-          <div class="text-h6">Poznámka k souboru</div>
-        </q-card-section>
-        <q-card-section class="q-pt-none">
-          <q-input
-            v-model="currentNote"
-            filled
-            type="textarea"
-            placeholder="Zadejte poznámku..."
-          />
-        </q-card-section>
-        <q-card-actions align="right" class="text-primary">
-          <q-btn flat label="Zrušit" v-close-popup />
-          <q-btn flat label="Uložit" @click="saveNote" v-close-popup />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, toRef } from 'vue';
-import { useStorageHandlers } from '~/composables/useStorageHandlers';
+import { defineModel, defineProps, defineEmits, toRef } from 'vue';
+import FileItem from './FileItem.vue';
 import type { FileSchemaType } from '@/schemas/fileSchema';
+import { useStorageHandlers } from '~/composables/useStorageHandlers';
+import { notify, notifyError } from '~/composables/useNotify'; 
+
+// Vytvoření v-model pro pole souborů (v-model="formData.files")
+const filesModel = defineModel<FileSchemaType[]>({ required: true }); 
 
 const props = defineProps<{
   formId: string | null;
   collectionName: string;
-  files: FileSchemaType[];
 }>();
 
-// Definice emit událostí
-const emit = defineEmits(['update:files', 'save-request']);
+// Emitujeme pouze událost pro uložení
+const emit = defineEmits(['save-request']);
 
-// Místní reaktivní stav pro soubory, který synchronizujeme s propsem
-//const localFiles = ref<FileSchemaType[]>(props.files);
-const localFiles = ref<FileSchemaType[]>(structuredClone(toRaw(props.files)));
-
-// Hlídáme změny v `files` props a aktualizujeme `localFiles`
-// To je důležité pro jednosměrný datový tok
-watch(
-  () => props.files,
-  (newFiles) => {
-    localFiles.value = newFiles;
-  },
-  { deep: true }
-);
-
-// Používáme useStorageHandlers composable
+// Získáváme VŠECHNY potřebné funkce a stavy POUZE ZDE
 const {
-  handleRemoveFile,
-  handleDownloadFile,
-  downloadProgress,
-  currentDownloadingFileId,
+  handleRemoveFile,     // Pro mazání (použito v removeItem)
+  handleDownloadFile,   // Pro spuštění stahování (použito v handleFileDownload)
+  downloadProgress,     // Stav pro progress bar (propouští se do FileItem)
+  currentDownloadingFileId, // ID stahovaného souboru (propouští se do FileItem pro filtraci)
 } = useStorageHandlers(
   props.collectionName,
   toRef(props, 'formId'),
-  localFiles,
-  (updatedFiles) => { // Callback pro aktualizaci a uložení
-    emit('update:files', updatedFiles);
-    emit('save-request');
-  }
+  filesModel as any, 
+  () => { } // Prázdný callback VYPÍNÁ automatické ukládání do Firestore
 );
 
-// --- LOGIKA PRO POZNÁMKY ---
-const showNoteDialog = ref(false);
-const currentNote = ref('');
-const fileToUpdate = ref<FileSchemaType | null>(null);
-
 /**
- * Otevře dialogové okno pro přidání/editaci poznámky.
+ * Odstraní soubor z úložiště a aktualizuje pole filesModel.
  */
-const openNoteDialog = (file: FileSchemaType) => {
-  fileToUpdate.value = file;// Uložení objektu souboru, který se má aktualizovat
-  currentNote.value = file.note || ''; // Načte existující poznámku, pokud existuje
-  showNoteDialog.value = true;
-};
+const removeItem = async (file: FileSchemaType, index: number) => {
+    if (!confirm(`Opravdu chcete smazat soubor ${file.origName}? Tato akce je nevratná.`)) {
+        return;
+    }
 
-/**
- * Uloží poznámku do lokálního stavu a následně emituje událost pro aktualizaci nadřazené komponenty.
- */
-const saveNote = () => {
-  if (!fileToUpdate.value) return;
+    try {
+        await handleRemoveFile(file); 
+        
+        if (filesModel.value) {
+            filesModel.value.splice(index, 1);
+        }
 
-  // Aktualizace poznámky v lokálním stavu
-  fileToUpdate.value.note = currentNote.value;
-
-  // Emitování události s aktualizovaným polem souborů
-  // Díky tomu, že `localFiles` je ref a je propojen s propsem `files`, můžeme emitovat `update:files` přímo s `localFiles.value`
-  emit('update:files', localFiles.value);
-
-
-  // Vyčistíme stavy dialogu
-  currentNote.value = '';
-  fileToUpdate.value = null;
+        emit('save-request');
+        notify(`Soubor '${file.origName}' byl úspěšně smazán a odstraněn z dokumentu.`, 'positive');
+    } catch (error) {
+        console.error('Chyba při mazání souboru:', error);
+        notifyError('Mazání souboru selhalo. Změny nebyly uloženy.', error);
+    }
 };
 </script>

@@ -79,11 +79,17 @@
         <q-separator spaced class="q-mt-lg" />
 
         <div class="q-pa-md text-h4">Seznam nahraných souborů</div>
-        <FileList
+        <!-- <FileList
           :form-id="formId"
           :collection-name="COLLECTION_NAME"
           :files="formData.files"
           @update:files="(newFiles: FileSchemaType[]) => formData.files = newFiles"
+          @save-request="handleUpdateDoc(false)"
+        /> -->
+        <FileList
+          :form-id="formId"
+          :collection-name="COLLECTION_NAME"
+          v-model="formData.files"
           @save-request="handleUpdateDoc(false)"
         />
         <q-separator spaced />

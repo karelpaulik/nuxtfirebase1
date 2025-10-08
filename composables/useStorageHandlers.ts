@@ -80,16 +80,16 @@ export function useStorageHandlers(
       notify('Dokument není platný, nelze smazat soubor.', 'warning');
       return;
     }
-    if (confirm(`Opravdu chcete smazat soubor '${fileToRemove.origName}'?`)) {
+    //if (confirm(`Opravdu chcete smazat soubor '${fileToRemove.origName}'?`)) {
       try {
         await useDeleteFile(fileToRemove.url);
-        const updatedFiles = filesRef.value.filter((file) => file.url !== fileToRemove.url);
-        await updateDocCallback(updatedFiles); // Aktualizujeme přes callback
-        notify('Soubor byl úspěšně smazán a odstraněn z dokumentu.', 'positive');
+        // const updatedFiles = filesRef.value.filter((file) => file.url !== fileToRemove.url);
+        // await updateDocCallback(updatedFiles); // Aktualizujeme přes callback
+        // notify('Soubor byl úspěšně smazán a odstraněn z dokumentu.', 'positive');
       } catch (e: any) {
         notifyError('Mazání souboru selhalo:', e);
       }
-    }
+    //}
   };
 
   const handleDownloadFile = async (file: StoredFile) => {

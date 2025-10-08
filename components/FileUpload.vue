@@ -52,7 +52,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, toRef } from 'vue';
+import { ref, watch, toRef, toRaw } from 'vue';
 import { useStorageHandlers } from '~/composables/useStorageHandlers';
 import type { FileSchemaType } from '@/schemas/fileSchema';
 

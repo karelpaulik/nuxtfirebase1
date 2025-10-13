@@ -123,14 +123,14 @@ import { usePreventKeys } from '~/composables/usePreventKeys';
 import { useDocHandlers } from '~/composables/useDocHandlers';
 import { userFormSchema, hobbiesOptions, pickedOptions, createEmptyFormData } from '@/schemas/userSchema';
 import type { UserFormType } from '@/schemas/userSchema';
-import FileUpload from '~/components/FileUpload.vue';
-import FileList from '~/components/FileList.vue';
+import FileUpload from '~/components/_shared/file/FileUpload.vue';
+import FileList from '~/components/_shared/file/FileList.vue';
 
 import type { FileSchemaType } from '@/schemas/fileSchema'; // Import nového typu souboru
-import AddressesList from '~/components/AddressesList.vue'; // Import nové komponenty pro seznam adres
-import AddressForm from '~/components/AddressForm.vue'; // Importujeme novou komponentu pro jednu adresu
-import FormToolbar from '~/components/FormToolbar.vue';
-import DateInput from '~/components/DateInput.vue';
+import AddressesList from '~/components/_shared/form/AddressesList.vue'; // Import nové komponenty pro seznam adres
+import AddressForm from '~/components/_shared/form/AddressForm.vue'; // Importujeme novou komponentu pro jednu adresu
+import FormToolbar from '~/components/_shared/nav/FormToolbar.vue';
+import DateInput from '~/components/_shared/form/DateInput.vue';
 
 const props = defineProps<{
   documentId?: string;

@@ -74,9 +74,9 @@ import type { BookFormType } from '@/schemas/bookSchema';
 import { userSelectAttributes } from '@/schemas/userSchema'; // Atributy pro výběr uživatele
 
 // Komponenty
-import FormToolbar from '~/components/FormToolbar.vue';
-import DateInput from '~/components/DateInput.vue';
-import InputSelect from '~/components/InputSelect.vue'; // Generická komponenta
+import FormToolbar from '~/components/_shared/nav/FormToolbar.vue';
+import DateInput from '~/components/_shared/form/DateInput.vue';
+import InputSelect from '~/components/_shared/form/InputSelect.vue'; // Generická komponenta
 
 const props = defineProps<{
   documentId?: string;

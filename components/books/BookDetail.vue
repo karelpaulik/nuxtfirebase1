@@ -1,5 +1,5 @@
 <template>
-  <FormLayout
+  <DetailLayout
     :loading="loading"
     :form-id="formId"
     :has-changes="hasChanges"
@@ -31,7 +31,7 @@
       :option-label-fn  Které atributy se zobrazí po vybrání v q-select (podmnožina :attribute)
       -->
     </div>
-  </FormLayout>
+  </DetailLayout>
 </template>
 
 <script setup lang="ts">
@@ -50,7 +50,7 @@ import type { BookFormType } from '@/schemas/bookSchema';
 import { userSelectAttributes } from '@/schemas/userSchema'; // Atributy pro výběr uživatele
 
 // Komponenty
-import FormLayout from '~/components/_shared/layout/FormLayout.vue';
+import DetailLayout from '~/components/_shared/layout/DetailLayout.vue';
 import DateInput from '~/components/_shared/form/DateInput.vue';
 import InputSelect from '~/components/_shared/form/InputSelect.vue'; // Generická komponenta
 

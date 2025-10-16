@@ -1,5 +1,5 @@
 <template>
-  <FormLayout
+  <DetailLayout
     :loading="loading"
     :form-id="formId"
     :has-changes="hasChanges"
@@ -90,7 +90,7 @@
         hasChanges (Vlastní stav):<pre>{{ hasChanges }}</pre>
       </div>
     </div>
-  </FormLayout>
+  </DetailLayout>
 </template>
 
 <script setup lang="ts">
@@ -107,7 +107,7 @@ import FileList from '~/components/_shared/file/FileList.vue';
 
 import AddressesList from '~/components/_shared/form/AddressesList.vue'; // Import nové komponenty pro seznam adres
 import AddressForm from '~/components/_shared/form/AddressForm.vue'; // Importujeme novou komponentu pro jednu adresu
-import FormLayout from '~/components/_shared/layout/FormLayout.vue';
+import DetailLayout from '~/components/_shared/layout/DetailLayout.vue';
 import DateInput from '~/components/_shared/form/DateInput.vue';
 
 const props = defineProps<{

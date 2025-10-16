@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useRoute } from 'vue-router';
-import BookForm from '@/components/books/BookForm.vue';
+import BookDetail from '@/components/books/BookDetail.vue';
 
 const route = useRoute();
 
@@ -11,6 +11,6 @@ const route = useRoute();
 <template>
   <div>
     <h4>Detail knihy {{ route.params.id }}</h4>
-    <BookForm class="q-ma-sm q-pa-sm" :documentId="route.params.id as string || 'new'" />
+    <BookDetail class="q-ma-sm q-pa-sm" :documentId="route.params.id as string || 'new'" />
   </div>
 </template>

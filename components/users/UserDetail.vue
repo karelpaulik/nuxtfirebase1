@@ -51,24 +51,25 @@ import { toRef } from 'vue';
 // Composables
 import { useDocHandlers } from '~/composables/useDocHandlers';
 
-// Schémata a typy
+// Layout
+import DetailLayout from '~/components/_shared/layout/DetailLayout.vue';
+
+// To edit----------------------------------------------------------------
 import { userFormSchema, createEmptyFormData } from '@/schemas/userSchema';
 import type { UserFormType } from '@/schemas/userSchema';
-
-// Komponenty
-import DetailLayout from '~/components/_shared/layout/DetailLayout.vue';
 import UserForm from '~/components/users/UserForm.vue';
+
+const COLLECTION_NAME = 'users';
+const PAGE_NAME = 'users';
+const FORM_SCHEMA = userFormSchema;
+type FormDataType = UserFormType
+// ----------------------------------------------------------------------
 
 const props = defineProps<{
   documentId?: string;
 }>();
 
 const documentIdPropRef = toRef(props, 'documentId'); // Převedeme props.userId na ref, abychom ho mohli předat do useDocHandlers
-
-const COLLECTION_NAME = 'users';
-const PAGE_NAME = 'users';
-const FORM_SCHEMA = userFormSchema;
-type FormDataType = UserFormType
 
 const {
   formId,

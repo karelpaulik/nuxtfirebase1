@@ -35,4 +35,8 @@ defineProps<{
 }>();
 
 const formData = defineModel<BookFormType>();
+
+const emit = defineEmits<{
+  (e: 'save-request'): void;
+}>();
 </script>

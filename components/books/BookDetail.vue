@@ -13,6 +13,7 @@
     <BookForm
       v-model="formData" 
       :form-id="formId"
+      @save-request="handleUpdateDoc(false)"
     />
   </DetailLayout>
 </template>
@@ -24,24 +25,25 @@ import { toRef } from 'vue';
 // Composables
 import { useDocHandlers } from '~/composables/useDocHandlers';
 
-// Schémata a typy
+// Layout
+import DetailLayout from '~/components/_shared/layout/DetailLayout.vue';
+
+// To edit----------------------------------------------------------------
 import { bookFormSchema, createEmptyFormData } from '@/schemas/bookSchema';
 import type { BookFormType } from '@/schemas/bookSchema';
-
-// Komponenty
-import DetailLayout from '~/components/_shared/layout/DetailLayout.vue';
 import BookForm from '~/components/books/BookForm.vue';
+
+const COLLECTION_NAME = 'books';
+const PAGE_NAME = 'books';
+const FORM_SCHEMA = bookFormSchema;
+type FormDataType = BookFormType
+// ----------------------------------------------------------------------
 
 const props = defineProps<{
   documentId?: string;
 }>();
 
 const documentIdPropRef = toRef(props, 'documentId');
-
-const COLLECTION_NAME = 'books';
-const PAGE_NAME = 'books';
-const FORM_SCHEMA = bookFormSchema;
-type FormDataType = BookFormType
 
 const {
   formId,

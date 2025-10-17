@@ -36,13 +36,15 @@ import { onMounted } from 'vue';
 
 import { useCollectionHandlers } from '~/composables/useCollectionHandlers';
 
+// To edit----------------------------------------------------------------
 import { userApiSchema } from '@/schemas/userSchema';
 import type { UserApiType } from '@/schemas/userSchema'; // Typ pro data po validaci
 
 const COLLECTION_NAME = 'users';
 const PAGE_NAME = 'users';
 const API_SCHEMA = userApiSchema;
-type ApiType = Omit<UserApiType, 'id'>; //interface DocumentDataType extends Omit<UserApiType, 'id'> {} - jiný způsob // Bez omit by bylo: type ApiType = UserApiType;
+type ApiType = UserApiType;
+// ----------------------------------------------------------------------
 
 const {
   documents,
@@ -58,7 +60,7 @@ onMounted(() => {
   handleReadAllDocs();
 });
 
-//Dále již volitelné
+// Dále již volitelné --------------------------------------------------------
 
 //Jednoduchý filter, kde se filtruje podle jednoho pole
 const handleFilterByFName = (name: string) => {

@@ -30,13 +30,15 @@ import { onMounted } from 'vue';
 
 import { useCollectionHandlers } from '~/composables/useCollectionHandlers';
 
+// To edit----------------------------------------------------------------
 import { bookApiSchema } from '@/schemas/bookSchema';
 import type { BookApiType } from '@/schemas/bookSchema'; // Typ pro data po validaci
 
 const COLLECTION_NAME = 'books';
 const PAGE_NAME = 'books';
 const API_SCHEMA = bookApiSchema;
-type ApiType = Omit<BookApiType, 'id'>;
+type ApiType = BookApiType;
+// ----------------------------------------------------------------------
 
 const {
   documents,
@@ -50,6 +52,5 @@ const {
 // Načíst všechny dokumenty při načtení komponenty
 onMounted(() => {
   handleReadAllDocs();
-  console.log(documents);
 });
 </script>

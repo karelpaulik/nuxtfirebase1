@@ -16,7 +16,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineModel, defineProps, defineEmits, toRef } from 'vue';
+import { toRef } from 'vue';
 import FileItem from './FileItem.vue';
 import type { FileSchemaType } from '@/schemas/fileSchema';
 import { useStorageHandlers } from '~/composables/useStorageHandlers';

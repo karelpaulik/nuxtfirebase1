@@ -74,7 +74,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, defineModel } from 'vue';
+import { ref } from 'vue';
 import type { FileSchemaType } from '@/schemas/fileSchema';
 
 // Model pro JEDNOTLIVÝ soubor (v-model)

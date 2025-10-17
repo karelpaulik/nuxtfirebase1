@@ -10,33 +10,15 @@
     @del-doc="handleDelDoc"
     @clear-error="error = null"
   >
-    <h4 class="q-pa-xs q-ma-xs">{{ formId === 'new' ? 'Nový záznam' : 'Detail záznamu' }}</h4>
-
-    <div class="q-pa-md" style="max-width: 300px">
-      <q-input v-model="formData.title" label="title" />
-      <q-input v-model="formData.author" label="Author" />
-      <DateInput v-model="formData.createdDate" label="createdDate" />
-
-      <InputSelect
-        v-model="formData.currUserRefUsers"
-        label="Vyberte uživatele"
-        collection-name="users"
-        :attributes="userSelectAttributes"
-        :option-value-fn="opt => opt.id"
-        :option-label-fn="opt => `${opt.fName} ${opt.lName} ${opt.born}`"
-      />
-      <!-- 
-      :attributes  Které atributy se uloží do db v rererenci.
-      :option-value-fn  Ponechat téměř vždy "opt.id". I bez "emit-value" a "map-option" je vhodné ponechat. V "multiple" téměř nutné, v "single" není nezbytné - ale stále vhodné (porovnání záznamů).
-      :option-label-fn  Které atributy se zobrazí po vybrání v q-select (podmnožina :attribute)
-      -->
-    </div>
+    <BookForm
+      v-model="formData" 
+      :form-id="formId"
+    />
   </DetailLayout>
 </template>
 
 <script setup lang="ts">
-// Pozn. Ve vue/nuxt nebusí být všechny importy na začátku souboru.
-// Tato podmínka platí pouze pro čisté javascript/typescript soubory.
+// Vue
 import { toRef } from 'vue';
 
 // Composables
@@ -46,13 +28,9 @@ import { useDocHandlers } from '~/composables/useDocHandlers';
 import { bookFormSchema, createEmptyFormData } from '@/schemas/bookSchema';
 import type { BookFormType } from '@/schemas/bookSchema';
 
-// Atributy pro reference
-import { userSelectAttributes } from '@/schemas/userSchema'; // Atributy pro výběr uživatele
-
 // Komponenty
 import DetailLayout from '~/components/_shared/layout/DetailLayout.vue';
-import DateInput from '~/components/_shared/form/DateInput.vue';
-import InputSelect from '~/components/_shared/form/InputSelect.vue'; // Generická komponenta
+import BookForm from '~/components/books/BookForm.vue';
 
 const props = defineProps<{
   documentId?: string;
@@ -73,10 +51,15 @@ const {
   error,
   docHandlers: { handleAddDoc, handleUpdateDoc, handleRevertChanges, handleDelDoc },
   formVee,
-} = useDocHandlers<FormDataType>(documentIdPropRef, COLLECTION_NAME, PAGE_NAME, createEmptyFormData, FORM_SCHEMA,
+} = useDocHandlers<FormDataType>(
+  documentIdPropRef, 
+  COLLECTION_NAME, 
+  PAGE_NAME, 
+  createEmptyFormData, 
+  FORM_SCHEMA,
   {
-    watchIdOnLoad: true,
-    confirmLeave: true,
+    watchIdOnLoad: true, // Chceme, aby se dokument načítal
+    confirmLeave: true,  // Chceme varovat při odchodu
   }
 );
 </script>

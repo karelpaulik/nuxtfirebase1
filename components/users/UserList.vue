@@ -1,37 +1,29 @@
 <template>
-  <section>
-    <ListToolbar :page-name="PAGE_NAME" />
-
-    <div class="q-pt-xl">
-      <h4 class="q-pa-xs q-mt-none q-mb-none">Všechny dokumenty</h4>
-
-      <p v-if="loading">Načítám data...</p>
-      <p v-else-if="error?.message">Chyba při načítání dat: {{ error.message }}</p>
-      <div v-else-if="documents && documents.length > 0">
-        <ul>
-          <li v-for="doc in documents" :key="doc.id" class="q-pa-xs">
-            <NuxtLink :to="`/${PAGE_NAME}/${doc.id}`">
-              {{ doc.data.fName }} {{ doc.data.lName }} (Born: {{ doc.data.born }})
-              Driv.lic:
-              <q-checkbox v-model="doc.data.hasDrivingLic" label="Driv. lic" disable dense />
-              {{ doc.data.hobbies }}
-            </NuxtLink>
-          </li>
-        </ul>
-      </div>
-      <p v-else>Žádná data v databázi (nebo žádné výsledky filtru).</p>
-
-      <q-btn @click="filterByPetrN()" label="Filtrovat: fName=Petr, lName začíná na N" />
-      <q-btn @click="resetFilterAndLoadAll()" label="Zobrazit vše" />
-    </div>
-  </section>
+  <ListLayout
+    :loading="loading"
+    :error="error"
+    :page-name="PAGE_NAME"
+  >
+    <ul>
+      <li v-for="doc in documents" :key="doc.id" class="q-pa-xs">
+        <NuxtLink :to="`/${PAGE_NAME}/${doc.id}`">
+          {{ doc.data.fName }} {{ doc.data.lName }} (Born: {{ doc.data.born }})
+          Driv.lic:
+          <q-checkbox v-model="doc.data.hasDrivingLic" label="Driv. lic" disable dense />
+          {{ doc.data.hobbies }}
+        </NuxtLink>
+      </li>
+    </ul>
+  </ListLayout>
 </template>
 
 <script setup lang="ts">
 import { onMounted } from 'vue';
 
 import { useCollectionHandlers } from '~/composables/useCollectionHandlers';
-import ListToolbar from '@/components/_shared/nav/ListToolbar.vue';
+
+// Layout
+import ListLayout from '~/components/_shared/layout/ListLayout.vue';
 
 // To edit----------------------------------------------------------------
 import { userApiSchema } from '@/schemas/userSchema';

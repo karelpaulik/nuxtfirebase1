@@ -1,13 +1,3 @@
-<script setup lang="ts">
-import { useRoute } from 'vue-router';
-import UserContainer from '~/components/users/UserContainer.vue';
-
-const route = useRoute();
-
-// Už není potřeba ref na formulář ani useConfirmRouteLeave, protože guard je v composable
-
-</script>
-
 <template>
   <div>
     <h4>Detail uživatele {{ route.params.id }}</h4>
@@ -17,3 +7,10 @@ const route = useRoute();
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+  import { useRoute } from 'vue-router';
+  import UserContainer from '~/components/users/UserContainer.vue';
+
+  const route = useRoute();
+</script>

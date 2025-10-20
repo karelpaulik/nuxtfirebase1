@@ -7,6 +7,7 @@ import type { WhereFilterOp } from 'firebase/firestore';
 import { z } from 'zod'; // Zde je 'z' potřeba pro z.object a z.array
 import type { ZodObject, ZodRawShape } from 'zod';
 import { displayZodErrors, notifyError } from './useNotify'; // Importujeme funkce pro zobrazení chyb z useNotify
+import { delay } from '~/utils/helpers';
 
 
 /**
@@ -54,6 +55,10 @@ export function useCollectionHandlers<T extends Record<string, any>>(
     loading.value = true;// true na začátku každého volání asynchronní operace.
     error.value = null;
     try {   
+      if (import.meta.env.DEV) { // Pouze pro testovací účely. V produkci bude vynecháno.
+        await delay(1000); // 2 sekundy zpoždění pro simulaci pomalé sítě
+        //throw new Error('Simulovaná chyba při ukládání nového záznamu!');
+      }
     // //bez validace
     // documents.value = await useGetAllDocs(collectionName);
 

@@ -1,10 +1,6 @@
 <template>
   <section>
-    <div class="fixed z-top">
-      <q-toolbar class="bg-blue-grey text-white shadow-2">
-        <q-btn flat stretch no-caps @click="navigateTo(`/${PAGE_NAME}/new`)" label="Nový záznam" />
-      </q-toolbar>
-    </div>
+    <ListToolbar :page-name="PAGE_NAME" />
 
     <div class="q-pt-xl">
       <h4 class="q-pa-xs q-mt-none q-mb-none">Všechny dokumenty</h4>
@@ -35,6 +31,7 @@
 import { onMounted } from 'vue';
 
 import { useCollectionHandlers } from '~/composables/useCollectionHandlers';
+import ListToolbar from '@/components/_shared/nav/ListToolbar.vue';
 
 // To edit----------------------------------------------------------------
 import { userApiSchema } from '@/schemas/userSchema';

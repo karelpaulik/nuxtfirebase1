@@ -1,4 +1,5 @@
 <template>
+  <div class="text-h4 q-py-md">Seznam knih</div>
   <BookList />
 </template>
 

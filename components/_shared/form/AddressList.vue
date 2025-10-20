@@ -1,4 +1,4 @@
-//component/AddressesList.vue
+//component/AddressList.vue
 <template>
   <div class="q-pa-md q-gutter-md">
     <div class="text-h4">Seznam adres:</div>

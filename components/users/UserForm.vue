@@ -35,7 +35,7 @@
   <div class="q-pa-md text-h4">Hlavní adresa:</div>
   <AddressForm v-model="formData.mainAddress" />
 
-  <AddressesList v-model="formData.addresses" />
+  <AddressList v-model="formData.addresses" />
   <q-separator spaced />
 
   <div class="q-pa-md text-h4">Nahrát soubory</div>
@@ -65,7 +65,7 @@ import { usePreventKeys } from '~/composables/usePreventKeys';
 
 import FileUpload from '~/components/_shared/file/FileUpload.vue';
 import FileList from '~/components/_shared/file/FileList.vue';
-import AddressesList from '~/components/_shared/form/AddressesList.vue'; // Import nové komponenty pro seznam adres
+import AddressList from '~/components/_shared/form/AddressList.vue'; // Import nové komponenty pro seznam adres
 import AddressForm from '~/components/_shared/form/AddressForm.vue'; // Importujeme novou komponentu pro jednu adresu
 import DateInput from '~/components/_shared/form/DateInput.vue';
 

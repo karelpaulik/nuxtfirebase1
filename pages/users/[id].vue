@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useRoute } from 'vue-router';
-import UserDetail from '@/components/users/UserDetail.vue';
+import UserContainer from '~/components/users/UserContainer.vue';
 
 const route = useRoute();
 
@@ -12,7 +12,7 @@ const route = useRoute();
   <div>
     <h4>Detail uživatele {{ route.params.id }}</h4>
     <div class="row">
-      <UserDetail class="q-ma-sm q-pa-sm" :documentId="route.params.id as string || 'new'" />
+      <UserContainer class="q-ma-sm q-pa-sm" :documentId="route.params.id as string || 'new'" />
       <!-- <UserForm class="q-ma-sm q-pa-sm" documentId="7HLRz0fN8ZxEpFiWF8nC" /> -->
     </div>
   </div>

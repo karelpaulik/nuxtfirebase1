@@ -63,10 +63,10 @@ import type { UserFormType } from '@/schemas/userSchema';
 import { hobbiesOptions, pickedOptions } from '@/schemas/userSchema';
 import { usePreventKeys } from '~/composables/usePreventKeys';
 
-import FileUpload from '~/components/_shared/file/FileUpload.vue';
-import FileList from '~/components/_shared/file/FileList.vue';
-import AddressList from '~/components/_shared/form/AddressList.vue'; // Import nové komponenty pro seznam adres
-import AddressForm from '~/components/_shared/form/AddressForm.vue'; // Importujeme novou komponentu pro jednu adresu
+import FileUpload from '~/components/_shared/data/file/FileUpload.vue';
+import FileList from '~/components/_shared/data/file/FileList.vue';
+import AddressList from '~/components/_shared/data/address/AddressList.vue'; // Import nové komponenty pro seznam adres
+import AddressForm from '~/components/_shared/data/address/AddressForm.vue'; // Importujeme novou komponentu pro jednu adresu
 import DateInput from '~/components/_shared/form/DateInput.vue';
 
 defineProps<{

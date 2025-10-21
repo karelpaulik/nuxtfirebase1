@@ -52,7 +52,7 @@ import { toRef } from 'vue';
 import { useDocHandlers } from '~/composables/useDocHandlers';
 
 // Layout
-import DetailLayout from '~/components/_shared/layout/DetailLayout.vue';
+import DetailLayout from '~/components/_shared/ui/layout/DetailLayout.vue';
 
 // To edit----------------------------------------------------------------
 import { userFormSchema, createEmptyFormData } from '@/schemas/userSchema';

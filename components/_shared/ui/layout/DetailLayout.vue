@@ -33,7 +33,7 @@
 </template>
 
 <script setup lang="ts">
-import FormToolbar from '~/components/_shared/nav/FormToolbar.vue';
+import FormToolbar from '~/components/_shared/ui/nav/FormToolbar.vue';
 
 defineProps({
  loading: {

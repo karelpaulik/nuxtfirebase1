@@ -28,7 +28,7 @@
 </template>
 
 <script setup lang="ts">
-import ListToolbar from '@/components/_shared/nav/ListToolbar.vue';
+import ListToolbar from '@/components/_shared/ui/nav/ListToolbar.vue';
 
 defineProps({
  loading: {

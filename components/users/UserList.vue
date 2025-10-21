@@ -23,7 +23,7 @@ import { onMounted } from 'vue';
 import { useCollectionHandlers } from '~/composables/useCollectionHandlers';
 
 // Layout
-import ListLayout from '~/components/_shared/layout/ListLayout.vue';
+import ListLayout from '~/components/_shared/ui/layout/ListLayout.vue';
 
 // To edit----------------------------------------------------------------
 import { userApiSchema } from '@/schemas/userSchema';

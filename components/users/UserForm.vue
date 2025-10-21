@@ -67,7 +67,7 @@ import FileUpload from '~/components/_shared/data/file/FileUpload.vue';
 import FileList from '~/components/_shared/data/file/FileList.vue';
 import AddressList from '~/components/_shared/data/address/AddressList.vue'; // Import nové komponenty pro seznam adres
 import AddressForm from '~/components/_shared/data/address/AddressForm.vue'; // Importujeme novou komponentu pro jednu adresu
-import DateInput from '~/components/_shared/form/DateInput.vue';
+import DateInput from '~/components/_shared/ui/form/DateInput.vue';
 
 defineProps<{
   formId: string;

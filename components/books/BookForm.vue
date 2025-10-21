@@ -27,8 +27,8 @@
 <script setup lang="ts">
 import type { BookFormType } from '@/schemas/bookSchema';
 import { userSelectAttributes } from '@/schemas/userSchema';
-import DateInput from '~/components/_shared/form/DateInput.vue';
-import InputSelect from '~/components/_shared/form/InputSelect.vue';
+import DateInput from '~/components/_shared/ui/form/DateInput.vue';
+import InputSelect from '~/components/_shared/ui/form/InputSelect.vue';
 
 defineProps<{
   formId: string;

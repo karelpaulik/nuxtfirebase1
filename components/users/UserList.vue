@@ -7,10 +7,10 @@
     <ul>
       <li v-for="doc in documents" :key="doc.id" class="q-pa-xs">
         <NuxtLink :to="`/${PAGE_NAME}/${doc.id}`">
-          {{ doc.data.fName }} {{ doc.data.lName }} (Born: {{ doc.data.born }})
+          {{ doc.fName }} {{ doc.lName }} (Born: {{ doc.born }})
           Driv.lic:
-          <q-checkbox v-model="doc.data.hasDrivingLic" label="Driv. lic" disable dense />
-          {{ doc.data.hobbies }}
+          <q-checkbox v-model="doc.hasDrivingLic" label="Driv. lic" disable dense />
+          {{ doc.hobbies }}
         </NuxtLink>
       </li>
     </ul>

@@ -7,12 +7,10 @@
     <ul>
       <li v-for="doc in documents" :key="doc.id" class="q-pa-xs">
         <NuxtLink :to="`/${PAGE_NAME}/${doc.id}`">
-          {{ doc.data.title }} {{ doc.data.author }} (Created Date: {{ doc.data.createdDate }}) {{ doc.data.currUserRef?.id }}
+          {{ doc.title }} {{ doc.author }} (Created Date: {{ doc.createdDate }}) {{ doc.currUserRef?.id }}
         </NuxtLink>
       </li>
     </ul>
-
-    <!-- <BookListView :documents="documents" :PAGE_NAME="PAGE_NAME" /> -->
 
   </ListLayout>
 </template>
@@ -24,7 +22,6 @@ import { useCollectionHandlers } from '~/composables/useCollectionHandlers';
 
 // Layout
 import ListLayout from '~/components/_shared/ui/layout/ListLayout.vue';
-// import BookListView from './BookListView.vue';
 
 // To edit----------------------------------------------------------------
 import { bookApiSchema } from '@/schemas/bookSchema';

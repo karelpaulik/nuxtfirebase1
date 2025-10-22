@@ -11,15 +11,6 @@ import { delay } from '~/utils/helpers';
 
 
 /**
- * Rozhraní pro data jednotlivého dokumentu po validaci.
- * Data jsou nyní genericky typována podle T, což zajišťuje, že odpovídají předanému schématu.
- */
-interface DocData<T> {
-  id: string;
-  data: T; // Data dokumentu jsou nyní genericky typována
-}
-
-/**
  * Rozhraní pro volitelné parametry composable useCollectionHandlers.
  */
 interface CollectionHandlerConfig {
@@ -39,7 +30,7 @@ export function useCollectionHandlers<T extends Record<string, any>>(
   collectionName: string,
   config: CollectionHandlerConfig = {}
 ) {
-  const documents = ref<DocData<T>[]>([]);
+  const documents = ref<(T & { id: string })[]>([]);
   const loading = ref(true);//true, protože se očekává, že se handler spustí hned po: onMounted
   const error = ref<Error | null>(null);
 
@@ -88,14 +79,14 @@ export function useCollectionHandlers<T extends Record<string, any>>(
 
       // Validace proběhne pouze, pokud je validationSchema poskytnuto
       if (validationSchema) {
-        const validatedDocs: DocData<T>[] = []; // Zde budeme sbírat pouze validní dokumenty
+        const validatedDocs: (T & { id: string })[] = []; // Zde budeme sbírat pouze validní dokumenty
 
         fetchedDocs.forEach(doc => {
           // Provedeme validaci dat dokumentu pomocí předaného Zod schématu
           const parsedData = validationSchema.safeParse(doc.data);
           if (parsedData.success) {
-            // Pokud je validace úspěšná, přidáme dokument do seznamu
-            validatedDocs.push({ id: doc.id, data: parsedData.data as T }); // Přetypování na T
+            // Pokud je validace úspěšná, přidáme sloučený dokument do seznamu
+            validatedDocs.push({ ...(parsedData.data as T), id: doc.id });
           } else {
             // Pokud validace selže, zobrazíme chyby a dokument nezahrneme
             console.warn(`Dokument s ID '${doc.id}' selhal validaci schématu:`, parsedData.error);
@@ -105,8 +96,8 @@ export function useCollectionHandlers<T extends Record<string, any>>(
         documents.value = validatedDocs; // Aktualizujeme seznam dokumentů pouze s platnými daty
         console.log('Validace povolena. Načtená validovaná data:', documents.value);
       } else {
-        // Pokud validationSchema není poskytnuto, přiřadíme data tak, jak jsou
-        documents.value = fetchedDocs as DocData<T>[]; // Přetypování na očekávaný typ
+        // Pokud validationSchema není poskytnuto, přiřadíme data tak, jak jsou, ale sloučíme id a data
+        documents.value = fetchedDocs.map(doc => ({ ...(doc.data as T), id: doc.id }));
         console.log('Validace zakázána (schéma nebylo poskytnuto). Načtená data:', documents.value);
       }
 
@@ -144,14 +135,14 @@ export function useCollectionHandlers<T extends Record<string, any>>(
 
       // Validace proběhne pouze, pokud je validationSchema poskytnuto
       if (validationSchema) {
-        const validatedDocs: DocData<T>[] = []; // Zde budeme sbírat pouze validní dokumenty
+        const validatedDocs: (T & { id: string })[] = []; // Zde budeme sbírat pouze validní dokumenty
 
         fetchedDocs.forEach(doc => {
           // Provedeme validaci dat dokumentu pomocí předaného Zod schématu
           const parsedData = validationSchema.safeParse(doc.data);
           if (parsedData.success) {
-            // Pokud je validace úspěšná, přidáme dokument do seznamu
-            validatedDocs.push({ id: doc.id, data: parsedData.data as T }); // Přetypování na T
+            // Pokud je validace úspěšná, přidáme sloučený dokument do seznamu
+            validatedDocs.push({ ...(parsedData.data as T), id: doc.id });
           } else {
             // Pokud validace selže, zobrazíme chyby a dokument nezahrneme
             console.warn(`Filtrovaný dokument s ID '${doc.id}' selhal validaci schématu:`, parsedData.error);
@@ -161,8 +152,8 @@ export function useCollectionHandlers<T extends Record<string, any>>(
         documents.value = validatedDocs; // Aktualizujeme seznam dokumentů pouze s platnými daty
         console.log('Validace povolena. Načtená filtrovaná validovaná data:', documents.value);
       } else {
-        // Pokud validationSchema není poskytnuto, přiřadíme data tak, jak jsou
-        documents.value = fetchedDocs as DocData<T>[]; // Přetypování na očekávaný typ
+        // Pokud validationSchema není poskytnuto, přiřadíme data tak, jak jsou, ale sloučíme id a data
+        documents.value = fetchedDocs.map(doc => ({ ...(doc.data as T), id: doc.id }));
         console.log('Validace zakázána (schéma nebylo poskytnuto). Načtená filtrovaná data:', documents.value);
       }
     } catch (e: any) {

@@ -108,8 +108,10 @@ export function useDocHandlers<T extends Record<string, any>>(
                 const validData = validationSchema.safeParse(doc.data);
                 if (validData.success) {
                     console.log('Data úspěšně validována:', validData.data);
+                    // Dříve: formVee.resetForm({ values: validData.data as T });
+                    const dataWithId = { ...(validData.data as T), id: doc.id }; // Do objektu bez id, přidáme id
                     // Nastavíme hodnoty do VeeValidate formuláře a resetujeme jej
-                    formVee.resetForm({ values: validData.data as T }); // Tímto se nastaví nové hodnoty jako 'čisté' a meta.dirty/touched se resetuje na false
+                    formVee.resetForm({ values: dataWithId }); // Tímto se nastaví nové hodnoty jako 'čisté' a meta.dirty/touched se resetuje na false
                     //hasChanges.value = false; // Automaticky se nastaví přes watch na formVee.meta.dirty
                     formId.value = doc.id;
                     notify('Dokument úspěšně načten!', 'positive');
@@ -183,7 +185,9 @@ export function useDocHandlers<T extends Record<string, any>>(
             // console.log('Raw data:', formVee);
             // console.log('Validated data:', values);
             // console.log('Cleaned data:', cleanedData);
-            const docId = await useAddColl(collectionName, cleanedData); // Použijeme validované hodnoty
+            const { id, ...dataToSave } = cleanedData; // Remove id before saving: dataToSave - objekt bez id
+            // Dříve: const docId = await useAddColl(collectionName, cleanedData); // Použijeme validované hodnoty
+            const docId = await useAddColl(collectionName, dataToSave); // Použijeme hodnoty: 1. validované (props bez value=undefined), 2. bez prop: id
             if (docId) {
                 formVee.resetForm(); // Reset VeeValidate form po uložení (resetuje na initialValues)
                 await router.push(`/${pageName}/${docId}`);
@@ -228,7 +232,8 @@ export function useDocHandlers<T extends Record<string, any>>(
                 //throw new Error('Simulovaná chyba při ukládání nového záznamu!');
             }
             const cleanedData = cleanObject(values); // <-- Čištění dat před odesláním. Tj. odstranění props s hodnotou "undefined".
-            const success = await useUpdateDoc(collectionName, formId.value, cleanedData); // Použijeme validované hodnoty
+            const { id, ...dataToSave } = cleanedData; // Remove id before saving: dataToSave - objekt bez id
+            const success = await useUpdateDoc(collectionName, formId.value, dataToSave); // Použijeme validované hodnoty
             if (success) {
                 console.log(`Dokument s ID '${formId.value}' v kolekci '${collectionName}' byl úspěšně aktualizován!`);
                 formVee.resetForm({ values: values as T }); // Reset VeeValidate form po uložení, ale zachovat aktuální hodnoty jako nové 'čisté'

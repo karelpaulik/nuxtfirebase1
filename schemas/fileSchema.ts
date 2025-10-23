@@ -7,6 +7,7 @@ import { datePreprocessor } from '@/utils/zod';
  * Zod schéma pro jeden soubor.
  */
 export const fileSchema = z.object({
+  id: z.string().optional(),
   origName: z.string().min(1, 'Původní název souboru je povinný.'),
   currName: z.string().min(1, 'Aktuální název souboru je povinný.'),
   url: z.string().url('URL souboru musí být platná URL adresa.'),

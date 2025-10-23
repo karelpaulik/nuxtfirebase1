@@ -5,14 +5,12 @@
 </template>
 
 <script setup lang="ts">
-defineProps({
-  doc: {
-    type: Object,
-    required: true,
-  },
-  PAGE_NAME: {
-    type: String,
-    required: true,
-  },
-});
+import type { BookApiType } from '@/schemas/bookSchema';
+
+// Type-based declaration, doporučovaný přístup pro composition API. Dále existuje: Runtime declaration
+defineProps<{
+  doc: BookApiType,
+  PAGE_NAME: string,
+}>();
+
 </script>

@@ -211,3 +211,28 @@ npm view @vee-validate/zod peerdependencies
 if (val instanceof Date) {}     //instanceof: Date, Timestamp, ...
 if (typeof val==='string') {}   //typeof: string, number, boolean, ... 
 ```
+
+# Deklarace props v typescript
+## Type-based declaration, doporučovaný přístup pro composition API.
+```
+defineProps<{
+  doc: BookApiType,
+  PAGE_NAME: string,
+}>();
+// string s malým: s
+```
+
+## Runtime declaration, primárně pro Options API. Není pro náš případ doporučeno.
+```
+defineProps({
+  doc: {
+    type: Object as () => BookApiType,
+    required: true,
+  },
+  PAGE_NAME: {
+    type: String,
+    required: true,
+  },
+});
+// String s velkým: S
+```

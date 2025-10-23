@@ -4,15 +4,16 @@
     :error="error"
     :page-name="PAGE_NAME"
   >
-    <ul>
+    <!-- <ul>
       <li v-for="doc in documents" :key="doc.id" class="q-pa-xs">
         <NuxtLink :to="`/${PAGE_NAME}/${doc.id}`">
           {{ doc.title }} {{ doc.author }} (Created Date: {{ doc.createdDate }}) {{ doc.currUserRef?.id }}
         </NuxtLink>
       </li>
-    </ul>
+    </ul> -->
 
-    <!-- <BookListView :documents="documents" :PAGE_NAME="PAGE_NAME" /> -->
+    <!-- Pro předání "documents" nepoužívat v-model. Nechci upravovat data v rodiči. Pouze one-way binding. -->
+    <BookListView :documents="documents" :PAGE_NAME="PAGE_NAME" />
 
   </ListLayout>
 </template>
@@ -24,7 +25,9 @@ import { useCollectionHandlers } from '~/composables/useCollectionHandlers';
 
 // Layout
 import ListLayout from '~/components/_shared/ui/layout/ListLayout.vue';
-// import BookListView from './BookListView.vue';
+
+// Components
+import BookListView from './BookListView.vue';
 
 // To edit----------------------------------------------------------------
 import { bookApiSchema } from '@/schemas/bookSchema';

@@ -7,16 +7,11 @@
 </template>
 
 <script setup lang="ts">
+import type { BookApiType } from '@/schemas/bookSchema';
 import BookListViewItem from './BookListViewItem.vue';
 
-defineProps({
-  documents: {
-    type: Array,
-    required: true,
-  },
-  PAGE_NAME: {
-    type: String,
-    required: true,
-  },
-});
+defineProps<{
+  documents: BookApiType[],
+  PAGE_NAME: string,
+}>();
 </script>

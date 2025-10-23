@@ -12,6 +12,8 @@
       </li>
     </ul>
 
+    <!-- <BookListView :documents="documents" :PAGE_NAME="PAGE_NAME" /> -->
+
   </ListLayout>
 </template>
 
@@ -22,6 +24,7 @@ import { useCollectionHandlers } from '~/composables/useCollectionHandlers';
 
 // Layout
 import ListLayout from '~/components/_shared/ui/layout/ListLayout.vue';
+// import BookListView from './BookListView.vue';
 
 // To edit----------------------------------------------------------------
 import { bookApiSchema } from '@/schemas/bookSchema';

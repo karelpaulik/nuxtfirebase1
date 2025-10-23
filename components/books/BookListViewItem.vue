@@ -1,6 +1,6 @@
 <template>
   <NuxtLink :to="`/${PAGE_NAME}/${doc.id}`">
-    {{ doc.data.title }} {{ doc.data.author }} (Created Date: {{ doc.data.createdDate }}) {{ doc.data.currUserRef?.id }}
+    {{ doc.title }} {{ doc.author }} (Created Date: {{ doc.createdDate }}) {{ doc.currUserRef?.id }}
   </NuxtLink>
 </template>
 

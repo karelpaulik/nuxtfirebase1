@@ -66,6 +66,7 @@ export const createUserSchema = (isFormValidation: boolean) => {
     picked: z.string().catch(null),
     createdDate: datePreprocessor.nullable().optional().catch(null),
     files: z.array(fileSchema).optional().catch([]),
+    file: fileSchema.optional().catch(null), // createEmptyFile zde není, protože neexistuje. Proč - viz schema
     mainAddress: addressSchema.optional().catch(createEmptyAddress()),
     addresses: z.array(addressSchema).optional().catch([]),
   });
@@ -96,6 +97,7 @@ export const createEmptyFormData = (): UserFormType => {
     picked: null,
     createdDate: new Date(), // Pro v-model nutno computed (převod na string a zpět). Maybe quasar?
     files: [],
+    file: null, // null vs. {} ??,  createEmptyFile zde není, protože neexistuje. Proč - viz schema
     addresses: [], // Inicializace prázdného pole pro adresy
     mainAddress: createEmptyAddress(), // Používáme importovanou funkci
   };

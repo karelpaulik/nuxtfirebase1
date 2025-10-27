@@ -23,11 +23,11 @@ interface StoredFile extends FileSchemaType {
 export function useStorageHandlers(
   collectionName: string,
   docIdRef: Ref<string | null>,
-  filesRef: Ref<StoredFile[]>,
-  updateDocCallback: (updatedFiles: StoredFile[]) => Promise<void>
+  filesRef: Ref<StoredFile[] | StoredFile>, // Již dříve uložené soubory
+  updateDocCallback: (updatedFiles: StoredFile[] | StoredFile) => Promise<void>
 ) {
   const isUploading = ref(false);
-  const filesToUpload = ref<File[]>([]);
+  const filesToUpload = ref<File[] | File | null>(null); // Nové soubory k uložení
   const downloadProgress = ref(0); // Nová reaktivní proměnná pro zobrazení průběhu stahování
   const uploadProgress = ref(0); // Nová reaktivní proměnná pro zobrazení průběhu nahrávání
   const currentDownloadingFileId = ref<string | null>(null); // Ukládá ID souboru, který se právě stahuje. Jinak by se progres stahování zobrazoval u všech souborů.
@@ -38,7 +38,7 @@ export function useStorageHandlers(
       return;
     }
 
-    if (!filesToUpload.value.length) {
+    if (!filesToUpload.value || (Array.isArray(filesToUpload.value) && filesToUpload.value.length === 0)) {
       notify('Nejsou vybrány žádné soubory k nahrání.', 'info');
       return;
     }
@@ -47,26 +47,32 @@ export function useStorageHandlers(
     uploadProgress.value = 0; // Resetování průběhu na 0
 
     try {
-      // Nyní se dá nahrávat buď 1. paraleně, nebo 2. sekvenčně 
+      if (Array.isArray(filesToUpload.value)) { // Jestliže pole souborů
+        const existingFiles = Array.isArray(filesRef.value)
+        ? filesRef.value
+        : (filesRef.value ? [filesRef.value] : []);
+        const newFiles: StoredFile[] = [];
+        let fileIndex = 0; // Sledování indexu nahráváného souboru
+        for (const file of filesToUpload.value) {
+          fileIndex++;
+          notify(`Nahrávám soubor ${fileIndex} z ${filesToUpload.value.length}`);
+          const uploadedFile = await useUploadFile(`${collectionName}/${docIdRef.value}`, file, (progress: number) => uploadProgress.value = progress);
+          newFiles.push(uploadedFile);
+        }
+  
+        const updatedFiles = [...existingFiles, ...newFiles];// Přidáme nová data k existujícím
+        await updateDocCallback(updatedFiles); // Aktualizujeme přes callback
+        filesToUpload.value = [];
+        notify('Všechny soubory byly úspěšně nahrány a uloženy!', 'positive');
 
-      // Paralelní nahrávání. Rychlejší, ale progress je progress náhodného souboru.
-      // const filePromises = filesToUpload.value.map(file => useUploadFile(`${collectionName}/${docIdRef.value}`, file, (progress: number) => uploadProgress.value = progress));// Vytoření pole promises pro paralelní nahrávání více souborů. Nic ale nenahrává.
-      // const newFiles = await Promise.all(filePromises);// Čekáme na dokončení nahrávání souborů, nyní se vrací objekt s metadaty
-
-      // Sekvenční nahrávání: Procházíme soubory jeden po druhém pomocí for...of. Pomalejší, ale jasný význam progressu.
-      const newFiles: StoredFile[] = [];
-      let fileIndex = 0; // Sledování indexu nahráváného souboru
-      for (const file of filesToUpload.value) {
-        fileIndex++;
-        notify(`Nahrávám soubor ${fileIndex} z ${filesToUpload.value.length}`);
-        const uploadedFile = await useUploadFile(`${collectionName}/${docIdRef.value}`, file, (progress: number) => uploadProgress.value = progress);
-        newFiles.push(uploadedFile);
+      } else { // Jestliže jednotlivý soubor
+        notify(`Nahrávám soubor ${filesToUpload.value.name}`);
+        const uploadedFile = await useUploadFile(`${collectionName}/${docIdRef.value}`, filesToUpload.value, (progress: number) => uploadProgress.value = progress);
+        
+        await updateDocCallback(uploadedFile);
+        filesToUpload.value = null;
+        notify('Soubor úspěšně nahraný a uložen!', 'positive');
       }
-
-      const updatedFiles = [...filesRef.value, ...newFiles];// Přidáme nová data k existujícím
-      await updateDocCallback(updatedFiles); // Aktualizujeme přes callback
-      filesToUpload.value = [];
-      notify('Všechny soubory byly úspěšně nahrány a uloženy!', 'positive');
     } catch (e: any) {
       notifyError('Nahrávání souborů selhalo:', e);
     } finally {

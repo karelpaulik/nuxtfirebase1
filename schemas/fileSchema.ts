@@ -22,3 +22,7 @@ export const fileSchema = z.object({
  * TypeScript typ odvozený od fileSchema.
  */
 export type FileSchemaType = z.infer<typeof fileSchema>;
+
+// Funkce pro vytvoření prázdného objektu, která je úzce spojená se schématem
+// !!! Tato funkce zřejmě není potřeba, protože nevytvářím prázdný objekt pro editaci. 
+// !!! Nový objekt se vždy vytvoří s nahráním souboru a obsah objektu je pak naplněn hotovými daty.

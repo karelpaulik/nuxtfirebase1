@@ -1,5 +1,5 @@
 <template>
-  <q-item>
+  <q-item v-if="fileModel">
     <q-item-section>
       <q-item-label>{{ fileModel.origName }}</q-item-label>
       <q-item-label caption v-if="fileModel.note">
@@ -80,10 +80,14 @@ import type { FileSchemaType } from '@/schemas/fileSchema';
 // Model pro JEDNOTLIVÝ soubor (v-model)
 const fileModel = defineModel<FileSchemaType>({ required: true }); 
 
-const props = defineProps<{
-    isDownloading: boolean;
-    downloadProgress: number;
-}>();
+// Definuje props s defaultními hodnotami pomocí `withDefaults`
+const props = withDefaults(defineProps<{
+    isDownloading?: boolean; // Změněno na volitelné
+    downloadProgress?: number; // Změněno na volitelné
+}>(), {
+    isDownloading: false, // Defaultní hodnota: false
+    downloadProgress: 0,  // Defaultní hodnota: 0
+});
 
 // NOVÉ EMITY: Událost pro stahování nese s sebou data souboru
 const emit = defineEmits(['remove-file', 'download-request']); 

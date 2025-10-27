@@ -3,11 +3,11 @@
     <q-file
       v-model="filesToUpload"
       label="Vyberte soubory"
-      multiple
+      :multiple="multiple"
       dense
       outlined
       class="q-mb-md"
-      :disable="!formId || formId === 'new'"
+      :disable="isDisabled"
     >
       <template v-slot:prepend>
         <q-icon name="attach_file" />
@@ -19,7 +19,7 @@
           flat
           icon="cloud_upload"
           @click="handleUpload"
-          :disable="!filesToUpload.length || isUploading || !formId || formId === 'new'"
+          :disable="isDisabled"
           :loading="isUploading"
           title="Nahrát vybrané soubory"
         />
@@ -52,34 +52,48 @@
 </template>
 
 <script setup lang="ts">
-import { ref, toRef } from 'vue';
+import { toRef, computed } from 'vue';
 import { useStorageHandlers } from '~/composables/useStorageHandlers';
 import type { FileSchemaType } from '@/schemas/fileSchema';
 
 const props = defineProps<{
-  formId: string | null;
-  collectionName: string;
+    formId: string | null;
+    collectionName: string;
+    multiple: boolean;
 }>();
 
-const files = defineModel<FileSchemaType[]>({
-  required: true,
-  defaultValue: [], 
+const model = defineModel<FileSchemaType | FileSchemaType[] | null>({
+    required: true,
 });
 
 const emit = defineEmits(['save-request']);
 
+const isDisabled = computed((): boolean => {
+    return isUploading.value || !props.formId || props.formId === 'new';
+});
+
 const {
-  handleUpload,
-  isUploading,
-  filesToUpload,
-  uploadProgress,
+    handleUpload,
+    handleRemoveFile,
+    isUploading,
+    filesToUpload,
+    uploadProgress,
 } = useStorageHandlers(
-  props.collectionName,
-  toRef(props, 'formId'),
-  files, 
-  (updatedFiles: FileSchemaType[]) => { // Callback pro aktualizaci a uložení
-    files.value = updatedFiles;     
-    emit('save-request');
-  }
+    props.collectionName,
+    toRef(props, 'formId'),
+    model,
+    async (updatedFiles: FileSchemaType[] | FileSchemaType) => { // Callback pro aktualizaci a uložení
+
+      //Pouze pro režim single(ne-multiple), v režimu multiple se soubory přidávají.
+      const oldFile = model.value as FileSchemaType | null;
+      if (!props.multiple && oldFile && oldFile.url && !Array.isArray(updatedFiles)) { // 1. Jestliže jsme v režimu single(ne-multiple) AND jestli existuje již nahraný soubor AND jestli updatedFiles nejsou pole, pak
+          if (oldFile.url !== updatedFiles.url) { // Pojistka (nepravděpodobná) - mažu opravdu starý soubor
+              await handleRemoveFile(oldFile);
+          }
+      }
+      
+      model.value = updatedFiles;
+      emit('save-request');
+    }
 );
 </script>

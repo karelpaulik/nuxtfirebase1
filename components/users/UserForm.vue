@@ -38,11 +38,12 @@
   <AddressList v-model="formData.addresses" />
   <q-separator spaced />
 
-  <div class="q-pa-md text-h4">Nahrát soubory</div>
+  <div class="q-pa-md text-h4">Nahrát soubory (vícenásobné)</div>
   <FileUpload
     :form-id="formId"
     :collection-name="COLLECTION_NAME"
     v-model="formData.files"
+    :multiple="true"
     @save-request="emit('save-request')"
   />
   <q-separator spaced class="q-mt-lg" />
@@ -55,6 +56,21 @@
     @save-request="emit('save-request')"
   />
 
+  <div class="q-pa-md text-h4">Nahrát soubor (jeden)</div>
+  <FileUpload
+    :form-id="formId"
+    :collection-name="COLLECTION_NAME"
+    v-model="formData.file"
+    :multiple="false"
+    @save-request="emit('save-request')"
+  />
+
+  <!-- FileList níže - nefunguje: download, delete  -->
+  <!-- Zobrazení obrázku je na dořešení -->
+  <FileItem
+    v-model="formData.file"       
+  />
+  <img v-if="formData.file && formData.file.url" :src="formData.file.url" />
 </template>
 
 
@@ -68,6 +84,8 @@ import FileList from '~/components/_shared/data/file/FileList.vue';
 import AddressList from '~/components/_shared/data/address/AddressList.vue'; // Import nové komponenty pro seznam adres
 import AddressForm from '~/components/_shared/data/address/AddressForm.vue'; // Importujeme novou komponentu pro jednu adresu
 import DateInput from '~/components/_shared/ui/form/DateInput.vue';
+
+import FileItem from '~/components/_shared/data/file/FileItem.vue';
 
 defineProps<{
   formId: string;

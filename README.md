@@ -106,7 +106,7 @@ npm run build
 Vytvoří se .output/public
 
 Do tohoto adresáře najet
-cd .output/public
+cd .output
 
 Provést deploy na google hosting.
 firebase login

@@ -236,3 +236,13 @@ defineProps({
 });
 // String s velkým: S
 ```
+
+## Použití authentizace
+Následující blok kódu se může použít pouze v soborech umístěných v adresářích/poadresářích: root/page
+
+Nemůže se použít např. v: root/components
+```
+  definePageMeta({
+    middleware: 'auth' 
+  });
+```

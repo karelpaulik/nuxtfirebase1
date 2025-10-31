@@ -4,5 +4,9 @@
 </template>
 
 <script setup lang="ts">
+  definePageMeta({
+    middleware: 'auth' 
+  });
+
   import UserList from '~/components/users/UserList.vue';
 </script>

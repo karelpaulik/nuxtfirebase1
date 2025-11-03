@@ -271,7 +271,7 @@ npm install firebase-admin firebase-functions
 ```
 
 **Napsání kódu - např. custom claim**
-```
+```ts
 //functions/src/index.js
 
 const functions = require('firebase-functions');
@@ -288,7 +288,7 @@ exports.setCustomUserClaims = functions.firestore
 ```
 
 Nebo např.
-```
+```ts
 import * as functions from "firebase-functions";
 
 export const helloWorld = functions.https.onRequest((req, res) => {
@@ -297,7 +297,7 @@ export const helloWorld = functions.https.onRequest((req, res) => {
 ```
 
 **Pro případ typescript je nutná kompilace**
-```
+```bash
 npm run build
 ```
 
@@ -307,12 +307,12 @@ cd ..
 ```
 
 **Deploy**
-```
+```bash
 firebase deploy --only functions
 ```
 
 **První deploy**
-```
+```ts
 import * as functions from "firebase-functions";
 
 export const helloWorld = functions.https.onRequest((req, res) => {
@@ -324,7 +324,7 @@ https://us-central1-inspired-berm-460713-t6.cloudfunctions.net/helloWorld
 
 
 **Druhý deploy**
-```
+```ts
 import {onRequest} from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 
@@ -383,7 +383,7 @@ export const helloWorld = onRequest((request, response) => {
 
 ## Emulace cloud function před nasazením na server
 **V root projektu**
-```
+```bash
 firebase emulators:start --only functions
 
 nebo obecně:

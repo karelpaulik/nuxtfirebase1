@@ -380,3 +380,12 @@ export const helloWorld = onRequest((request, response) => {
 ```
 
 **Závěr:** Změna URL je **pozitivní** indikátor. Funkce nyní běží na modernější a škálovatelnější infrastruktuře Cloud Run, i když jsou stále spravovány přes rozhraní Firebase Cloud Functions.
+
+## Emulace cloud function před nasazením na server
+**V root projektu**
+```
+firebase emulators:start --only functions
+
+nebo obecně:
+firebase emulators:start
+```

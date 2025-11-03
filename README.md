@@ -246,3 +246,67 @@ Nemůže se použít např. v: root/components
     middleware: 'auth' 
   });
 ```
+
+# Cloud function
+## Postup jak založit první cloud function
+
+**Najet do root**
+```
+firebase init functions
+
+Typescript
+
+Do you want to install dependencies with npm now? (Y/n)
+y
+```
+
+**Přejít do adresáře**
+```
+cd functions
+```
+
+Doinstalovat (firebase-admin není povinný, podle toho, co vše budu používat)
+```
+npm install firebase-admin firebase-functions
+```
+
+**Napsání kódu - např. custom claim**
+```
+//functions/src/index.js
+
+const functions = require('firebase-functions');
+const admin = require('firebase-admin');
+
+admin.initializeApp(); 
+
+exports.setCustomUserClaims = functions.firestore
+    .document('users/{userId}')
+    .onUpdate(async (change, context) => {
+        // ... (logika pro čtení role a nastavení claimu)
+        // ...
+    });
+```
+
+Nebo např.
+```
+import * as functions from "firebase-functions";
+
+export const helloWorld = functions.https.onRequest((req, res) => {
+  res.send({ message: "Ahoj z Firebase!" });
+});
+```
+
+**Pro případ typescript je nutná kompilace**
+```
+npm run build
+```
+
+**Najet do rootu**
+```
+cd ..
+```
+
+**Deploy**
+```
+firebase deploy --only functions
+```

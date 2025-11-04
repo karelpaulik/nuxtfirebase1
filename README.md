@@ -389,3 +389,8 @@ firebase emulators:start --only functions
 nebo obecně:
 firebase emulators:start
 ```
+
+## Výpis uživatelů včetně custom claims
+```
+firebase auth:export auth_data.json --format=json
+```

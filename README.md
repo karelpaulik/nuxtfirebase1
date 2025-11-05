@@ -246,3 +246,151 @@ Nemůže se použít např. v: root/components
     middleware: 'auth' 
   });
 ```
+
+# Cloud function
+## Postup jak založit první cloud function
+
+**Najet do root**
+```
+firebase init functions
+
+Typescript
+
+Do you want to install dependencies with npm now? (Y/n)
+y
+```
+
+**Přejít do adresáře**
+```
+cd functions
+```
+
+Doinstalovat (firebase-admin není povinný, podle toho, co vše budu používat)
+```
+npm install firebase-admin firebase-functions
+```
+
+**Napsání kódu - např. custom claim**
+```ts
+//functions/src/index.js
+
+const functions = require('firebase-functions');
+const admin = require('firebase-admin');
+
+admin.initializeApp(); 
+
+exports.setCustomUserClaims = functions.firestore
+    .document('users/{userId}')
+    .onUpdate(async (change, context) => {
+        // ... (logika pro čtení role a nastavení claimu)
+        // ...
+    });
+```
+
+Nebo např.
+```ts
+import * as functions from "firebase-functions";
+
+export const helloWorld = functions.https.onRequest((req, res) => {
+  res.send({ message: "Ahoj z Firebase!" });
+});
+```
+
+**Pro případ typescript je nutná kompilace**
+```bash
+npm run build
+```
+
+**Najet do rootu**
+```
+cd ..
+```
+
+**Deploy**
+```bash
+firebase deploy --only functions
+```
+
+**První deploy**
+```ts
+import * as functions from "firebase-functions";
+
+export const helloWorld = functions.https.onRequest((req, res) => {
+  res.send({ message: "Ahoj z Firebase!" });
+});
+```
+https://us-central1-inspired-berm-460713-t6.cloudfunctions.net/helloWorld
+
+
+
+**Druhý deploy**
+```ts
+import {onRequest} from "firebase-functions/v2/https";
+import * as logger from "firebase-functions/logger";
+
+export const helloWorld = onRequest((request, response) => {
+  logger.info("Hello logs!", {structuredData: true});
+  response.send("Hello from Firebase!");
+});
+```
+https://helloworld-k2ha6kfpha-uc.a.run.app/
+
+
+
+**Proč taková změna?**
+
+Toto je skvělé pozorování\! Změna URL adresy není náhodná; naznačuje, přechod z **první generace** Cloud Functions na **druhou generaci** (2nd Gen), která využívá službu **Cloud Run**.
+
+Jde o modernější a doporučený způsob hostování funkcí.
+
+-----
+
+## 🧐 Vysvětlení Změny URL
+
+Rozdílná struktura URL přímo odráží, jakým způsobem jsou Cloud Functions spravovány a hostovány v rámci Google Cloud Platform:
+
+### 1\. První Deploy (1. Generace Cloud Functions)
+
+  * **URL struktura:** `https://[region]-[project-id].cloudfunctions.net/[function-name]`
+  * **Technologie:** Běží přímo na původním prostředí **Google Cloud Functions**.
+  * **Charakteristika:** Toto je starší, stabilní verze. Funkce se spouští, když je volána, ale její škálování a rychlost startu (cold start) jsou ve srovnání s 2. generací omezenější.
+
+### 2\. Druhý Deploy (2. Generace Cloud Functions)
+
+  * **URL struktura:** `https://[service-name]-[hash]-[region].a.run.app/`
+  * **Technologie:** Běží jako služba **Google Cloud Run**.
+  * **Charakteristika:** Toto je **druhá generace** Cloud Functions. Firebase je nyní nasazuje jako služby **Cloud Run**, což má tyto výhody:
+      * **Vylepšené škálování:** Rychlejší náběh (nižší cold start) a efektivnější škálování až na nulu (nulová spotřeba, když se nepoužívá).
+      * **Delší runtime:** Může běžet déle (až 60 minut).
+      * **Standardní URL:** Používá standardní doménu Cloud Run (`.a.run.app`), která je navržena pro hostování kontejnerizovaných služeb.
+
+### 💡 Proč k tomu došlo?
+
+V kódu pro druhý deploy se použila **nová syntaxi** pro Cloud Functions, která je specifická pro druhou generaci (např. importy z `firebase-functions/v2/...` nebo použití `onRequest` namísto `functions.https.onRequest`).
+
+**Příklad kódu, který spustí 2. generaci (Cloud Run):**
+
+```typescript
+// Toto vyžaduje 2. generaci a spouští se na Cloud Run
+import { onRequest } from "firebase-functions/v2/https"; 
+
+export const helloWorld = onRequest((request, response) => { 
+    // ... 
+});
+```
+
+**Závěr:** Změna URL je **pozitivní** indikátor. Funkce nyní běží na modernější a škálovatelnější infrastruktuře Cloud Run, i když jsou stále spravovány přes rozhraní Firebase Cloud Functions.
+
+## Emulace cloud function před nasazením na server
+**V root projektu**
+```bash
+firebase emulators:start --only functions
+
+nebo obecně:
+firebase emulators:start
+```
+
+## Výpis uživatelů včetně custom claims
+```
+firebase auth:export auth_data.json --format=json
+```

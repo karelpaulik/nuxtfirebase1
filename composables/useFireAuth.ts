@@ -56,7 +56,21 @@ export const useLogin = async (email: string, password: string): Promise<User | 
         const auth = getAuthInstance();
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         console.log(`Uživatel ${email} úspěšně přihlášen.`);
-        return userCredential.user;
+
+        // Nově pro claims ----------------------------------------------
+        const user = userCredential.user;
+      
+        //const tokenResult = await auth.currentUser.getIdTokenResult(true);
+        const tokenResult = await user.getIdTokenResult(true); // Toto je vhodnější, i když to v podstětě dělá to samé jako řádek výše.
+
+        const claims = tokenResult.claims;
+        const roles = tokenResult.claims.roles; // Bude to pole: např. ["admin", "editor"]
+        
+        console.log('Uživatel přihlášen. Claims: ', claims);
+        console.log('Uživatel přihlášen. Role pole: ', roles);
+        // ---------------------------------------------------------------
+
+        return user;
     } catch (e: any) {
         notifyError(`Chyba při přihlášení uživatele: ${email}`, e);
         throw e;

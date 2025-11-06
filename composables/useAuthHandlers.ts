@@ -1,15 +1,9 @@
-// composables/useAuthHandlers.ts
 import { ref, type Ref } from 'vue';
+import { useState } from '#app';
 import type { User } from 'firebase/auth';
 import { useLogin, useLogout, useSignUp, useAuthListener } from './useFireAuth';
-import { notify, notifyError } from './useNotify'; 
-
-// 1. GLOBÁLNÍ STAV USER: Tento ref je zdrojem pravdy pro celou aplikaci.
-// Listener do něj bude vždy zapisovat, bez ohledu na to, kolikrát se volá useAuthHandlers.
-const globalUser = ref<User | null>(null);
-
-// 2. SENTINEL (STRÁŽCE): Zajišťuje, že se useAuthListener spustí jen jednou.
-let isAuthListenerActive: boolean = false; 
+import { notify, notifyError } from './useNotify';
+import { useLoggedUser } from './useLoggedUser';
 
 // Definice typu pro obsah Ref
 interface AuthFormDataType {
@@ -25,7 +19,7 @@ interface AuthFormDataType {
 export function useAuthHandlers() {
     // 1. LOKÁLNÍ STAVY (Vytváří se při každém volání useAuthHandlers)
     const loading = ref(false);
-    const error = ref<Error | null>(null); 
+    const error = ref<Error | null>(null);
 
     // 2. DATA FORMULÁŘE (JEDINÝ REF KONTEJNER)
     const formData: Ref<AuthFormDataType> = ref({
@@ -33,22 +27,11 @@ export function useAuthHandlers() {
         password: '',
     });
 
-    // 3. LISTENERY - Obaleno do kontroly, volá se jen jednou
-    if (!isAuthListenerActive) {
-        // TOTO se stane pouze PŘI PRVNÍM SPUŠTĚNÍ useAuthHandlers
-        
-        const unsubscribe = useAuthListener((newUser) => {
-            // Listener nyní zapisuje do GLOBÁLNÍ proměnné, čímž aktualizuje stav v celé aplikaci.
-            globalUser.value = newUser;            
-            console.log('Auth stav změněn. Aktuální uživatel:', newUser?.email || 'uživatel nepřihlášen');
-            // if (newUser) {
-            //     notify(`Vítejte, ${newUser.email}!`, 'positive');
-            // }
-        });
-        isAuthListenerActive = true;
-    }
+    // 3. ZÍSKÁNÍ SDÍLENÉHO STAVU UŽIVATELE (pro pohodlí, aby ho komponenty měly k dispozici)
+    const { user } = useLoggedUser();
 
-    // 4. HANDLERY
+
+    // 5. HANDLERY
 
     const handleSignUp = async (): Promise<void> => {
         const email = formData.value.email;
@@ -129,7 +112,7 @@ export function useAuthHandlers() {
         formData, 
         loading,
         error,
-        user: globalUser, // Vrátíme GLOBÁLNÍ stav uživatele
+        user, // Vrátíme sdílený stav uživatele
         authHandlers: {
             handleLogin,
             handleLogout,

@@ -394,3 +394,45 @@ firebase emulators:start
 ```
 firebase auth:export auth_data.json --format=json
 ```
+
+# Pluginy 
+
+Nuxt 3 Pluginy slouží k **rozšíření a přizpůsobení** aplikace v rámci jejího inicializačního procesu. Umožňují vám spouštět kód, konfigurovat knihovny nebo přidávat funkce **předtím, než se načte hlavní Vue aplikace**.
+
+## Pojmenování pluginů
+
+**xxxx.client.ts** Toto pojmenování znamená, že se plugin spustí pouze na klientu.
+
+**Čísla na začátku názvu souborů** - jsou velice důležitá. Říkají v jakém pořadí se mají pluginy spustit.
+- 01.xxx.client.ts
+- 02.xxx.client.ts
+
+-----
+
+## 🔌 K čemu slouží Nuxt 3 Pluginy?
+
+Pluginy jsou primárně určeny k tomu, abyste mohli:
+
+1.  **Registrovat externí knihovny nebo služby:** Ideální pro integraci knihoven, které potřebují být inicializovány globálně (např. analytika, notifikační systémy, UI frameworky, Pinia/Vuex store moduly).
+2.  **Přidávat globální funkce nebo proměnné:** Můžete injektovat (vložit) funkce nebo vlastnosti do kontextu Nuxt (a tím pádem i do všech komponent a kompozable), čímž získáte snadný přístup k často používaným nástrojům.
+3.  **Nastavovat globální konfigurace:** Například nastavení jazyka pro i18n nebo konfigurace HTTP klientů.
+4.  **Vytvářet vlastní direktivy nebo filtry Vue:** Globalizovat specifické chování Vue.
+
+-----
+
+## ⏰ Kdy se Pluginy spouští?
+
+Pluginy v Nuxt 3 se spouští **předtím, než se vytvoří a spustí hlavní Vue aplikace** (root instance).
+
+Díky tomu mohou ovlivnit, jak se celá aplikace bude chovat od samého začátku. Spouštějí se **jak na straně serveru (SSR), tak na straně klienta**, ale v různých fázích:
+
+### 1\. Na straně **Serveru (SSR)**
+
+  * Spustí se **před renderováním** první stránky.
+  * Zajistí, že všechny potřebné služby a stavy jsou k dispozici pro generování HTML, které se odesílá klientovi.
+  * Pluginy se spouští **jednou pro každý požadavek**.
+
+### 2\. Na straně **Klienta (Prohlížeč)**
+
+  * Spustí se **při hydrataci** (převzetí kontroly nad HTML kódem staženým ze serveru).
+  * Pluginy se spouští **jednou** po načtení aplikace a poté při navigaci ne (pokud nejsou znovu načteny).

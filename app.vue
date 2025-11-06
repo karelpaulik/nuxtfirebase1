@@ -6,10 +6,22 @@
           <q-route-tab to="/load_direct/" label="Load direct" />
           <q-route-tab to="/storage_q-uploader/" label="q-uploader" />
           <q-route-tab to="/storage_q-file/" label="q-file" />
-          <q-route-tab to="/auth/" label="Auth" />
+          <!-- <q-route-tab to="/auth/" label="Auth" /> -->
           <q-route-tab to="/users/" label="Users" />
           <q-route-tab to="/books/" label="Books" />
         </q-tabs>
+
+        <q-space />
+        
+        <div v-if="user" class="q-gutter-sm">
+          <span>{{ user.email }}</span>
+          <q-btn flat round dense icon="logout" @click="handleLogout" />
+        </div>
+        <div v-else>
+          <span>Uživatel odhlášen.</span>
+          <q-btn flat round dense icon="login" to="/auth" />
+        </div>
+
     </q-toolbar>
   </div>
 
@@ -29,6 +41,20 @@
   </q-toolbar>
 
 </template>
+
+<script setup lang="ts">
+import { useLoggedUser } from '~/composables/useLoggedUser';
+import { useAuthHandlers } from '~/composables/useAuthHandlers';
+
+const { user } = useLoggedUser();
+
+const {
+  authHandlers: {
+    handleLogout,
+  }
+} = useAuthHandlers();
+
+</script>
 
 <style scoped>
 /* Rezervace místa pod hlavičkou */

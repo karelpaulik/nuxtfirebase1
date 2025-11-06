@@ -1,7 +1,5 @@
 <template>
-  <div class="q-pa-md row items-start q-gutter-md">
-    <h2>🔑 Firebase Authentication</h2>
-    
+  <div class="q-pa-md row items-center justify-center q-gutter-md">
     <div v-if="loading">Načítám...</div>
     
     <div v-if="error" class="text-negative">

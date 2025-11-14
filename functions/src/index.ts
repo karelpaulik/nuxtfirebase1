@@ -58,10 +58,14 @@
 import * as admin from 'firebase-admin';
 // 1. Importujeme funkci setRoleClaim ze souboru claims.ts
 import { setRoleClaim } from './claims'; 
+// 2. Importujeme novou funkci pro automatické vytvoření role
+import { createInitialUserRole } from './auth';
 
 // 1. Inicializace Admin SDK (Tato část zůstává zde)
 admin.initializeApp();
 
-// 2. Exportujeme funkci, aby ji Firebase vidělo a nasadilo.
-// Většinou se funkce exportují pomocí aliasu, který je stejný jako původní název.
+// Pozn. I pokud již byly konkrétní funkce již deploynuté, je nutné jejich import a export ponechat.
+// Pokud bych neponechal, další deploy by je pak na serveru smazal.
 export { setRoleClaim };
+export { createInitialUserRole }; // Nově exportovaná funkce
+

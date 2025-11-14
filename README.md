@@ -298,6 +298,8 @@ export const helloWorld = functions.https.onRequest((req, res) => {
 
 **Pro případ typescript je nutná kompilace**
 ```bash
+// Najet do adresáře: functions
+
 npm run build
 ```
 
@@ -309,6 +311,10 @@ cd ..
 **Deploy**
 ```bash
 firebase deploy --only functions
+
+Nebo se dá:
+firebase deploy --only functions:nazev_funkce
+// Pozor - starší již deploynuté funkce musí v functions/src/index.ts zůstat, jinak by se při tomto deploy smazaly.
 ```
 
 **První deploy**

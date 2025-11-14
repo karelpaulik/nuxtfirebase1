@@ -26,7 +26,7 @@ interface FormHandlerProps<T extends Record<string, any>> {
     router: Router;
     route: RouteLocationNormalizedLoaded;
     formVee: ReturnType<typeof useForm<T>>;
-    validationSchema: ZodObject<ZodRawShape>;
+    apiSchema: ZodObject<ZodRawShape>;
 }
 
 // NOVÝ INTERFACE PRO VOLITELNOU KONFIGURACI
@@ -42,7 +42,8 @@ export function useDocHandlers<T extends Record<string, any>>(
     collectionName: string,
     pageName: string,
     createEmptyData: () => T,
-    validationSchema: ZodObject<ZodRawShape>,
+    formSchema: ZodObject<ZodRawShape>,
+    apiSchema: ZodObject<ZodRawShape>,
     // Volitelný konfigurační objekt, hodnoty za rovnítkem jsou defaultní hodnoty
     config: DocHandlersConfig = { watchIdOnLoad: true, confirmLeave: true }
 ) {
@@ -56,7 +57,7 @@ export function useDocHandlers<T extends Record<string, any>>(
 
     // Inicializace VeeValidate formuláře
     const formVee = useForm<T>({
-        validationSchema: toTypedSchema(validationSchema),
+        validationSchema: toTypedSchema(formSchema),
         initialValues: createEmptyData(),
     });
 
@@ -89,7 +90,7 @@ export function useDocHandlers<T extends Record<string, any>>(
         router,
         route,
         formVee,
-        validationSchema,
+        apiSchema,
     };
 
     /**
@@ -98,14 +99,14 @@ export function useDocHandlers<T extends Record<string, any>>(
      * Tím se zjednoduší volání v komponentě (handleRevertChanges() místo handleRevertChanges(_handlerProps)).
      */
     const handleReadDoc = async (idToRead: string): Promise<void> => {
-        const { formId, collectionName, router, formVee, validationSchema, loading, error, pageName } = handlerProps;
+        const { formId, collectionName, router, formVee, apiSchema, loading, error, pageName } = handlerProps;
 
         loading.value = true; // Spuštění načítání
         error.value = null; // Reset chyby
         try {
             const doc = await useReadDoc(collectionName, idToRead);
             if (doc) {
-                const validData = validationSchema.safeParse(doc.data);
+                const validData = apiSchema.safeParse(doc.data);
                 if (validData.success) {
                     console.log('Data úspěšně validována:', validData.data);
                     // Dříve: formVee.resetForm({ values: validData.data as T });

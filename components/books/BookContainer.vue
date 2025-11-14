@@ -29,14 +29,15 @@ import { useDocHandlers } from '~/composables/useDocHandlers';
 import DetailLayout from '~/components/_shared/ui/layout/DetailLayout.vue';
 
 // To edit----------------------------------------------------------------
-import { bookFormSchema, createEmptyFormData } from '@/schemas/bookSchema';
+import { bookFormSchema, bookApiSchema, createEmptyFormData } from '@/schemas/bookSchema';
 import type { BookFormType } from '@/schemas/bookSchema';
 import BookForm from '~/components/books/BookForm.vue';
 
 const COLLECTION_NAME = 'books';
 const PAGE_NAME = 'books';
 const FORM_SCHEMA = bookFormSchema;
-type FormDataType = BookFormType
+const API_SCHEMA = bookApiSchema;
+type FormDataType = BookFormType;
 // ----------------------------------------------------------------------
 
 const props = defineProps<{
@@ -59,6 +60,7 @@ const {
   PAGE_NAME, 
   createEmptyFormData, 
   FORM_SCHEMA,
+  API_SCHEMA,
   {
     watchIdOnLoad: true, // Chceme, aby se dokument načítal
     confirmLeave: true,  // Chceme varovat při odchodu

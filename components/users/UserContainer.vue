@@ -55,14 +55,15 @@ import { useDocHandlers } from '~/composables/useDocHandlers';
 import DetailLayout from '~/components/_shared/ui/layout/DetailLayout.vue';
 
 // To edit----------------------------------------------------------------
-import { userFormSchema, createEmptyFormData } from '@/schemas/userSchema';
+import { userFormSchema, userApiSchema, createEmptyFormData } from '@/schemas/userSchema';
 import type { UserFormType } from '@/schemas/userSchema';
 import UserForm from '~/components/users/UserForm.vue';
 
 const COLLECTION_NAME = 'users';
 const PAGE_NAME = 'users';
 const FORM_SCHEMA = userFormSchema;
-type FormDataType = UserFormType
+const API_SCHEMA = userApiSchema;
+type FormDataType = UserFormType;
 // ----------------------------------------------------------------------
 
 const props = defineProps<{
@@ -85,6 +86,7 @@ const {
   PAGE_NAME,
   createEmptyFormData,
   FORM_SCHEMA,
+  API_SCHEMA,
   {
     watchIdOnLoad: true, // Chceme, aby se dokument načítal
     confirmLeave: true,  // Chceme varovat při odchodu

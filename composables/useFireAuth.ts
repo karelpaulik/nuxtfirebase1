@@ -3,7 +3,6 @@ import {
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
     signOut,
-    onAuthStateChanged,
 } from 'firebase/auth';
 
 // 2. Import typů pomocí 'import type'
@@ -90,16 +89,4 @@ export const useLogout = async (): Promise<void> => {
         notifyError('Chyba při odhlášení.', e);
         throw e;
     }
-};
-
-/**
- * Nastaví posluchače na změny stavu autentizace.
- * @param {(user: User | null) => void} callback Funkce, která se volá při každé změně stavu.
- * @returns {() => void} Funkce pro odhlášení posluchače.
- */
-export const useAuthListener = (callback: (user: User | null) => void): () => void => {
-    const auth = getAuthInstance(); // Tj. auth = $fireAuth
-    // onAuthStateChanged se postará o počáteční kontrolu a následné změny
-    const unsubscribe = onAuthStateChanged(auth, callback);
-    return unsubscribe;
 };

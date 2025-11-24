@@ -1,13 +1,16 @@
-import { useAuthListener } from '~/composables/useFireAuth';
+import { onAuthStateChanged } from 'firebase/auth';
 import { useLoggedUser } from '~/composables/useLoggedUser';
 
-export default defineNuxtPlugin((nuxtApp) => {
+export default defineNuxtPlugin(() => {
   // Spustí se pouze jednou při startu aplikace na klientovi
-
+  const { $fireAuth } = useNuxtApp();
   const { user } = useLoggedUser();
 
-  useAuthListener((newUser) => {
-    user.value = newUser;
-    console.log('Auth stav změněn přes plugin. Aktuální uživatel:', newUser?.email || 'uživatel nepřihlášen');
+  // Naslouchání změn přihlášení přímo z Firebase
+  onAuthStateChanged($fireAuth, (authUser) => {
+    user.value = authUser;
+    console.log(
+      'Auth stav změněn přímo v pluginu. Aktuální uživatel:', authUser?.email || 'uživatel nepřihlášen',
+    );
   });
 });

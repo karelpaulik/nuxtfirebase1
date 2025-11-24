@@ -1,7 +1,7 @@
 import { ref, type Ref } from 'vue';
-import { useState } from '#app';
-import type { User } from 'firebase/auth';
-import { useLogin, useLogout, useSignUp, useAuthListener } from './useFireAuth';
+// import { useState } from '#app';
+// import type { User } from 'firebase/auth';
+import { useLogin, useLogout, useSignUp } from './useFireAuth';
 import { notify, notifyError } from './useNotify';
 import { useLoggedUser } from './useLoggedUser';
 

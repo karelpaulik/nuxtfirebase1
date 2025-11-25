@@ -25,9 +25,9 @@ export const createInitialUserRole = functions.auth.user().onCreate(async (user:
 
     // Definice dat pro uložení
     const initialRoleData = {
+        email: email,
         roles: ['def'], 
         isManager: false,
-        // ZMĚNA: Používáme FieldValue z nového importu
         createdAt: FieldValue.serverTimestamp()
     };
 

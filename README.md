@@ -1,9 +1,24 @@
 # Instalace
+
+## CLI
+- **gcloud command**  GCP CLI
+- **firebase command**  Firebase CLI
+
 ## firebase-tools
 Pro používání:
-- firebase login
+- firebase login //Přihlášení. Pokud již přihlášený, pak výpis přihl. uživatele
 - firebase init
 - firebase deploy
+- firebase use  // Vypíše současný projekt
+- firebase projects:list //Seznam projektů
+- firebase functions:log //Logy funkcí živě
+- firebase --version
+
+- firebase deploy --only hosting
+- firebase deploy --only functions
+- firebase deploy --only firestore:rules
+- firebase deploy --only storage
+
 ```
 npm install -g firebase-tools
 ```
@@ -248,6 +263,11 @@ Nemůže se použít např. v: root/components
 ```
 
 # Cloud function
+## Triggery
+- **onDocumentUpdated** Při změně dokumentu 
+- **onDocumentCreated** Při vytvoření dokumentu
+- **onDocumentWritten** Při změně nebo vytvoření dokumentu
+
 ## Postup jak založit první cloud function
 
 **Najet do root**
@@ -442,3 +462,22 @@ Díky tomu mohou ovlivnit, jak se celá aplikace bude chovat od samého začátk
 
   * Spustí se **při hydrataci** (převzetí kontroly nad HTML kódem staženým ze serveru).
   * Pluginy se spouští **jednou** po načtení aplikace a poté při navigaci ne (pokud nejsou znovu načteny).
+
+# Autorizace
+## Na straně klienta
+**vue soubor**
+```ts
+<template>
+  <div v-if="claims && claims.roles && claims.roles.includes('admin')"> //Pozn. metoda "hasAny()" existuje v Firebase rules. Ale ne v čistém javascriptu.
+    Jsem admin
+  </div>
+  <div v-else>
+    Nejsem admin
+  </div>
+</template>
+
+<script setup lang="ts">
+  import { useLoggedUser } from '~/composables/useLoggedUser';
+  const { loggedUser, claims } = useLoggedUser();
+</script>
+```

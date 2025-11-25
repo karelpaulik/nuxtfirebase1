@@ -1,5 +1,5 @@
 import * as admin from 'firebase-admin';
-import { onDocumentUpdated } from 'firebase-functions/v2/firestore';
+import { onDocumentWritten } from 'firebase-functions/v2/firestore';
 import { logger } from 'firebase-functions/v2'; 
 
 /**
@@ -7,28 +7,26 @@ import { logger } from 'firebase-functions/v2';
  * * Spustí se pokaždé, když se v kolekci 'userRoles' změní dokument.
  * Přečte pole 'roles' a boolean 'isManager' a nastaví je jako Custom Claims v Firebase Auth.
  */
-export const setRoleClaim = onDocumentUpdated({
+export const setRoleClaim = onDocumentWritten({ //onDocumentWritten se spouští při změně dokumentu, nebo při vytvoření nového dokumentu.
     document: 'userRoles/{userId}', 
     database: 'firestore-in-fb-pa1'
 }, async (event) => {
     
     // 1. Získání dat
     const uid = event.params.userId;
-    const beforeData = event.data?.before.data();
-    const afterData = event.data?.after.data();
 
-    if (!beforeData || !afterData) {
-        logger.info(`Data missing for user ${uid} (e.g., document was deleted). Skipping.`);
+    const beforeData = event.data?.before.data() || null;
+    const afterData = event.data?.after.data() || null;
+
+    if (!afterData) {
+        logger.info(`After data missing for user ${uid}. Skipping.`);
         return null;
     }
 
-    // Vytvoření bezpečných polí a boolean hodnot.
-    // Pro roles: použije se prázdné pole, pokud "roles" neexistuje.
-    const beforeRoles: string[] = beforeData.roles || [];
+    const beforeRoles: string[] = beforeData?.roles || [];
     const afterRoles: string[] = afterData.roles || [];
-    
-    // Pro isManager: použije se false, pokud "isManager" neexistuje nebo není boolean.
-    const beforeIsManager: boolean = !!beforeData.isManager; 
+
+    const beforeIsManager: boolean = !!beforeData?.isManager;
     const afterIsManager: boolean = !!afterData.isManager;
 
     // 1. kontrola, zda došlo ke změně atributů vstupujících do custom claims ---------------------------

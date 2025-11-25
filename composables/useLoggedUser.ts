@@ -1,7 +1,8 @@
 import { useState } from '#app';
-import type { User } from 'firebase/auth';
+import type { User, IdTokenResult } from 'firebase/auth';
 
 export const useLoggedUser = () => {
   const user = useState<User | null>('user', () => null);
-  return { user };
+  const claims = useState<IdTokenResult['claims'] | null>('claims', () => null);
+  return { user, claims };
 };

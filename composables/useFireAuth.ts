@@ -37,7 +37,8 @@ export const useSignUp = async (email: string, password: string): Promise<User |
         const auth = getAuthInstance();
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         console.log(`Uživatel ${email} úspěšně zaregistrován.`);
-        return userCredential.user;
+        return userCredential.user; //S vrácenou hodnotozu se napracuje: await useSignUp(email, password);
+
     } catch (e: any) {
         notifyError(`Chyba při registraci uživatele: ${email}`, e);
         throw e;
@@ -56,20 +57,21 @@ export const useLogin = async (email: string, password: string): Promise<User | 
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         console.log(`Uživatel ${email} úspěšně přihlášen.`);
 
-        // Nově pro claims ----------------------------------------------
-        const user = userCredential.user;
+        // // Nově pro claims ----------------------------------------------
+        // const user = userCredential.user;
       
-        //const tokenResult = await auth.currentUser.getIdTokenResult(true);
-        const tokenResult = await user.getIdTokenResult(true); // Toto je vhodnější, i když to v podstětě dělá to samé jako řádek výše.
+        // //const tokenResult = await auth.currentUser.getIdTokenResult(true);
+        // const tokenResult = await user.getIdTokenResult(true); // Toto je vhodnější, i když to v podstětě dělá to samé jako řádek výše.
 
-        const claims = tokenResult.claims;
-        const roles = tokenResult.claims.roles; // Bude to pole: např. ["admin", "editor"]
+        // const claims = tokenResult.claims;
+        // const roles = tokenResult.claims.roles; // Bude to pole: např. ["admin", "editor"]
         
-        console.log('Uživatel přihlášen. Claims: ', claims);
-        console.log('Uživatel přihlášen. Role pole: ', roles);
-        // ---------------------------------------------------------------
+        // console.log('Uživatel přihlášen. Claims: ', claims);
+        // console.log('Uživatel přihlášen. Role pole: ', roles);
+        // // ---------------------------------------------------------------
 
-        return user;
+        return userCredential.user; //S vrácenou hodnotozu se napracuje: await useLogin(email, password);
+
     } catch (e: any) {
         notifyError(`Chyba při přihlášení uživatele: ${email}`, e);
         throw e;

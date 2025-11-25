@@ -13,7 +13,7 @@ interface AuthFormDataType {
 
 /**
  * Hlavní composable pro práci s Firebase Authentication.
- * user: globální stav (synchronizovaný listenerem)
+ * loggedUser: globální stav (synchronizovaný listenerem)
  * loading, error, formData: lokální stavy (vytváří se při každém volání)
  */
 export function useAuthHandlers() {
@@ -28,7 +28,7 @@ export function useAuthHandlers() {
     });
 
     // 3. ZÍSKÁNÍ SDÍLENÉHO STAVU UŽIVATELE (pro pohodlí, aby ho komponenty měly k dispozici)
-    const { user } = useLoggedUser();
+    const { loggedUser } = useLoggedUser();
 
 
     // 5. HANDLERY
@@ -112,7 +112,7 @@ export function useAuthHandlers() {
         formData, 
         loading,
         error,
-        user, // Vrátíme sdílený stav uživatele
+        loggedUser, // Vrátíme sdílený stav uživatele
         authHandlers: {
             handleLogin,
             handleLogout,

@@ -7,9 +7,9 @@
       <button @click="error = null">Zavřít</button>
     </div>
 
-    <div v-if="user">
+    <div v-if="loggedUser">
       <h3>Uživatel je přihlášen jako:</h3>
-      <p>E-mail: **{{ user.email }}**</p>
+      <p>E-mail: **{{ loggedUser.email }}**</p>
       <button @click="handleLogout" :disabled="loading">
         Odhlásit se
       </button>
@@ -63,7 +63,7 @@ const {
   formData,
   loading,
   error,
-  user,
+  loggedUser,
   authHandlers: {
     handleLogin,
     handleLogout,
@@ -72,7 +72,7 @@ const {
 } = useAuthHandlers();
 
 // Zde by mohl být přidaný kód pro navigaci po přihlášení/odhlášení
-// například pomocí watch(() => user.value, (newUser) => { ... })
+// například pomocí watch(() => loggedUser.value, (newUser) => { ... })
 </script>
 
 <style scoped>

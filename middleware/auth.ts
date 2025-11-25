@@ -7,10 +7,10 @@ import { notify, notifyError } from '~/composables/useNotify';
 export default defineNuxtRouteMiddleware((to, from) => {
     // 1. Získáme globální stav uživatele
     // Destrukturalizujeme user: globalUser, který vrací useAuthHandlers
-    const { user } = useAuthHandlers(); 
+    const { loggedUser } = useAuthHandlers(); 
 
     // 2. Kontrola stavu
-    if (!user.value) { // Uživatel NENÍ přihlášen!       
+    if (!loggedUser.value) { // Uživatel NENÍ přihlášen!       
         // Zastavíme navigaci na aktuální chráněnou stránku
         // A přesměrujeme uživatele na stránku pro přihlášení (např. /auth)
         console.log(`Middleware: Přístup na routu ${to.path} odepřen, přesměrování na /auth.`);

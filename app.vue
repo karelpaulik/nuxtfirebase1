@@ -13,8 +13,8 @@
 
         <q-space />
         
-        <div v-if="user" class="q-gutter-sm">
-          <span>{{ user.email }}</span>
+        <div v-if="loggedUser" class="q-gutter-sm">
+          <span>{{ loggedUser.email }}</span>
           <q-btn flat round dense icon="logout" @click="handleLogout" />
         </div>
         <div v-else>
@@ -46,7 +46,7 @@
 import { useLoggedUser } from '~/composables/useLoggedUser';
 import { useAuthHandlers } from '~/composables/useAuthHandlers';
 
-const { user } = useLoggedUser();
+const { loggedUser } = useLoggedUser();
 
 const {
   authHandlers: {

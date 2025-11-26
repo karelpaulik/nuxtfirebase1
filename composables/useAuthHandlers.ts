@@ -51,8 +51,9 @@ export function useAuthHandlers() {
         try {
             await useSignUp(email, password); 
             
-            notify('Registrace proběhla úspěšně! Nyní jste přihlášeni.', 'positive');
-            formData.value = { email: '', password: '' }; 
+            notify('Registrace proběhla úspěšně!', 'positive');
+            //formData.value = { email: '', password: '' }; // Po registraci smazán: email i heslo
+            formData.value.password = ''; // Po registraci smazáno pouze heslo
 
         } catch (e) {
             error.value = e as Error;

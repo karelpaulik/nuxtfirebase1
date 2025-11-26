@@ -1,6 +1,9 @@
 // useNotify.ts
 
-import { Notify } from 'quasar'; // Importujeme Notify pro typování, i když se používá $q.notify
+// !!! POZOR !!!
+// !!! Aby fungoval $q.notify, $q.dialog je nutno mít "plugins: ['Notify', 'Dialog']" v muxt.config.ts
+
+import { Notify, Dialog } from 'quasar'; // Importujeme Notify a Dialog pro typování
 import type { ZodError, ZodIssue } from 'zod'; // Importujeme typy pro Zod chyby
 
 /**
@@ -47,8 +50,8 @@ export const notifyError = (
     error instanceof Error
       ? error.message
       : typeof error === 'string'
-      ? error
-      : '';
+        ? error
+        : '';
 
   // Zobrazí error notifikaci (přidá i text chyby, pokud existuje)
   $q.notify({
@@ -116,3 +119,50 @@ export const displayZodErrors = (zodError: ZodError, position: Parameters<typeof
     });
   });
 };
+
+export const confirmDialog = (
+  title: string = 'Potvrzení',
+  message: string = 'Opravdu chcete pokračovat?',
+  okLabel: string = 'OK',
+  cancelLabel: string = 'Zrušit',
+  color: string = 'primary'
+): Promise<boolean> => {
+  const { $q } = useNuxtApp(); // získáme Quasar instance
+
+  return new Promise((resolve) => {
+    $q.dialog({
+      title,
+      message,
+      html: true,  
+      ok: {
+        label: okLabel,
+        color,
+        unelevated: true
+      },
+      cancel: {
+        label: cancelLabel,
+        flat: true
+      },
+      persistent: true
+    })
+      .onOk(() => resolve(true))
+      .onCancel(() => resolve(false))
+      .onDismiss(() => resolve(false)); // pro jistotu i zavření ESC
+  });
+};
+
+// // How to use "confirm dialog"
+// import { confirmDialog } from '@/composables/useNotify'; 
+
+// const ok = await confirmDialog(
+//     'Registrace úspěšná',
+//     `Účet <b>${email}</b> byl úspěšně vytvořen. Nyní se můžete přihlásit.`,
+//     'Přihlásit se',
+//     'Zavřít',
+//     'positive'
+// );
+
+// if (ok) {
+//     console.log('Uživatel potvrdil.');
+//     //navigateTo('/auth');
+// } 

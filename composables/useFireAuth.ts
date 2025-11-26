@@ -11,7 +11,7 @@ import type {
     Auth, // Typ pro Auth instanci
 } from 'firebase/auth';
 
-import { notifyError } from './useNotify'; // Předpoklad notifikační funkce
+import { notify, notifyError, confirmDialog } from './useNotify'; // Předpoklad notifikační funkce
 
 /**
  * Získá Firebase Auth instanci z Nuxt App.
@@ -37,6 +37,21 @@ export const useSignUp = async (email: string, password: string): Promise<User |
         const auth = getAuthInstance();
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         console.log(`Uživatel ${email} úspěšně zaregistrován.`);
+        
+        await signOut(auth); // Nově vytvořeného a přihlášeného uživatele odhlásíme. Až při dalším přihlášení se natáhne custom claims.
+
+        const ok = await confirmDialog(
+            'Registrace úspěšná',
+            `Účet <b>${email}</b> byl úspěšně vytvořen. Nyní se můžete přihlásit.`,
+            'Přihlásit se',
+            'Zavřít',
+            'positive'
+        );
+
+        if (ok) {
+            console.log('Uživatel potvrdil.');
+            //navigateTo('/auth');
+        }        
         return userCredential.user; //S vrácenou hodnotozu se napracuje: await useSignUp(email, password);
 
     } catch (e: any) {

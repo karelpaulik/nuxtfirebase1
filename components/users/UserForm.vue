@@ -65,10 +65,11 @@
     @save-request="emit('save-request')"
   />
 
-  <!-- FileList níže - nefunguje: download, delete  -->
-  <!-- Zobrazení obrázku je na dořešení -->
-  <FileItem
-    v-model="formData.file"       
+  <FileContainer
+    :form-id="formId"
+    :collection-name="COLLECTION_NAME"
+    v-model="formData.file"
+    @save-request="emit('save-request')"
   />
   <img v-if="formData.file && formData.file.url" :src="formData.file.url" />
 </template>
@@ -84,8 +85,7 @@ import FileList from '~/components/_shared/data/file/FileList.vue';
 import AddressList from '~/components/_shared/data/address/AddressList.vue'; // Import nové komponenty pro seznam adres
 import AddressForm from '~/components/_shared/data/address/AddressForm.vue'; // Importujeme novou komponentu pro jednu adresu
 import DateInput from '~/components/_shared/ui/form/DateInput.vue';
-
-import FileItem from '~/components/_shared/data/file/FileItem.vue';
+import FileContainer from '~/components/_shared/data/file/FileContainer.vue';
 
 defineProps<{
   formId: string;

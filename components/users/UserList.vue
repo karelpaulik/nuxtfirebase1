@@ -11,9 +11,19 @@
           Driv.lic:
           <q-checkbox v-model="doc.hasDrivingLic" label="Driv. lic" disable dense />
           {{ doc.hobbies }}
+          {{ doc.createdDate }}
         </NuxtLink>
       </li>
     </ul>
+    <div class="q-pa-lg flex flex-center">
+      <q-btn
+        @click="handleReadPaginatedDocs(DOCS_PER_PAGE, [], 'fName');"
+        :loading="loading"
+        :disable="!hasMoreDocs"
+        label="Load More"
+        color="primary"
+      />
+    </div>
   </ListLayout>
 </template>
 
@@ -33,20 +43,25 @@ const COLLECTION_NAME = 'users';
 const PAGE_NAME = 'users';
 const API_SCHEMA = userApiSchema;
 type ApiType = UserApiType;
+const DOCS_PER_PAGE = 5;
 // ----------------------------------------------------------------------
 
 const {
   documents,
   loading,
   error,
-  collectionHandlers: { handleReadAllDocs, handleReadFilterDocs },
+  hasMoreDocs,
+  collectionHandlers: { handleReadPaginatedDocs, handleReadFilterDocs },
 } = useCollectionHandlers<ApiType>(COLLECTION_NAME, {
-  validationSchema: API_SCHEMA // <-- Zde se předává schéma. No schema, nebo undefined = no validation.
+  validationSchema: API_SCHEMA,
 });
 
-// Načíst všechny dokumenty při načtení komponenty
+const loadMore = () => {
+  handleReadPaginatedDocs(DOCS_PER_PAGE, [], 'fName');
+};
+
 onMounted(() => {
-  handleReadAllDocs();
+  handleReadPaginatedDocs(DOCS_PER_PAGE, [], 'fName', true);
 });
 
 // Dále již volitelné --------------------------------------------------------
@@ -69,6 +84,7 @@ const filterByPetrN = () => {
 
 // Funkce pro resetování filtru a opětovné načtení všech dat
 const resetFilterAndLoadAll = () => {
-  handleReadAllDocs();
+  //handleReadAllDocs();
+  handleReadPaginatedDocs(DOCS_PER_PAGE, [], 'fName', true);
 };
 </script>

@@ -10,9 +10,12 @@ import {
   getDocs, 
   query, 
   where, 
-  or // Import pro OR dotazy
+  or, // Import pro OR dotazy
+  limit,
+  startAfter,
+  orderBy,
 } from 'firebase/firestore'
-import type { WhereFilterOp } from 'firebase/firestore';
+import type { WhereFilterOp, QueryDocumentSnapshot } from 'firebase/firestore';
 // const { $firestore } = useNuxtApp() //nelze volat na úrovní  modulu kvůli server side rendering
 
 
@@ -161,6 +164,49 @@ export const useReadDocsByFilter = async (
     return docs;
   } catch (e: any) {
     notifyError(`Chyba při načítání filtrovaných dokumentů z kolekce '${collName}':`, e);
+    throw e;
+  }
+};
+
+export const useGetDocsWithPagination = async (
+  collName: string,
+  limitNum: number,
+  startAfterDoc: QueryDocumentSnapshot | null,
+  filters: Array<{ field: string; operator: WhereFilterOp; value: any }> = [],
+  orderByField: string | null = null,
+): Promise<{ docs: Array<{ data: object, id: string }>, lastVisible: QueryDocumentSnapshot | null }> => {
+  try {
+    const { $firestore } = useNuxtApp();
+    const collRef = collection($firestore, collName);
+    
+    let q = query(collRef);
+
+    if (orderByField) {
+      q = query(q, orderBy(orderByField));
+    }
+
+    filters.forEach(filter => {
+      q = query(q, where(filter.field, filter.operator, filter.value));
+    });
+
+    if (startAfterDoc) {
+      q = query(q, startAfter(startAfterDoc));
+    }
+
+    q = query(q, limit(limitNum));
+
+    const querySnapshot = await getDocs(q);
+    const docs: Array<{ data: object, id: string }> = [];
+    querySnapshot.forEach((documentSnapshot) => {
+      docs.push({ id: documentSnapshot.id, data: documentSnapshot.data() });
+    });
+
+    const lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1] || null;
+
+    console.log(`Úspěšně načteno ${docs.length} paginovaných dokumentů z kolekce '${collName}'.`);
+    return { docs, lastVisible };
+  } catch (e: any) {
+    notifyError(`Chyba při načítání paginovaných dokumentů z kolekce '${collName}':`, e);
     throw e;
   }
 };

@@ -1,7 +1,7 @@
 // composables/useCollectionHandlers.ts
 import { ref, type Ref } from 'vue';
-import { useGetAllDocs, useReadDocsByFilter } from '~/composables/useFirestore';
-import type { WhereFilterOp } from 'firebase/firestore';
+import { useGetAllDocs, useReadDocsByFilter, useGetDocsWithPagination } from '~/composables/useFirestore';
+import type { WhereFilterOp, QueryDocumentSnapshot } from 'firebase/firestore';
 
 // Importujeme typy pro Zod, ale samotné schéma se bude předávat
 import { z } from 'zod'; // Zde je 'z' potřeba pro z.object a z.array
@@ -33,6 +33,68 @@ export function useCollectionHandlers<T extends Record<string, any>>(
   const documents = ref<(T & { id: string })[]>([]);
   const loading = ref(true);//true, protože se očekává, že se handler spustí hned po: onMounted
   const error = ref<Error | null>(null);
+  const lastVisible = ref<QueryDocumentSnapshot | null>(null);
+  const hasMoreDocs = ref(true);
+
+  const handleReadPaginatedDocs = async (
+    limitNum: number,
+    filters: Array<{ field: string; operator: WhereFilterOp; value: any }> = [],
+    orderByField: string | null = null,
+    isInitialLoad = false,
+  ): Promise<void> => {
+    if (isInitialLoad) {
+      documents.value = [];
+      lastVisible.value = null;
+      hasMoreDocs.value = true;
+    }
+
+    if (!hasMoreDocs.value) {
+      return;
+    }
+
+    const { validationSchema } = config;
+
+    loading.value = true;
+    error.value = null;
+    try {
+      if (import.meta.env.DEV) {
+        await delay(1000);
+      }
+      
+      const { docs: fetchedDocs, lastVisible: newLastVisible } = await useGetDocsWithPagination(
+        collectionName,
+        limitNum,
+        lastVisible.value,
+        filters,
+        orderByField
+      );
+
+      lastVisible.value = newLastVisible;// lastVisible - je to poslední načtený dokument
+      hasMoreDocs.value = !!newLastVisible;// 
+
+      if (validationSchema) {
+        const validatedDocs: (T & { id: string })[] = [];
+        fetchedDocs.forEach(doc => {
+          const parsedData = validationSchema.safeParse(doc.data);
+          if (parsedData.success) {
+            validatedDocs.push({ ...(parsedData.data as T), id: doc.id });
+          } else {
+            console.warn(`Dokument s ID '${doc.id}' selhal validaci schématu:`, parsedData.error);
+            displayZodErrors(parsedData.error);
+          }
+        });
+        documents.value.push(...validatedDocs);
+      } else {
+        const unvalidatedDocs = fetchedDocs.map(doc => ({ ...(doc.data as T), id: doc.id }));
+        documents.value.push(...unvalidatedDocs);
+      }
+      
+    } catch (e: any) {
+      notifyError(`Chyba při načítání paginovaných dokumentů z kolekce '${collectionName}':`, e);
+    } finally {
+      loading.value = false;
+    }
+  };
 
   /**
    * Handler pro načtení všech dokumentů z dané kolekce.
@@ -76,7 +138,6 @@ export function useCollectionHandlers<T extends Record<string, any>>(
     //   documents.value = []; // Vyprázdníme seznam, protože data nejsou validní
     // }  
       const fetchedDocs = await useGetAllDocs(collectionName);
-
       // Validace proběhne pouze, pokud je validationSchema poskytnuto
       if (validationSchema) {
         const validatedDocs: (T & { id: string })[] = []; // Zde budeme sbírat pouze validní dokumenty
@@ -97,8 +158,9 @@ export function useCollectionHandlers<T extends Record<string, any>>(
         console.log('Validace povolena. Načtená validovaná data:', documents.value);
       } else {
         // Pokud validationSchema není poskytnuto, přiřadíme data tak, jak jsou, ale sloučíme id a data
-        documents.value = fetchedDocs.map(doc => ({ ...(doc.data as T), id: doc.id }));
-        console.log('Validace zakázána (schéma nebylo poskytnuto). Načtená data:', documents.value);
+        const unvalidatedDocs = fetchedDocs.map(doc => ({ ...(doc.data as T), id: doc.id }));
+        console.log('Validace zakázána (schéma nebylo poskytnuto). Načtená data:', unvalidatedDocs);
+        documents.value = unvalidatedDocs;
       }
 
     } catch (e: any) {
@@ -153,8 +215,9 @@ export function useCollectionHandlers<T extends Record<string, any>>(
         console.log('Validace povolena. Načtená filtrovaná validovaná data:', documents.value);
       } else {
         // Pokud validationSchema není poskytnuto, přiřadíme data tak, jak jsou, ale sloučíme id a data
-        documents.value = fetchedDocs.map(doc => ({ ...(doc.data as T), id: doc.id }));
-        console.log('Validace zakázána (schéma nebylo poskytnuto). Načtená filtrovaná data:', documents.value);
+        const unvalidatedDocs = fetchedDocs.map(doc => ({ ...(doc.data as T), id: doc.id }));
+        console.log('Validace zakázána (schéma nebylo poskytnuto). Načtená filtrovaná data:', unvalidatedDocs);
+        documents.value = unvalidatedDocs;
       }
     } catch (e: any) {
       notifyError(`Chyba při načítání filtrovaných dokumentů z kolekce '${collectionName}':`, e);
@@ -167,9 +230,11 @@ export function useCollectionHandlers<T extends Record<string, any>>(
     documents,
     loading,
     error,
+    hasMoreDocs,
     collectionHandlers: {
         handleReadAllDocs, 
         handleReadFilterDocs, 
+        handleReadPaginatedDocs
     },
   };
 }

@@ -9,12 +9,12 @@ import type { ZodObject, ZodRawShape } from 'zod';
 import { displayZodErrors, notifyError } from './useNotify'; // Importujeme funkce pro zobrazení chyb z useNotify
 import { delay } from '~/utils/helpers';
 
-
 /**
  * Rozhraní pro volitelné parametry composable useCollectionHandlers.
  */
 interface CollectionHandlerConfig {
   validationSchema?: ZodObject<ZodRawShape>; // Validační schéma je volitelné
+  docsPerPage?: number;
   // Zde se přidají další volitelné parametry. Např.: anotherOptionalParam?: string;
 }
 
@@ -30,6 +30,8 @@ export function useCollectionHandlers<T extends Record<string, any>>(
   collectionName: string,
   config: CollectionHandlerConfig = {}
 ) {
+  const { validationSchema, docsPerPage } = config;
+
   const documents = ref<(T & { id: string })[]>([]);
   const loading = ref(true);//true, protože se očekává, že se handler spustí hned po: onMounted
   const error = ref<Error | null>(null);
@@ -37,11 +39,14 @@ export function useCollectionHandlers<T extends Record<string, any>>(
   const hasMoreDocs = ref(true);
 
   const handleReadPaginatedDocs = async (
-    limitNum: number,
     filters: Array<{ field: string; operator: WhereFilterOp; value: any }> = [],
     orderByField: string | null = null,
     isInitialLoad = false,
   ): Promise<void> => {
+    if (!docsPerPage) {
+      return await handleReadAllDocs();
+    }
+
     if (isInitialLoad) {
       documents.value = [];
       lastVisible.value = null;
@@ -52,8 +57,6 @@ export function useCollectionHandlers<T extends Record<string, any>>(
       return;
     }
 
-    const { validationSchema } = config;
-
     loading.value = true;
     error.value = null;
     try {
@@ -63,7 +66,7 @@ export function useCollectionHandlers<T extends Record<string, any>>(
       
       const { docs: fetchedDocs, lastVisible: newLastVisible } = await useGetDocsWithPagination(
         collectionName,
-        limitNum,
+        docsPerPage,
         lastVisible.value,
         filters,
         orderByField
@@ -167,6 +170,7 @@ export function useCollectionHandlers<T extends Record<string, any>>(
       notifyError(`Chyba při načítání všech dokumentů z kolekce '${collectionName}':`, e);
     } finally {
       loading.value = false;
+      hasMoreDocs.value = false;
     }
   };
 

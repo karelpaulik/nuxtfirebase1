@@ -17,7 +17,7 @@
     </ul>
     <div class="q-pa-lg flex flex-center">
       <q-btn
-        @click="handleReadPaginatedDocs(DOCS_PER_PAGE, [], 'fName');"
+        @click="handleReadPaginatedDocs([], 'fName');"
         :loading="loading"
         :disable="!hasMoreDocs"
         label="Load More"
@@ -54,14 +54,11 @@ const {
   collectionHandlers: { handleReadPaginatedDocs, handleReadFilterDocs },
 } = useCollectionHandlers<ApiType>(COLLECTION_NAME, {
   validationSchema: API_SCHEMA,
+  docsPerPage: DOCS_PER_PAGE,
 });
 
-const loadMore = () => {
-  handleReadPaginatedDocs(DOCS_PER_PAGE, [], 'fName');
-};
-
 onMounted(() => {
-  handleReadPaginatedDocs(DOCS_PER_PAGE, [], 'fName', true);
+  handleReadPaginatedDocs([], 'fName', true);
 });
 
 // Dále již volitelné --------------------------------------------------------
@@ -85,6 +82,6 @@ const filterByPetrN = () => {
 // Funkce pro resetování filtru a opětovné načtení všech dat
 const resetFilterAndLoadAll = () => {
   //handleReadAllDocs();
-  handleReadPaginatedDocs(DOCS_PER_PAGE, [], 'fName', true);
+  handleReadPaginatedDocs([], 'fName', true);
 };
 </script>

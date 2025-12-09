@@ -229,7 +229,7 @@ export function useDocHandlers<T extends Record<string, any>>(
         error.value = null; // Reset chyby
         try {
             if (import.meta.env.DEV) { // Pouze pro testovací účely. V produkci bude vynecháno.
-                await delay(2000); // 2 sekundy zpoždění pro simulaci pomalé sítě
+                await delay(1000); // 2 sekundy zpoždění pro simulaci pomalé sítě
                 //throw new Error('Simulovaná chyba při ukládání nového záznamu!');
             }
             const cleanedData = cleanObject(values); // <-- Čištění dat před odesláním. Tj. odstranění props s hodnotou "undefined".

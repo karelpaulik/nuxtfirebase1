@@ -73,13 +73,12 @@
     @save-request="emit('save-request')"
   />
 
-  <FileContainer
+  <ImageContainer
     :form-id="formId"
     :collection-name="COLLECTION_NAME"
     v-model="formData.file"
     @save-request="emit('save-request')"
   />
-  <img v-if="formData.file && formData.file.url" :src="formData.file.url" />
 </template>
 
 
@@ -94,7 +93,7 @@ import ImageList from '~/components/_shared/data/image/ImageList.vue';
 import AddressList from '~/components/_shared/data/address/AddressList.vue'; // Import nové komponenty pro seznam adres
 import AddressForm from '~/components/_shared/data/address/AddressForm.vue'; // Importujeme novou komponentu pro jednu adresu
 import DateInput from '~/components/_shared/ui/form/DateInput.vue';
-import FileContainer from '~/components/_shared/data/file/FileContainer.vue';
+import ImageContainer from '~/components/_shared/data/image/ImageContainer.vue';
 
 defineProps<{
   formId: string;

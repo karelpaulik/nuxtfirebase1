@@ -56,6 +56,14 @@
     @save-request="emit('save-request')"
   />
 
+  <div class="q-pa-md text-h4">Seznam nahraných obrázků</div>
+  <ImageList
+    :form-id="formId"
+    :collection-name="COLLECTION_NAME"
+    v-model="formData.files"
+    @save-request="emit('save-request')"
+  />
+
   <div class="q-pa-md text-h4">Nahrát soubor (jeden)</div>
   <FileUpload
     :form-id="formId"
@@ -82,6 +90,7 @@ import { usePreventKeys } from '~/composables/usePreventKeys';
 
 import FileUpload from '~/components/_shared/data/file/FileUpload.vue';
 import FileList from '~/components/_shared/data/file/FileList.vue';
+import ImageList from '~/components/_shared/data/image/ImageList.vue';
 import AddressList from '~/components/_shared/data/address/AddressList.vue'; // Import nové komponenty pro seznam adres
 import AddressForm from '~/components/_shared/data/address/AddressForm.vue'; // Importujeme novou komponentu pro jednu adresu
 import DateInput from '~/components/_shared/ui/form/DateInput.vue';

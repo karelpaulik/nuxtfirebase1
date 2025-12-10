@@ -1,5 +1,13 @@
 <template>
-  <q-item v-if="fileModel">
+  <q-item v-if="fileModel && isImage">
+    <q-item-section>
+        <q-img
+            :src="fileModel.url"
+            :alt="fileModel.origName"
+            style="width: 100px; height: 100px;"
+            fit="contain"
+        />
+    </q-item-section>
     <q-item-section>
       <q-item-label caption><a :href="fileModel.url" target="_blank">{{ fileModel.origName }}</a></q-item-label>
       <q-item-label caption v-if="fileModel.note">
@@ -73,25 +81,25 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import type { FileSchemaType } from '@/schemas/fileSchema';
 
 // Model pro JEDNOTLIVÝ soubor (v-model)
 const fileModel = defineModel<FileSchemaType>({ required: true }); 
 
-// Definuje props s defaultními hodnotami pomocí `withDefaults`
+  // Definuje props s defaultními hodnotami pomocí `withDefaults`
 const props = withDefaults(defineProps<{
-    isDownloading?: boolean; // Změněno na volitelné
-    downloadProgress?: number; // Změněno na volitelné
+    isDownloading?: boolean;
+    downloadProgress?: number;
 }>(), {
-    isDownloading: false, // Defaultní hodnota: false
-    downloadProgress: 0,  // Defaultní hodnota: 0
+    isDownloading: false,
+    downloadProgress: 0,
 });
 
 // NOVÉ EMITY: Událost pro stahování nese s sebou data souboru
 const emit = defineEmits(['remove-file', 'download-request']); 
 
-// --- LOGIKA PRO POZNÁMKY (nezměněno) ---
+// --- LOGIKA PRO POZNÁMKY ---
 const showNoteDialog = ref(false);
 const currentNote = ref('');
 
@@ -108,4 +116,9 @@ const saveNote = () => {
     fileModel.value = fileModel.value; 
     showNoteDialog.value = false;
 };
+
+const isImage = computed(() => {
+    if (!fileModel.value.fileType) return false;
+    return fileModel.value.fileType.startsWith('image/');
+});
 </script>

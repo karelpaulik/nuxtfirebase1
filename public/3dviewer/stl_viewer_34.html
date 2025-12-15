@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>STL viewer</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<link type="text/css" rel="stylesheet" href="web3d/main.css">
+		<!-- <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='web3d/main.css') }}"> -->
+	</head>
+	<body id="body">
+		
+		<div id="info">
+			<!--
+			<input type="text" id="part" size="10">
+			<button type="button" id="btn">Search</button><br />
+			<table border="0" id="table"></table>
+			<button type="button" id="btn_logout" style="position:fixed; bottom:10px;" onclick="location.href = '../log_in_out.php?logout';">Odhlásit</button>
+			-->
+			<button type="button" onclick="document.getElementById('body').requestFullscreen()">Fullscreen</button><br />
+			<button type="button" onclick="document.exitFullscreen()">ExitFullscreen</button><br />
+			<label id="fileNameLabel"></label>
+		</div>
+		
+
+		<script type="module">
+		/*
+		//---------------------------------- Ajax start --------------------------------
+		let input = document.getElementById("part");
+		let btn = document.getElementById("btn");
+		let table = document.getElementById("table");
+		let tableLength = table.rows.length;
+		btn.onclick = search;
+		input.onkeypress = inputKeyPress;
+		
+		function inputKeyPress() {
+			if (event.keyCode ==13) { //13 = enter
+				//event.preventDefault(); // Cancel the default action, if needed
+				search();
+			}
+		}
+
+		//------------------------ajax post-------------------
+		const todo = {
+			part: ""
+		}
+
+		function search() {
+			table.innerHTML = "";
+			todo.part = input.value;
+			fetch("query_post.php" , {
+				method: 'POST',
+				body: JSON.stringify(todo),
+				headers: {
+					'Content-Type': 'application/json',
+				}
+			})		
+			.then(response => response.json())
+			.then(result => viewResults(result));
+		}
+
+		function viewResults(input) {							
+			for (var i=0; i<input.length; i++) {
+				var row = table.insertRow(tableLength);
+				var cell = row.insertCell(0);
+				cell.id = input[i];
+				cell.innerHTML = input[i];
+				cell.onclick = loadPart;
+			}
+		}		
+		
+		function loadPart() {
+			//console.log(this.id);			
+			loadModel('./models/' + this.id + '.zip', 0.001, true).then( (result)=>{helperObjects.push(result) ; } );
+			table.innerHTML = "";
+		}
+		*/
+		//---------------------------------- Ajax end --------------------------------
+			import * as THREE from './web3d/three.module.js';
+			// import * as THREE from "{{ url_for('static', filename='web3d/three.module.js') }}";
+
+			import { STLLoader } from './web3d/STLLoader.js';
+			// import { STLLoader } from "{{ url_for('static', filename='web3d/STLLoader.js') }}";
+
+			import { OrbitControls } from './web3d/OrbitControls.js';
+			// import { OrbitControls } from "{{ url_for('static', filename='web3d/OrbitControls.js') }}";
+
+			import { TransformControls } from './web3d/TransformControls.js';
+			// import { TransformControls } from "{{ url_for('static', filename='web3d/TransformControls.js') }}";
+
+			import { DragControls } from './web3d/DragControls.js';
+			// import { DragControls } from "{{ url_for('static', filename='web3d/DragControls.js') }}";
+
+
+			import { GUI } from './web3d/dat.gui.module.js';
+			// import { GUI } from "{{ url_for('static', filename='web3d/dat.gui.module.js') }}";
+
+			import { ZipLoader } from './web3d/zip-loader.module.js';
+			// import { ZipLoader } from "{{ url_for('static', filename='web3d/zip-loader.module.js') }}";
+
+			var container, stats;
+			var camera, cameraTarget, scene, renderer;			
+			var controls;
+			
+			var motor1;
+			var clipPlanes = [];		
+			
+			var cameraPersp, cameraOrtho, currentCamera;
+			var transformControls, orbitControls, dragcontrols;
+			var helperObjects = [];	
+			
+			var gui = null;				
+			var lastSelectedObject = null;
+			
+			var raycaster = new THREE.Raycaster();
+			var mouse = new THREE.Vector2( 1, 1 ); //udání hodnoty 1,1 je kvůli inicializaci. Jinak může vybrat objekt i když není na vybrání.
+			var INTERSECTED;
+			
+			var isTouchScreen;
+			
+			init();
+			//animate();
+			render();
+			
+			window.onload = function ()
+			{
+				//initLoad();		
+				//loadModel("{{ url_for('static', filename=filename_compl) }}", 0.001, true).then( (result)=>{helperObjects.push( result ); } );	
+				//loadModel('1011364_c.zip', 0.001, true).then( (result)=>{helperObjects.push( result )} );	
+				
+				// 1. Získání celého řetězce dotazu (query string) z aktuální URL
+                // Např. získá '?model=https%3A%2F%2Ffirebase.zip&name=muj_dil.zip'
+				const urlParams = new URLSearchParams(window.location.search);
+
+				// 2. Získání hodnoty parametru s názvem 'model' (URL k modelu) a 'name' (původní název souboru)
+                // Např. pro 'model' získá 'https%3A%2F%2Ffirebase.zip' a pro 'name' získá 'muj_dil.zip'
+				const fileUrl = urlParams.get('model'); 
+				const fileName = urlParams.get('name'); 
+
+				document.getElementById('fileNameLabel').textContent = fileName;
+
+				// 3. Načtení modelu
+				if (fileUrl && fileName) {
+					console.log(`fileUrl: ${fileUrl}`);
+					console.log(`fileName: ${fileName}`);
+					
+					// Použití proměnné modelToLoad v tvé funkci
+					loadModel(fileUrl, fileName, 0.001, true).then( (result) => {
+						// Zde pokračuje tvůj kód pro zpracování načteného modelu
+						helperObjects.push(result);
+						console.log(`Model ${fileName} byl úspěšně načten.`);
+					}).catch((error) => {
+						console.error(`Chyba při načítání modelu ${fileName}:`, error);
+					});
+
+				} else {
+					console.error("Chyba: Nebyl nalezen žádný model k načtení.");
+				}
+				//----------------------------------------------------------------------------------------------------------------
+
+				isTouchScreen = isTouchDevice();//Toto by asi mohlo být i v: init()
+				console.log(isTouchScreen);
+			}
+			/*
+			function initLoad() {
+				if (window.location.search) {
+					console.log("not null")
+					const urlParams = new URLSearchParams(window.location.search);
+					const file = urlParams.get('part') + '_' + urlParams.get('ver');
+					//alert(urlParams.get('part'));			
+					//alert(urlParams.get('ver'));
+					//alert(urlParams.get(file));
+					loadModel('./models/' + file + '.zip', 0.001, true).then( (result)=>{helperObjects.push( result )} );				
+				}				
+			}*/
+
+			function init() {
+			
+				//classes modification
+
+				THREE.Mesh.prototype.changeColor = function (color) {
+					for (var i=0; i<this.material.length ; i++) {
+						if (color==undefined) {
+							var randomColor = new THREE.Color( Math.random() * 0xffffff );
+						} else {
+							var randomColor = new THREE.Color( color );						
+						}
+						this.material[i].color = randomColor;
+						this.children[0].material[i].color = randomColor;
+					};
+					render();
+				};
+				
+				THREE.Mesh.prototype.setDefPosRotScale = function () {			
+					this.position.set(this.initPosition.x, this.initPosition.y, this.initPosition.z);
+					this.rotation.set(this.initRotation.x, this.initRotation.y, this.initRotation.z);
+					this.scale.set(this.initScale.x, this.initScale.y, this.initScale.z);
+					render();
+				};
+				
+				THREE.Mesh.prototype.initPosition = {
+					x: 0,
+					y: 0,
+					z: 0
+				};
+
+				THREE.Mesh.prototype.initRotation = {
+					x: -Math.PI/2,
+					y: 0,
+					z: 0
+				};
+
+				THREE.Mesh.prototype.initScale = {
+					x: 1,
+					y: 1,
+					z: 1
+				};
+
+				THREE.Mesh.prototype.setPolygonOffsetFactor = function (value) {			
+					for (var i=0; i<this.material.length ; i++) {
+						this.children[0].material[i].polygonOffsetFactor=value;
+					};
+				};
+
+				//precondition:
+				//exist object: mesh
+				//this object mesh has: group and material as array
+				THREE.Mesh.prototype.createSectionMesh = function (meshObject) {
+					var sectionMesh = meshObject.clone();				
+					var clonedMaterial = [];
+					for (var j=0; j < meshObject.material.length; j++) {
+						clonedMaterial.push(meshObject.material[j].clone());
+					}							
+					sectionMesh.material = clonedMaterial;
+							
+					for (var j=0; j < sectionMesh.material.length; j++) {
+						var parentMaterial = sectionMesh.material[j].color;
+						//console.log(parentMaterial);
+						var material = new THREE.MeshBasicMaterial({
+							side: THREE.BackSide,
+							clippingPlanes: clipPlanes,
+							clipIntersection: true,								
+							color: parentMaterial, //Math.random() * 0xffffff,
+							polygonOffset: true,
+							polygonOffsetFactor: -1,
+							wireframe: false
+						});
+						sectionMesh.material[j] = material;
+					}
+
+					sectionMesh.position.set( 0, 0, 0);
+					sectionMesh.rotation.set( 0, 0, 0);							
+					sectionMesh.scale.set( 1, 1, 1 );
+							
+					meshObject.add(sectionMesh);			
+				}
+				
+				//container
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
+
+				//renderer
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.outputEncoding = THREE.sRGBEncoding;
+				//renderer.shadowMap.enabled = true;
+				renderer.localClippingEnabled = false;
+				container.appendChild( renderer.domElement );
+				
+				//currentCamera
+				const frustumSize = 1;
+				const aspect = window.innerWidth / window.innerHeight;
+				cameraPersp = new THREE.PerspectiveCamera( 20, aspect, 250, 20000 );
+				cameraOrtho = new THREE.OrthographicCamera( frustumSize * aspect / - 0.002, frustumSize * aspect / 0.002, frustumSize / 0.002, frustumSize / - 0.002, 250, 20000 );
+				
+				currentCamera = cameraOrtho;
+
+				currentCamera.position.set( 1000, 1000, 1000 );
+				currentCamera.lookAt( 0, 0, 0 );
+				
+				//scene
+				scene = new THREE.Scene();
+				scene.background = new THREE.Color( 0x72645b );
+				
+				//load model	
+				//loadModel('./models/gltf/paulik/1012053_i_ch05_a225_text.stl', 0.001, true).then( (result)=>{motor1=result} );						
+
+				//lights
+				scene.add( new THREE.HemisphereLight( 0x443333, 0x111122 ) );
+				addShadowedLight( 1, 1, 1, 0xffffff, 1.35 );
+				addShadowedLight( 0.5, 1, - 1, 0xffaa00, 1 );
+
+				var mouseDown = 0;
+				document.body.onmousedown = function() { 
+					mouseDown = 1;
+				}
+				document.body.onmouseup = function() {
+					mouseDown = 0;
+				}
+				
+				//clipPlanes
+				clipPlanes[0] = new THREE.Plane( new THREE.Vector3( -1, 0, 0 ), 0 );
+				clipPlanes[1] = new THREE.Plane( new THREE.Vector3( 0, -1, 0 ), 0 );
+				clipPlanes[2] = new THREE.Plane( new THREE.Vector3( 0, 0, -1 ), 0 );
+				
+				//newcontrols
+				orbitControls = new OrbitControls( currentCamera, renderer.domElement );
+				orbitControls.update();
+				orbitControls.addEventListener( 'change', render ); // use if there is no animation loop
+
+				transformControls = new TransformControls( currentCamera, renderer.domElement );
+				transformControls.setSize( 0.5 );
+				scene.add( transformControls );	
+				
+				transformControls.addEventListener( 'change', render );
+
+				transformControls.addEventListener( 'dragging-changed', function ( event ) {
+					orbitControls.enabled = ! event.value;
+				} );			
+				
+			
+				/*
+				dragcontrols = new DragControls( helperObjects, currentCamera, renderer.domElement ); //
+				dragcontrols.enabled = false;
+				dragcontrols.addEventListener( 'hoveron', function ( event ) {
+					if (!mouseDown) {
+						transformControls.attach( event.object );
+						cancelHideTransform();
+						render();
+						if ( event.object != lastSelectedObject ) { //Podmínka: jestliže je vybraný jiný objekt než ten předchozí, pak ...
+							if (gui!=undefined) { //Podmínka: jestliže gui neexistuje, pak ...
+								gui.destroy();
+							}
+							gui = addGui(event.object);
+						}						
+						lastSelectedObject = event.object;						
+					};
+				} );
+
+				dragcontrols.addEventListener( 'hoveroff', function () {
+					delayHideTransform();
+				} );
+				
+				// Hiding transform situation is a little in a mess :()
+				transformControls.addEventListener( 'change', function () {
+					cancelHideTransform();
+				} );
+
+				transformControls.addEventListener( 'mouseDown', function () {
+					cancelHideTransform();
+				} );
+
+				transformControls.addEventListener( 'mouseUp', function () {
+					delayHideTransform();
+				} );
+
+				var hiding;
+
+				function delayHideTransform() {
+					cancelHideTransform();
+					hideTransform();
+				}
+
+				function hideTransform() {
+					hiding = setTimeout( function () {
+						transformControls.detach( transformControls.object );
+						render();
+					}, 1000 );
+				}
+
+				function cancelHideTransform() {
+					if ( hiding ) clearTimeout( hiding );
+				}
+				*/
+				
+				window.addEventListener( 'resize', onWindowResize, false );
+				window.addEventListener( 'mousemove', onMouseMove, false );				
+				window.addEventListener( 'click', onClick, false );
+				
+				window.addEventListener( 'keydown', function ( event ) {
+
+					switch ( event.keyCode ) {
+
+						case 81: // Q
+							transformControls.setSpace( transformControls.space === "local" ? "world" : "local" );
+							break;
+
+						case 16: // Shift
+							transformControls.setTranslationSnap( 10 );
+							transformControls.setRotationSnap( THREE.MathUtils.degToRad( 30 ) );
+							transformControls.setScaleSnap( 0.25 );
+							break;
+						
+
+						case 82: // R
+							transformControls.setMode( "rotate" );
+							break;
+
+						case 83: // S
+							transformControls.setMode( "scale" );x
+							break;							
+
+						case 84: // T
+							transformControls.setMode( "translate" );
+							break;							
+							
+						/*case 67: // C
+							const position = currentCamera.position.clone();
+
+							currentCamera = currentCamera.isPerspectiveCamera ? cameraOrtho : cameraPersp;
+							currentCamera.position.copy( position );
+
+							orbitControls.object = currentCamera;
+							transformControls.camera = currentCamera;
+
+							currentCamera.lookAt( orbitControls.target.x, orbitControls.target.y, orbitControls.target.z );
+							onWindowResize();
+							break;*/
+
+						/*case 86: // V
+							const randomFoV = Math.random() + 0.1;
+							const randomZoom = Math.random() + 0.1;
+
+							cameraPersp.fov = randomFoV * 160;
+							cameraOrtho.bottom = - randomFoV * 500;
+							cameraOrtho.top = randomFoV * 500;
+
+							cameraPersp.zoom = randomZoom * 5;
+							cameraOrtho.zoom = randomZoom * 5;
+							onWindowResize();
+							break;*/
+
+						case 187:
+						case 107: // +, =, num+
+							transformControls.setSize( transformControls.size + 0.1 );
+							break;
+
+						case 189:
+						case 109: // -, _, num-
+							transformControls.setSize( Math.max( transformControls.size - 0.1, 0.1 ) );
+							break;
+
+						case 88: // X
+							transformControls.showX = ! transformControls.showX;
+							break;
+
+						case 89: // Y
+							transformControls.showY = ! transformControls.showY;
+							break;
+
+						case 90: // Z
+							transformControls.showZ = ! transformControls.showZ;
+							break;
+
+						case 32: // Spacebar
+							transformControls.enabled = ! transformControls.enabled;
+							break;
+
+					}
+
+				} );
+
+				window.addEventListener( 'keyup', function ( event ) {
+
+					switch ( event.keyCode ) {
+
+						case 16: // Shift
+							transformControls.setTranslationSnap( null );
+							transformControls.setRotationSnap( null );
+							transformControls.setScaleSnap( null );
+							break;
+
+					}
+
+				} );
+			
+		
+			} //End init ------------------------------------------------------------------------------------------------------------------------------	
+
+			//GUI----------------------------------------------------------------------------------------------------------------
+			var extent = {
+				pn: -1000,
+				pp: +1000,
+				pStep: 10,
+				rn: -3.1416,
+				rp: 3.1416,
+				rStep: 0.035,
+				sn: 0,
+				sp: 10,
+				sStep: 0.1
+			}
+
+			var viewProp = {
+				perspCam: false,
+				section: false,
+				px: 0,
+				py: 0,
+				pz: 0,
+				reset: function() { resetSection() },
+				viewx: function() { viewFromPoint(1000, 0, 0) },
+				viewy: function() { viewFromPoint(0, 1000, 0) },
+				viewz: function() { viewFromPoint(0, 0, 1000) },
+			}
+				
+			var part = {
+				partNr: "1011388_b",
+				//load: function() { loadModel('./models/' + part.partNr + '.zip', 0.001, true).then( (result)=>{helperObjects.push( result ); } );},
+				//load: function() { loadModel("{{ url_for('static', filename='1011388_b.zip') }}", 0.001, true).then( (result)=>{helperObjects.push( result ); } );},			
+				load: function() { loadModel('1011364_c.zip', 0.001, true).then( (result)=>{helperObjects.push( result ); } );},
+				remove: function() { removeModel(lastSelectedObject); },
+				color: "#888888",
+				separate: function() { 
+					
+					var geometris = [];
+					geometris = separateGroups(lastSelectedObject.geometry);
+					removeModel(lastSelectedObject);				
+						
+					for (var i=0; i<geometris.length; i++) {
+
+						//1.moznost------------------------------------------------------------------
+						//var mesh = new THREE.Mesh(geometris[i], lastSelectedObject.material[i]);
+						//---------------------------------------------------------------------------
+							
+						//2.moznost------------------------------------------------------------------
+						geometris[i].addGroup(0, geometris[i].attributes.position.count, 0);
+						var materials = [];
+						materials.push(lastSelectedObject.material[i]);
+						var mesh = new THREE.Mesh(geometris[i], materials);
+						//---------------------------------------------------------------------------
+							
+						mesh.setDefPosRotScale();
+						mesh.name = fileNameWithoutExtension("sep dil");						
+						scene.add( mesh );
+						console.log(mesh);
+							
+						mesh.createSectionMesh(mesh);
+							
+						render();
+						helperObjects.push( mesh );						
+					}										
+				}
+			};	
+
+			var params = {
+				backgroundColor: "#888888"
+			}
+
+			function addMainGui() {
+				var gui = new GUI();
+				//View
+				var folderProp = gui.addFolder( 'View' );
+				folderProp.addColor(params, 'backgroundColor').name('Background').onChange(function(value){ console.log(value); scene.background = new THREE.Color(value); render(); });
+				folderProp.add(viewProp, 'perspCam').name('Persp. camera').onChange(function(value){setCamera(); render(); });
+				folderProp.add(viewProp, 'section').name('Section').onChange(function(value){renderer.localClippingEnabled = value; render(); });
+				folderProp.add(viewProp, 'px', extent.pn, extent.pp, extent.pStep).name('Pos. x').onChange(function(value){clipPlanes[0].constant=value; render(); }).listen();
+				folderProp.add(viewProp, 'py', extent.pn, extent.pp, extent.pStep).name('Pos. y').onChange(function(value){clipPlanes[1].constant=value; render(); }).listen();
+				folderProp.add(viewProp, 'pz', extent.pn, extent.pp, extent.pStep).name('Pos. z').onChange(function(value){clipPlanes[2].constant=value; render(); }).listen();
+				folderProp.add(viewProp, 'reset').name('Reset section');
+				folderProp.add(viewProp, 'viewx').name('View from X');
+				folderProp.add(viewProp, 'viewy').name('View from Y');
+				folderProp.add(viewProp, 'viewz').name('View from Z');
+				folderProp.add(lastSelectedObject, 'changeColor').name('Random color');	
+				//Loading
+				//var folder1 = gui.addFolder( 'Load / Remove' );
+				//folder1.open();
+				folder1.add(part, 'partNr').name('Part nr.');
+				folder1.add(part, 'load').name('Load');
+				folder1.add(part, 'remove').name('Remove');						
+			}	
+			//addMainGui();
+
+			function addGui(obj) {
+				var gui = new GUI();					
+				var folder1 = gui.addFolder( 'Selected part' );
+				folder1.open();
+				folder1.add(obj, 'name').name('Name').listen();
+				folder1.add(obj, 'changeColor').name('Random color');
+				folder1.addColor(part, 'color').name('Specif. color').onChange(function(value){ obj.changeColor(value); });
+				folder1.add(part, 'remove').name('Remove');	
+				folder1.add(part, 'separate').name('Separate Part');				
+				var folder2 = gui.addFolder("Location");
+				folder2.add(obj.position, 'x', extent.pn, extent.pp, extent.pStep)
+					.name('Px')
+					.onChange(function(value){obj.position.x=value; render(); })
+					.listen();
+				folder2.add(obj.position, 'y', extent.pn, extent.pp, extent.pStep)
+					.name('Py')
+					.onChange(function(value){obj.position.y=value; render(); })
+					.listen();
+				folder2.add(obj.position, 'z', extent.pn, extent.pp, extent.pStep)
+					.name('Pz')
+					.onChange(function(value){obj.position.z=value; render(); })
+					.listen();
+				folder2.add(obj.rotation, 'x', extent.rn, extent.rp, extent.rStep)
+					.name('Rx')
+					.onChange(function(value){obj.rotation.x=value; render(); })
+					.listen();
+				folder2.add(obj.rotation, 'y', extent.rn, extent.rp, extent.rStep)
+					.name('Ry')
+					.onChange(function(value){obj.rotation.y=value; render(); })
+					.listen();
+				folder2.add(obj.rotation, 'z', extent.rn, extent.rp, extent.rStep)
+					.name('Rz')
+					.onChange(function(value){obj.rotation.z=value; render(); })
+					.listen();
+				folder2.add(obj.scale, 'x', extent.sn, extent.sp, extent.sStep)
+					.name('Scale')
+					.onChange(function(value){obj.scale.x=value; obj.scale.y=value; obj.scale.z=value; render(); })
+					.listen();
+				folder2.add(obj, 'setDefPosRotScale').name('Reset init. location');
+				var folder3 = gui.addFolder("Section view");
+				folder3.add(obj.children[0], 'visible').name('Fullfiled section').onChange(function(value){obj.children[0].visible = value; render(); });
+				folder3.add(obj.children[0].material[0], 'polygonOffsetFactor', -4, 0, 0.1)
+					.name('OffsetFactor')
+					.onChange(function(value){obj.setPolygonOffsetFactor(value); render(); });
+				return gui;
+			}
+
+			function resetSection() {					
+				viewProp.px = 0;
+				viewProp.py = 0;
+				viewProp.pz = 0;
+				updateSection();
+			}
+				
+			function viewFromPoint(x, y, z) {
+				currentCamera.position.set( x, y, z );	
+				currentCamera.lookAt( 0, 0, 0 );					
+				orbitControls.update();
+			}
+				
+			function updateSection() {
+				clipPlanes[0].constant=viewProp.px;
+				clipPlanes[1].constant=viewProp.py;
+				clipPlanes[2].constant=viewProp.pz;
+				render();
+			}				
+				
+			function setCamera() {					
+				const position = currentCamera.position.clone();
+
+				currentCamera = currentCamera.isPerspectiveCamera ? cameraOrtho : cameraPersp;
+				currentCamera.position.copy( position );
+
+				orbitControls.object = currentCamera;
+				transformControls.camera = currentCamera;
+
+				currentCamera.lookAt( orbitControls.target.x, orbitControls.target.y, orbitControls.target.z );
+				onWindowResize();
+			}	
+			//GUI----------------------------------------------------------------------------------------------------------------
+			
+
+			function isTouchDevice() {
+				return (('ontouchstart' in window) ||
+					(navigator.maxTouchPoints > 0) ||
+					(navigator.msMaxTouchPoints > 0));
+			}
+
+			function addShadowedLight( x, y, z, color, intensity ) {
+
+				var directionalLight = new THREE.DirectionalLight( color, intensity );
+				directionalLight.position.set( x, y, z );
+				scene.add( directionalLight );
+
+				directionalLight.castShadow = true;
+
+				var d = 1;
+				/*directionalLight.shadow.currentCamera.left = - d;
+				directionalLight.shadow.currentCamera.right = d;
+				directionalLight.shadow.currentCamera.top = d;
+				directionalLight.shadow.currentCamera.bottom = - d;
+
+				directionalLight.shadow.currentCamera.near = 1;
+				directionalLight.shadow.currentCamera.far = 4;
+
+				directionalLight.shadow.bias = - 0.002;*/
+			}
+			
+			//https://www.reddit.com/r/learnjavascript/comments/9jovpn/how_can_i_load_a_3d_model_asynchronously_in/	
+			//https://javascript.info/promise-basics
+			function loadModel(model, name, scale, colored) {
+				return new Promise( (resolve, reject) => {	
+
+					var zipLoader = new ZipLoader( model ); //Např: './models/1011388_b.zip'
+					zipLoader.load().then( function() {
+						var url = zipLoader.extractAsBlobUrl( fileNameWithoutExtension(name) + '.txt');					
+					
+						var loader = new STLLoader();
+						loader.load( url, function ( geometry ) {												
+
+							var materials = [];
+							var nGeometryGroups = geometry.groups.length;
+							console.log(nGeometryGroups);
+							for (var i = 0; i < nGeometryGroups; i++) {
+								var material = new THREE.MeshPhongMaterial({
+									side: THREE.DoubleSide,
+									clippingPlanes: clipPlanes,
+									clipIntersection: true,								
+									color: Math.random() * 0xffffff,
+									wireframe: false
+								});
+							materials.push(material);
+							}
+							var mesh = new THREE.Mesh(geometry, materials);				
+							/*var material = new THREE.MeshPhongMaterial( {
+								color: 0x606060,
+								specular: 0x111111,
+								shininess: 100,
+								side: THREE.DoubleSide,
+								clippingPlanes: clipPlanes,
+								clipIntersection: true	
+								} );
+							var mesh = new THREE.Mesh( geometry, material );	*/					
+							
+							mesh.setDefPosRotScale();							
+							mesh.name = fileNameWithoutExtension(model);
+							scene.add( mesh );	
+							console.log(mesh);
+							render();
+							resolve(mesh);	
+
+							mesh.createSectionMesh(mesh);
+							lastSelectedObject=mesh;  
+							addMainGui();
+							//-----------------------------------fullfilled section-----------------------------
+							/*var sectionMesh = mesh.clone();				
+							var clonedMaterial = [];
+							for (var j=0; j < mesh.material.length; j++) {
+								clonedMaterial.push(mesh.material[j].clone());
+							}							
+							sectionMesh.material = clonedMaterial;
+							
+							for (var j=0; j < sectionMesh.material.length; j++) {
+								var parentMaterial = sectionMesh.material[j].color;
+								//console.log(parentMaterial);
+								var material = new THREE.MeshBasicMaterial({
+									side: THREE.BackSide,
+									clippingPlanes: clipPlanes,
+									clipIntersection: true,								
+									color: parentMaterial, //Math.random() * 0xffffff,
+									polygonOffset: true,
+									polygonOffsetFactor: -1,
+									wireframe: false
+								});
+								sectionMesh.material[j] = material;
+							}
+
+							sectionMesh.position.set( 0, 0, 0);
+							sectionMesh.rotation.set( 0, 0, 0);							
+							sectionMesh.scale.set( 1, 1, 1 );
+							
+							mesh.add(sectionMesh);
+							render();*/
+							//-----------------------------------end fullfilled section-----------------------------
+							
+							
+							//console.log(mesh);				
+							//-------------------------------------------------------------------------------------------------------
+						} );
+					} );					
+				});
+			}
+			//Volání funkce:
+			//loadModel('./models/gltf/paulik/1012053_i_ch05_a225_text.stl', 0.001).then( (result)=>{console.log(result)} );	
+
+			function fileNameWithoutExtension(path) {
+				var myArr = path.split('/');
+				var myStr = myArr[ myArr.length-1 ];
+				myArr = myStr.split('.');
+				return myArr[0];			
+			}
+			
+			function removeModel(part) {
+				try {
+					/*transformControls.detach( part );
+					scene.remove(part);*/
+
+					//remove first object from array
+					//transformControls.detach( helperObjects[0] );
+					//scene.remove( helperObjects[0] );
+					//helperObjects.splice(0, 1); //delete helperObjects[0]; - nefungovalo, protože to neposunulo indexy
+					
+					//remove last array from array
+					/*transformControls.detach( helperObjects[helperObjects.length - 1] );
+					scene.remove( helperObjects[helperObjects.length - 1] );
+					helperObjects.pop();	*/
+
+					//remove last selected object					
+					transformControls.detach( part );
+					scene.remove( part );
+					var partIndex = helperObjects.indexOf(part);
+					helperObjects.splice(partIndex, 1);					
+					
+					render();
+				} catch(err) {
+					console.log("Error: removeModel " + err.message);
+				}
+
+			}
+			
+			function separateGroups( bufGeom ) {
+				var outGeometries = [];
+				var groups = bufGeom.groups;					
+				var origPositions = bufGeom.getAttribute( 'position' ).array;
+				var origNormals = bufGeom.getAttribute( 'normal' ).array;
+				var origNumVerts = Math.floor( origPositions.length / 3 );	
+				for ( var ig = 0, ng = groups.length; ig < ng; ig ++ ) {				
+					var group = groups[ ig ];
+					var destNumVerts = group.count;
+					var newBufGeom = new THREE.BufferGeometry();
+					var newPositions = new Float32Array( destNumVerts * 3 );
+					var newNormals = new Float32Array( destNumVerts * 3 );
+					for ( var iv = 0; iv < destNumVerts; iv ++ ) {					
+						var indexOrig = 3 * ( group.start + iv );
+						var indexDest = 3 * iv;						
+						newPositions[ indexDest + 0 ] = origPositions[ indexOrig + 0 ];
+						newPositions[ indexDest + 1 ] = origPositions[ indexOrig + 1 ];
+						newPositions[ indexDest + 2 ] = origPositions[ indexOrig + 2 ];
+						newNormals[ indexDest + 0 ] = origNormals[ indexOrig + 0 ];
+						newNormals[ indexDest + 1 ] = origNormals[ indexOrig + 1 ];
+						newNormals[ indexDest + 2 ] = origNormals[ indexOrig + 2 ];				
+					}						
+					newBufGeom.setAttribute( 'position', new THREE.BufferAttribute( newPositions, 3 ) );
+					newBufGeom.setAttribute( 'normal', new THREE.BufferAttribute( newNormals, 3 ) );
+					outGeometries.push( newBufGeom );
+				}
+				return outGeometries;
+			}
+			
+			function onWindowResize() {
+				//currentCamera.aspect = window.innerWidth / window.innerHeight;
+				
+				if (currentCamera == cameraPersp) {
+					currentCamera.aspect = window.innerWidth / window.innerHeight;
+				}
+				
+				if (currentCamera == cameraOrtho) { 				
+					const frustumSize = 1;
+					const aspect = window.innerWidth / window.innerHeight;				
+					currentCamera.left = - frustumSize * aspect / 0.002;
+					currentCamera.right = frustumSize * aspect / 0.002;
+					currentCamera.top = frustumSize / 0.002;
+					currentCamera.bottom = - frustumSize / 0.002;					
+				}
+				
+				currentCamera.updateProjectionMatrix();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				render();
+			}
+
+			function animate() {
+				requestAnimationFrame( animate );
+				render();
+			}
+
+			function render() {
+			
+				//------------------------------------------------------------
+				
+				if ( !isTouchScreen ) {		
+					raycaster.setFromCamera( mouse, currentCamera );
+					var intersects = raycaster.intersectObjects( helperObjects );				
+	
+					if ( intersects.length > 0 ) { //jestliže existuje výběr
+						if ( INTERSECTED != intersects[ 0 ].object ) { //jestliže současný vybraný prvek je jiný, než předchozí vybraný prvek
+							if ( INTERSECTED ) {
+								//INTERSECTED.material[11].emissive.setHex( INTERSECTED.currentHex );
+								for (var i=0; i<INTERSECTED.material.length; i++) {
+									INTERSECTED.material[i].emissive.setHex( 0x000000 );
+									//INTERSECTED.children[0].material[i].colorWrite = true;
+								}							
+							}	
+							
+							INTERSECTED = intersects[ 0 ].object;
+							//INTERSECTED.currentHex = INTERSECTED.material[11].emissive.getHex();
+							//INTERSECTED.material[11].emissive.setHex( 0xff0000 );						
+							for (var i=0; i<INTERSECTED.material.length; i++) {
+								INTERSECTED.material[i].emissive.setHex( 0xff0000 );
+								//INTERSECTED.children[0].material[i].colorWrite = false;
+							}						
+						}
+					} else {
+						if ( INTERSECTED ) {
+							//INTERSECTED.material[11].emissive.setHex( INTERSECTED.currentHex );
+							for (var i=0; i<INTERSECTED.material.length; i++) {
+								INTERSECTED.material[i].emissive.setHex( 0x000000 );
+								//INTERSECTED.children[0].material[i].colorWrite = true;
+							}
+						}
+						INTERSECTED = null;
+					}
+				}
+				//------------------------------------------------------------
+		
+		
+				renderer.render( scene, currentCamera );
+			}
+		
+			
+			function onMouseMove( event ) {			
+				event.preventDefault();			
+				// calculate mouse position in normalized device coordinates
+				// (-1 to +1) for both components				
+				mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+				mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;				
+				render();
+			}			
+			
+			function onClick( event ) {		
+				if (INTERSECTED) {
+					console.log(INTERSECTED);
+					transformControls.attach(INTERSECTED);					
+					lastSelectedObject=INTERSECTED;					
+					if (gui!=undefined) { //Podmínka: jestliže gui neexistuje, pak ...
+						gui.destroy();
+					}
+					gui = addGui(lastSelectedObject);
+				}
+			}
+			
+
+		</script>
+	</body>
+</html>

@@ -171,3 +171,5 @@ function onClick( event ) {
 scene.add( transformControls );	
 transformControls.attach(selectedObjects[0]);
 transformControls.detach();
+
+scene.remove( object );

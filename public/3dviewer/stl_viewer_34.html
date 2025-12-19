@@ -5,17 +5,10 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 		<link type="text/css" rel="stylesheet" href="web3d/main.css">
-		<!-- <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='web3d/main.css') }}"> -->
 	</head>
 	<body id="body">
 		
 		<div id="info">
-			<!--
-			<input type="text" id="part" size="10">
-			<button type="button" id="btn">Search</button><br />
-			<table border="0" id="table"></table>
-			<button type="button" id="btn_logout" style="position:fixed; bottom:10px;" onclick="location.href = '../log_in_out.php?logout';">Odhlásit</button>
-			-->
 			<button type="button" onclick="document.getElementById('body').requestFullscreen()">Fullscreen</button><br />
 			<button type="button" onclick="document.exitFullscreen()">ExitFullscreen</button><br />
 			<label id="fileNameLabel"></label>
@@ -23,58 +16,6 @@
 		
 
 		<script type="module">
-		/*
-		//---------------------------------- Ajax start --------------------------------
-		let input = document.getElementById("part");
-		let btn = document.getElementById("btn");
-		let table = document.getElementById("table");
-		let tableLength = table.rows.length;
-		btn.onclick = search;
-		input.onkeypress = inputKeyPress;
-		
-		function inputKeyPress() {
-			if (event.keyCode ==13) { //13 = enter
-				//event.preventDefault(); // Cancel the default action, if needed
-				search();
-			}
-		}
-
-		//------------------------ajax post-------------------
-		const todo = {
-			part: ""
-		}
-
-		function search() {
-			table.innerHTML = "";
-			todo.part = input.value;
-			fetch("query_post.php" , {
-				method: 'POST',
-				body: JSON.stringify(todo),
-				headers: {
-					'Content-Type': 'application/json',
-				}
-			})		
-			.then(response => response.json())
-			.then(result => viewResults(result));
-		}
-
-		function viewResults(input) {							
-			for (var i=0; i<input.length; i++) {
-				var row = table.insertRow(tableLength);
-				var cell = row.insertCell(0);
-				cell.id = input[i];
-				cell.innerHTML = input[i];
-				cell.onclick = loadPart;
-			}
-		}		
-		
-		function loadPart() {
-			//console.log(this.id);			
-			loadModel('./models/' + this.id + '.zip', 0.001, true).then( (result)=>{helperObjects.push(result) ; } );
-			table.innerHTML = "";
-		}
-		*/
-		//---------------------------------- Ajax end --------------------------------
 			import * as THREE from './web3d/three.module.js';
 			// import * as THREE from "{{ url_for('static', filename='web3d/three.module.js') }}";
 
@@ -99,13 +40,13 @@
 
 			var container, stats;
 			var camera, cameraTarget, scene, renderer;			
-			var controls;
+			//var controls;
 			
 			var motor1;
 			var clipPlanes = [];		
 			
 			var cameraPersp, cameraOrtho, currentCamera;
-			var transformControls, orbitControls, dragcontrols;
+			var transformControls, orbitControls;
 			var helperObjects = [];	
 			
 			var gui = null;				
@@ -127,6 +68,7 @@
 				//loadModel("{{ url_for('static', filename=filename_compl) }}", 0.001, true).then( (result)=>{helperObjects.push( result ); } );	
 				//loadModel('1011364_c.zip', 0.001, true).then( (result)=>{helperObjects.push( result )} );	
 				
+				// Načtení modelu z URL parametru---------------------------------------------------------
 				// 1. Získání celého řetězce dotazu (query string) z aktuální URL
                 // Např. získá '?model=https%3A%2F%2Ffirebase.zip&name=muj_dil.zip'
 				const urlParams = new URLSearchParams(window.location.search);
@@ -155,23 +97,11 @@
 				} else {
 					console.error("Chyba: Nebyl nalezen žádný model k načtení.");
 				}
-				//----------------------------------------------------------------------------------------------------------------
+				//--------------------------------------------------------------------------------------	
 
 				isTouchScreen = isTouchDevice();//Toto by asi mohlo být i v: init()
-				console.log(isTouchScreen);
+				//console.log(isTouchScreen);
 			}
-			/*
-			function initLoad() {
-				if (window.location.search) {
-					console.log("not null")
-					const urlParams = new URLSearchParams(window.location.search);
-					const file = urlParams.get('part') + '_' + urlParams.get('ver');
-					//alert(urlParams.get('part'));			
-					//alert(urlParams.get('ver'));
-					//alert(urlParams.get(file));
-					loadModel('./models/' + file + '.zip', 0.001, true).then( (result)=>{helperObjects.push( result )} );				
-				}				
-			}*/
 
 			function init() {
 			
@@ -318,61 +248,6 @@
 					orbitControls.enabled = ! event.value;
 				} );			
 				
-			
-				/*
-				dragcontrols = new DragControls( helperObjects, currentCamera, renderer.domElement ); //
-				dragcontrols.enabled = false;
-				dragcontrols.addEventListener( 'hoveron', function ( event ) {
-					if (!mouseDown) {
-						transformControls.attach( event.object );
-						cancelHideTransform();
-						render();
-						if ( event.object != lastSelectedObject ) { //Podmínka: jestliže je vybraný jiný objekt než ten předchozí, pak ...
-							if (gui!=undefined) { //Podmínka: jestliže gui neexistuje, pak ...
-								gui.destroy();
-							}
-							gui = addGui(event.object);
-						}						
-						lastSelectedObject = event.object;						
-					};
-				} );
-
-				dragcontrols.addEventListener( 'hoveroff', function () {
-					delayHideTransform();
-				} );
-				
-				// Hiding transform situation is a little in a mess :()
-				transformControls.addEventListener( 'change', function () {
-					cancelHideTransform();
-				} );
-
-				transformControls.addEventListener( 'mouseDown', function () {
-					cancelHideTransform();
-				} );
-
-				transformControls.addEventListener( 'mouseUp', function () {
-					delayHideTransform();
-				} );
-
-				var hiding;
-
-				function delayHideTransform() {
-					cancelHideTransform();
-					hideTransform();
-				}
-
-				function hideTransform() {
-					hiding = setTimeout( function () {
-						transformControls.detach( transformControls.object );
-						render();
-					}, 1000 );
-				}
-
-				function cancelHideTransform() {
-					if ( hiding ) clearTimeout( hiding );
-				}
-				*/
-				
 				window.addEventListener( 'resize', onWindowResize, false );
 				window.addEventListener( 'mousemove', onMouseMove, false );				
 				window.addEventListener( 'click', onClick, false );
@@ -407,34 +282,6 @@
 							transformControls.setMode( 'translate' );
 							break;
 
-						/*case 'c':
-						case 'C':
-							const position = currentCamera.position.clone();
-
-							currentCamera = currentCamera.isPerspectiveCamera ? cameraOrtho : cameraPersp;
-							currentCamera.position.copy( position );
-
-							orbitControls.object = currentCamera;
-							transformControls.camera = currentCamera;
-
-							currentCamera.lookAt( orbitControls.target.x, orbitControls.target.y, orbitControls.target.z );
-							onWindowResize();
-							break;*/
-
-						/*case 'v':
-						case 'V':
-							const randomFoV = Math.random() + 0.1;
-							const randomZoom = Math.random() + 0.1;
-
-							cameraPersp.fov = randomFoV * 160;
-							cameraOrtho.bottom = - randomFoV * 500;
-							cameraOrtho.top = randomFoV * 500;
-
-							cameraPersp.zoom = randomZoom * 5;
-							cameraOrtho.zoom = randomZoom * 5;
-							onWindowResize();
-							break;*/
-
 						case '+':
 						case '=':
 							transformControls.setSize( transformControls.size + 0.1 );
@@ -462,6 +309,14 @@
 
 						case ' ':
 							transformControls.enabled = ! transformControls.enabled;
+							break;
+
+						case 'm':
+							lastSelectedObject.position.set(
+								Math.random() * 400 - 200,
+								Math.random() * 400 - 200,
+								Math.random() * 400 - 200
+							);
 							break;
 
 					}
@@ -672,17 +527,6 @@
 				scene.add( directionalLight );
 
 				directionalLight.castShadow = true;
-
-				var d = 1;
-				/*directionalLight.shadow.currentCamera.left = - d;
-				directionalLight.shadow.currentCamera.right = d;
-				directionalLight.shadow.currentCamera.top = d;
-				directionalLight.shadow.currentCamera.bottom = - d;
-
-				directionalLight.shadow.currentCamera.near = 1;
-				directionalLight.shadow.currentCamera.far = 4;
-
-				directionalLight.shadow.bias = - 0.002;*/
 			}
 			
 			//https://www.reddit.com/r/learnjavascript/comments/9jovpn/how_can_i_load_a_3d_model_asynchronously_in/	
@@ -699,7 +543,8 @@
 
 							var materials = [];
 							var nGeometryGroups = geometry.groups.length;
-							console.log(nGeometryGroups);
+							console.log("nGeometryGroups: ", nGeometryGroups);
+							
 							for (var i = 0; i < nGeometryGroups; i++) {
 								var material = new THREE.MeshPhongMaterial({
 									side: THREE.DoubleSide,
@@ -710,16 +555,7 @@
 								});
 							materials.push(material);
 							}
-							var mesh = new THREE.Mesh(geometry, materials);				
-							/*var material = new THREE.MeshPhongMaterial( {
-								color: 0x606060,
-								specular: 0x111111,
-								shininess: 100,
-								side: THREE.DoubleSide,
-								clippingPlanes: clipPlanes,
-								clipIntersection: true	
-								} );
-							var mesh = new THREE.Mesh( geometry, material );	*/					
+							var mesh = new THREE.Mesh(geometry, materials);					
 							
 							mesh.setDefPosRotScale();							
 							mesh.name = fileNameWithoutExtension(model);
@@ -731,40 +567,6 @@
 							mesh.createSectionMesh(mesh);
 							lastSelectedObject=mesh;  
 							addMainGui();
-							//-----------------------------------fullfilled section-----------------------------
-							/*var sectionMesh = mesh.clone();				
-							var clonedMaterial = [];
-							for (var j=0; j < mesh.material.length; j++) {
-								clonedMaterial.push(mesh.material[j].clone());
-							}							
-							sectionMesh.material = clonedMaterial;
-							
-							for (var j=0; j < sectionMesh.material.length; j++) {
-								var parentMaterial = sectionMesh.material[j].color;
-								//console.log(parentMaterial);
-								var material = new THREE.MeshBasicMaterial({
-									side: THREE.BackSide,
-									clippingPlanes: clipPlanes,
-									clipIntersection: true,								
-									color: parentMaterial, //Math.random() * 0xffffff,
-									polygonOffset: true,
-									polygonOffsetFactor: -1,
-									wireframe: false
-								});
-								sectionMesh.material[j] = material;
-							}
-
-							sectionMesh.position.set( 0, 0, 0);
-							sectionMesh.rotation.set( 0, 0, 0);							
-							sectionMesh.scale.set( 1, 1, 1 );
-							
-							mesh.add(sectionMesh);
-							render();*/
-							//-----------------------------------end fullfilled section-----------------------------
-							
-							
-							//console.log(mesh);				
-							//-------------------------------------------------------------------------------------------------------
 						} );
 					} );					
 				});
@@ -780,21 +582,7 @@
 			}
 			
 			function removeModel(part) {
-				try {
-					/*transformControls.detach( part );
-					scene.remove(part);*/
-
-					//remove first object from array
-					//transformControls.detach( helperObjects[0] );
-					//scene.remove( helperObjects[0] );
-					//helperObjects.splice(0, 1); //delete helperObjects[0]; - nefungovalo, protože to neposunulo indexy
-					
-					//remove last array from array
-					/*transformControls.detach( helperObjects[helperObjects.length - 1] );
-					scene.remove( helperObjects[helperObjects.length - 1] );
-					helperObjects.pop();	*/
-
-					//remove last selected object					
+				try {				
 					transformControls.detach( part );
 					scene.remove( part );
 					var partIndex = helperObjects.indexOf(part);

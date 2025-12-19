@@ -16,7 +16,7 @@
       @save-request="handleUpdateDoc(false)"
     />
 
-    <q-separator spaced />
+    <!-- <q-separator spaced />
 
     <div class="q-pa-md text-h4">Debug Data:</div>
     <p>
@@ -40,7 +40,7 @@
       <div>
         hasChanges (Vlastní stav):<pre>{{ hasChanges }}</pre>
       </div>
-    </div>
+    </div> -->
   </DetailLayout>
 </template>
 

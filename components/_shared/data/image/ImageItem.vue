@@ -1,19 +1,19 @@
 <template>
   <q-item v-if="fileModel && isImage">
     <q-item-section>
-        <q-img
-            :src="fileModel.url"
-            :alt="fileModel.origName"
-            style="width: 100px; height: 100px;"
-            fit="contain"
-        />
-    </q-item-section>
-    <q-item-section>
+      <q-img
+          :src="fileModel.url"
+          :alt="fileModel.origName"
+          style="width: 100px; height: 100px;"
+          fit="contain"
+      />
       <q-item-label caption><a :href="fileModel.url" target="_blank">{{ fileModel.origName }}</a></q-item-label>
       <q-item-label caption v-if="fileModel.note">
-        Poznámka: {{ fileModel.note }}
+        {{ fileModel.note }}
       </q-item-label>
     </q-item-section>
+
+
 
     <q-item-section side>
       <div class="row items-center q-gutter-xs">

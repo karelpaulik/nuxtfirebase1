@@ -379,32 +379,36 @@
 				
 				window.addEventListener( 'keydown', function ( event ) {
 
-					switch ( event.keyCode ) {
+					switch ( event.key ) {
 
-						case 81: // Q
-							transformControls.setSpace( transformControls.space === "local" ? "world" : "local" );
+						case 'q':
+						case 'Q':
+							transformControls.setSpace( transformControls.space === 'local' ? 'world' : 'local' );
 							break;
 
-						case 16: // Shift
+						case 'Shift':
 							transformControls.setTranslationSnap( 10 );
 							transformControls.setRotationSnap( THREE.MathUtils.degToRad( 30 ) );
 							transformControls.setScaleSnap( 0.25 );
 							break;
-						
 
-						case 82: // R
-							transformControls.setMode( "rotate" );
+						case 'r':
+						case 'R':
+							transformControls.setMode( 'rotate' );
 							break;
 
-						case 83: // S
-							transformControls.setMode( "scale" );x
-							break;							
+						case 's':
+						case 'S':
+							transformControls.setMode( 'scale' );
+							break;
 
-						case 84: // T
-							transformControls.setMode( "translate" );
-							break;							
-							
-						/*case 67: // C
+						case 't':
+						case 'T':
+							transformControls.setMode( 'translate' );
+							break;
+
+						/*case 'c':
+						case 'C':
 							const position = currentCamera.position.clone();
 
 							currentCamera = currentCamera.isPerspectiveCamera ? cameraOrtho : cameraPersp;
@@ -417,7 +421,8 @@
 							onWindowResize();
 							break;*/
 
-						/*case 86: // V
+						/*case 'v':
+						case 'V':
 							const randomFoV = Math.random() + 0.1;
 							const randomZoom = Math.random() + 0.1;
 
@@ -430,29 +435,32 @@
 							onWindowResize();
 							break;*/
 
-						case 187:
-						case 107: // +, =, num+
+						case '+':
+						case '=':
 							transformControls.setSize( transformControls.size + 0.1 );
 							break;
 
-						case 189:
-						case 109: // -, _, num-
+						case '-':
+						case '_':
 							transformControls.setSize( Math.max( transformControls.size - 0.1, 0.1 ) );
 							break;
 
-						case 88: // X
+						case 'x':
+						case 'X':
 							transformControls.showX = ! transformControls.showX;
 							break;
 
-						case 89: // Y
+						case 'y':
+						case 'Y':
 							transformControls.showY = ! transformControls.showY;
 							break;
 
-						case 90: // Z
+						case 'z':
+						case 'Z':
 							transformControls.showZ = ! transformControls.showZ;
 							break;
 
-						case 32: // Spacebar
+						case ' ':
 							transformControls.enabled = ! transformControls.enabled;
 							break;
 
@@ -462,9 +470,9 @@
 
 				window.addEventListener( 'keyup', function ( event ) {
 
-					switch ( event.keyCode ) {
+					switch ( event.key ) {
 
-						case 16: // Shift
+						case 'Shift':
 							transformControls.setTranslationSnap( null );
 							transformControls.setRotationSnap( null );
 							transformControls.setScaleSnap( null );
@@ -880,15 +888,15 @@
 								//INTERSECTED.children[0].material[i].colorWrite = false;
 							}						
 						}
-					} else {
-						if ( INTERSECTED ) {
+					} else { // jestliže neexistuje žádný výběr
+						if ( INTERSECTED ) { // Okamžik přechodu z myši nad objektem na prázdné místo
 							//INTERSECTED.material[11].emissive.setHex( INTERSECTED.currentHex );
 							for (var i=0; i<INTERSECTED.material.length; i++) {
 								INTERSECTED.material[i].emissive.setHex( 0x000000 );
 								//INTERSECTED.children[0].material[i].colorWrite = true;
 							}
+							INTERSECTED = null;
 						}
-						INTERSECTED = null;
 					}
 				}
 				//------------------------------------------------------------

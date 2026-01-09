@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-		<title>STL viewer</title>
+		<title id="pageTitle">STL viewer</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 		<link type="text/css" rel="stylesheet" href="web3d/main.css">
@@ -79,6 +79,7 @@
 				const fileName = urlParams.get('name'); 
 
 				document.getElementById('fileNameLabel').textContent = fileName;
+				document.getElementById('pageTitle').textContent = fileName;
 
 				// 3. Načtení modelu
 				if (fileUrl && fileName) {
